@@ -3,27 +3,24 @@ import { useWeb3Store } from '../stores/web3Store';
 
 const routes = [
     {
-        path: '/about',
-        component: () => import('../layouts/DefaultLayout.vue'),
-        children: [
-            // {
-            //     path: '',
-            //     name: 'home',
-            //     component: () => import('../pages/Home.vue')
-            // },
-            // {
-            //     path: 'swap',
-            //     name: 'swap',
-            //     component: () => import('../pages/Swap.vue'),
-            //     meta: { requiresWallet: true }
-            // },
-            // {
-            //     path: 'portfolio',
-            //     name: 'portfolio',
-            //     component: () => import('../pages/Portfolio.vue'),
-            //     meta: { requiresWallet: true }
-            // }
-        ]
+        path: '/',
+        component() {location.href = 'https://www.satsurance.xyz/'}
+    },
+    {
+        path: '/stake',
+        component: () => import('../layouts/StakingLayout.vue'),
+    },
+    {
+        path: '/claim',
+        component: () => import('../layouts/ClaimLayout.vue'),
+    },
+    {
+        path: '/cover',
+        component: () => import('../layouts/CoverLayout.vue'),
+    },
+    {
+        path: '/docs',
+        component() {location.href = 'https://satsurance.gitbook.io/satsurance'}
     }
 ];
 

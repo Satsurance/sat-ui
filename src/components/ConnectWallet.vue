@@ -1,14 +1,14 @@
 <template>
   <div>
     <button
-        v-if="!isConnected"
+        v-if="!web3Store.isConnected"
         @click="handleConnect"
         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
     >
       Connect Wallet
     </button>
     <div v-else class="flex items-center space-x-2">
-      <span class="text-gray-600">{{ formatAddress(account) }}</span>
+      <span class="text-gray-600">{{ formatAddress(web3Store.account) }}</span>
       <button
           @click="handleDisconnect"
           class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"

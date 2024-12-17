@@ -1,6 +1,8 @@
 <template>
-  <div class="w-screen min-h-screen m-0 p-0 bg-yellow-50">
-    <header class="w-screen bg-gradient-to-r from-yellow-400 to-yellow-300 shadow-lg">
+  <!-- Remove w-screen class since it can cause overflow -->
+  <div class="min-h-screen m-0 p-0 bg-yellow-50">
+    <!-- Remove w-screen from header as well -->
+    <header class="bg-gradient-to-r from-yellow-400 to-yellow-300 shadow-lg">
       <div class="px-8 py-6">
         <!-- Top row with logo and user info -->
         <div class="flex justify-between items-center">
@@ -12,13 +14,6 @@
             <!-- App title -->
             <h1 class="text-slate-800 text-xl font-semibold tracking-tight">Satsurance</h1>
           </div>
-
-          <!-- User section -->
-          <div class="flex items-center gap-3">
-            <div class="px-4 py-2 bg-white bg-opacity-50 rounded-lg text-slate-700 text-sm font-medium hover:bg-opacity-70 transition-all duration-300">
-              Welcome, User
-            </div>
-          </div>
         </div>
 
         <!-- Navigation row -->
@@ -27,9 +22,22 @@
         </nav>
       </div>
     </header>
+
+    <!-- Remove container class to prevent extra margins -->
+    <main>
+      <router-view></router-view>
+    </main>
   </div>
 </template>
 
 <script setup>
 import Navbar from './components/Navbar.vue'
 </script>
+
+<style>
+/* Add this to ensure no default margins or padding */
+body {
+  margin: 0;
+  padding: 0;
+}
+</style>

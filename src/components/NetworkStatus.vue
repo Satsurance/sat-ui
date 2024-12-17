@@ -16,19 +16,14 @@ import { useWeb3Store } from '../stores/web3Store';
 const web3Store = useWeb3Store();
 
 const networkName = computed(() => {
+  if(!web3Store.isConnected) return 'Not connected';
   switch (web3Store.chainId) {
-    case 1:
-      return 'Ethereum';
-    case 137:
-      return 'Polygon';
-    case 56:
-      return 'BSC';
-    case 42161:
-      return 'Arbitrum';
-    case 10:
-      return 'Optimism';
+    case 200901:
+      return 'Bitlayer';
+    case 200810:
+      return 'Bitlayer Testnet';
     default:
-      return 'Unknown Network';
+      return 'Unsupported Network';
   }
 });
 

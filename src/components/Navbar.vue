@@ -2,34 +2,51 @@
 <template>
   <nav class="bg-white shadow-lg">
     <div class="container mx-auto px-4">
-      <div class="flex justify-between items-center h-16">
-        <!-- Logo/Brand -->
-        <div class="flex items-center">
+      <!-- Use absolute positioning for perfect centering -->
+      <div class="relative flex h-16 items-center">
+        <!-- Logo/Brand - Compact width -->
+        <div class="w-[200px]">
           <router-link to="/" class="text-xl font-bold text-gray-800">
-            Web3 App
-          </router-link>
-        </div>
-
-        <!-- Navigation Links -->
-        <div class="hidden md:flex items-center space-x-8">
-          <router-link
-              to="/"
-              class="text-gray-600 hover:text-gray-900"
-              active-class="text-blue-600"
-          >
             Home
           </router-link>
-          <router-link
-              to="/portfolio"
-              class="text-gray-600 hover:text-gray-900"
-              active-class="text-blue-600"
-          >
-            Portfolio
-          </router-link>
         </div>
 
-        <!-- Network Status and Wallet Connection -->
-        <div class="flex items-center space-x-4">
+        <!-- Navigation Links - Absolutely centered -->
+        <div class="absolute left-1/2 -translate-x-1/2">
+          <div class="flex items-center space-x-8">
+            <router-link
+                to="/cover"
+                class="text-gray-600 hover:text-gray-900"
+                active-class="text-blue-600"
+            >
+              Request Cover
+            </router-link>
+            <router-link
+                to="/stake"
+                class="text-gray-600 hover:text-gray-900"
+                active-class="text-blue-600"
+            >
+              Stakes
+            </router-link>
+            <router-link
+                to="/claim"
+                class="text-gray-600 hover:text-gray-900"
+                active-class="text-blue-600"
+            >
+              Claims
+            </router-link>
+            <router-link
+                to="/docs"
+                class="text-gray-600 hover:text-gray-900"
+                active-class="text-blue-600"
+            >
+              Docs
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Network Status and Wallet Connection - Larger width -->
+        <div class="ml-auto w-[500px] flex items-center justify-end space-x-4">
           <NetworkStatus v-if="isConnected" />
           <ConnectWallet />
         </div>
