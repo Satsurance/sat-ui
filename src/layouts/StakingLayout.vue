@@ -1,110 +1,90 @@
+<!-- src/pages/Stake.vue -->
 <template>
-  <div class="w-full bg-white">
-    <div class="max-w-5xl mx-auto py-6">
-      <!-- Main Insurance Pool Container -->
-      <div class="bg-white border border-gray-100 rounded-lg shadow-sm">
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-100">
-          <h1 class="text-xl font-semibold text-center text-gray-800">Insurance Pool</h1>
-        </div>
+  <div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+      <!-- Header -->
+      <h1 class="text-4xl font-normal text-center mb-16 text-gray-800">Insurance Pool</h1>
 
-        <!-- Content Container -->
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Left Section -->
-            <div class="bg-gray-50/50 rounded-lg border border-gray-100 overflow-hidden">
-              <div class="px-6 py-4 bg-white border-b border-gray-100">
-                <h2 class="text-lg font-medium text-center text-gray-800">Shared Insurance Coverage</h2>
-              </div>
-
-              <div class="p-6">
-                <!-- Insurance Pool Description -->
-                <div class="mb-8">
-                  <p class="text-gray-600 text-center">
-                    Stake your BTC to earn rewards while providing coverage for the community.
-                  </p>
-                </div>
-
-                <!-- Pool Statistics -->
-                <div class="space-y-4">
-                  <div class="flex justify-between items-center py-3 px-4 bg-white rounded border border-gray-100">
-                    <span class="text-gray-600">APR</span>
-                    <span class="font-medium text-gray-900">5.2%</span>
-                  </div>
-                  <div class="flex justify-between items-center py-3 px-4 bg-white rounded border border-gray-100">
-                    <span class="text-gray-600">Total Staked</span>
-                    <span class="font-medium text-gray-900">123.45 BTC</span>
-                  </div>
-                  <div class="flex justify-between items-center py-3 px-4 bg-white rounded border border-gray-100">
-                    <span class="text-gray-600">Minimum Lock Period</span>
-                    <span class="font-medium text-gray-900">7 days</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Section -->
-            <div class="bg-gray-50/50 rounded-lg border border-gray-100 overflow-hidden">
-              <div class="px-6 py-4 bg-white border-b border-gray-100">
-                <h2 class="text-lg font-medium text-center text-gray-800">
-                  {{ hasPosition ? 'Your Pool Position' : 'Add Pool Position' }}
-                </h2>
-              </div>
-
-              <div class="p-6">
-                <!-- Show when user has position -->
-                <div v-if="hasPosition" class="space-y-4">
-                  <div class="bg-white rounded border border-gray-100 p-4">
-                    <div class="space-y-4">
-                      <div class="flex justify-between items-center py-2">
-                        <span class="text-gray-600">Days Staked</span>
-                        <span class="font-medium text-gray-900">15 days</span>
-                      </div>
-                      <div class="flex justify-between items-center py-2">
-                        <span class="text-gray-600">Staked Amount</span>
-                        <span class="font-medium text-gray-900">0.5 BTC</span>
-                      </div>
-                    </div>
-                  </div>
-                  <button class="w-full px-4 py-3 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                    Unstake Position
-                  </button>
-                </div>
-
-                <!-- Show when user has no position -->
-                <div v-else class="space-y-4">
-                  <div class="bg-white rounded border border-gray-100 p-4">
-                    <label class="block text-sm font-medium text-gray-600 mb-2">
-                      BTC Amount to Stake
-                    </label>
-                    <div class="flex space-x-3">
-                      <input
-                          type="number"
-                          placeholder="0.00"
-                          class="flex-1 px-4 py-3 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
-                      >
-                      <button class="px-6 py-3 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition-colors">
-                        Stake
-                      </button>
-                    </div>
-                  </div>
-                  <div class="bg-blue-50 rounded p-4 text-sm text-blue-700">
-                    Minimum stake 0.01 BTC. 7-day lock period applies.
-                  </div>
-                </div>
-              </div>
-            </div>
+      <!-- Pool Info -->
+      <div class="bg-white rounded-lg shadow-sm mb-8">
+        <div class="grid grid-cols-3 divide-x">
+          <div class="p-6 text-center">
+            <div class="text-gray-600 mb-2">APR</div>
+            <div class="text-2xl font-medium">5.2%</div>
+          </div>
+          <div class="p-6 text-center">
+            <div class="text-gray-600 mb-2">Total Staked</div>
+            <div class="text-2xl font-medium">123.45 BTC</div>
+          </div>
+          <div class="p-6 text-center">
+            <div class="text-gray-600 mb-2">Lock Period</div>
+            <div class="text-2xl font-medium">7 days</div>
           </div>
         </div>
+      </div>
+
+      <!-- Staking Interface -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-2xl font-normal text-center mb-8">
+          {{ hasPosition ? 'Your Pool Position' : 'Add Pool Position' }}
+        </h2>
+
+        <!-- Active Position View -->
+        <div v-if="hasPosition" class="max-w-lg mx-auto space-y-6">
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded">
+              <span class="text-gray-600">Days Staked</span>
+              <span class="font-medium">15 days</span>
+            </div>
+            <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded">
+              <span class="text-gray-600">Staked Amount</span>
+              <span class="font-medium">0.5 BTC</span>
+            </div>
+          </div>
+
+          <button
+              class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Unstake Position
+          </button>
+        </div>
+
+        <!-- Staking Form -->
+        <div v-else class="max-w-lg mx-auto space-y-6">
+          <div class="space-y-2">
+            <label class="block text-gray-600">BTC Amount to Stake</label>
+            <div class="flex gap-3">
+              <input
+                  type="number"
+                  placeholder="0.00"
+                  class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+              >
+              <button
+                  class="px-8 bg-[#4747ff] text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Stake
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 rounded-lg p-4 text-blue-700">
+            Minimum stake 0.01 BTC. 7-day lock period applies.
+          </div>
+        </div>
+      </div>
+
+      <!-- Pool Description -->
+      <div class="mt-8 text-center text-gray-600">
+        Stake your BTC to earn rewards while providing coverage for the community.
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const hasPosition = ref(false)
+const hasPosition = ref(false);
 </script>
 
 <style scoped>

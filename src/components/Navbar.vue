@@ -36,6 +36,13 @@
               Claims
             </router-link>
             <router-link
+                to="/claims_gov"
+                class="text-gray-600 hover:text-gray-900"
+                active-class="text-blue-600"
+            >
+              Manage Claims
+            </router-link>
+            <router-link
                 to="/docs"
                 class="text-gray-600 hover:text-gray-900"
                 active-class="text-blue-600"

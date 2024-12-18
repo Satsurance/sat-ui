@@ -19,6 +19,10 @@ const routes = [
         component: () => import('../layouts/CoverLayout.vue'),
     },
     {
+        path: '/claims_gov',
+        component: () => import('../layouts/ClaimGovLayout.vue'),
+    },
+    {
         path: '/docs',
         component() {location.href = 'https://satsurance.gitbook.io/satsurance'}
     }
