@@ -10,10 +10,10 @@
         <table class="w-full">
           <thead>
           <tr class="border-b">
-            <th class="px-6 py-4 text-left text-xl font-normal text-gray-700">ID</th>
-            <th class="px-6 py-4 text-left text-xl font-normal text-gray-700">Date</th>
-            <th class="px-6 py-4 text-left text-xl font-normal text-gray-700">Amount</th>
-            <th class="px-6 py-4 text-left text-xl font-normal text-gray-700">Description</th>
+            <th class="px-6 py-4 text-center text-xl font-normal text-gray-700">ID</th>
+            <th class="px-6 py-4 text-center text-xl font-normal text-gray-700">Date</th>
+            <th class="px-6 py-4 text-center text-xl font-normal text-gray-700">Amount</th>
+            <th class="px-6 py-4 text-center text-xl font-normal text-gray-700">Description</th>
             <th class="px-6 py-4 text-left text-xl font-normal text-gray-700">Approve/Decline</th>
           </tr>
           </thead>

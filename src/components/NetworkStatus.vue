@@ -22,6 +22,8 @@ const networkName = computed(() => {
       return 'Bitlayer';
     case 200810:
       return 'Bitlayer Testnet';
+    case 31337:
+      return 'Local Hardhat';
     default:
       return 'Unsupported Network';
   }

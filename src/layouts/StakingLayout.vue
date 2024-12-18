@@ -14,7 +14,7 @@
           </div>
           <div class="p-6 text-center">
             <div class="text-gray-600 mb-2">Total Staked</div>
-            <div class="text-2xl font-medium">123.45 BTC</div>
+            <div class="text-2xl font-medium">{{ totalStakedAmount }} BTC</div>
           </div>
           <div class="p-6 text-center">
             <div class="text-gray-600 mb-2">Lock Period</div>
@@ -82,9 +82,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { ethers } from 'ethers';
+import { useWeb3Store } from '../stores/web3Store';
+import { getContractAddress } from '../constants/contracts.js';
+import insurancePoolABI from '../assets/abis/insurancePool.json';
 
 const hasPosition = ref(false);
+const totalStakedAmount = ref(0);
+const web3Store = useWeb3Store();
+
+
+const loadPositionState = async () => {
+  const insurancePool = new ethers.Contract(
+      getContractAddress("INSURANCE_POOL", web3Store.chainId),
+      insurancePoolABI,
+      web3Store.provider
+  );
+  totalStakedAmount.value = await insurancePool.totalAssetsStaked();
+  const position = await insurancePool.getPoolPosition(web3Store.account);
+  hasPosition.value = position.startDate > 0;
+}
+
+
+
+watch(() => [web3Store.isConnected, web3Store.account], async (values) => {
+  if (values[0]) {
+    await loadPositionState()
+  }
+})
 </script>
 
 <style scoped>
