@@ -103,6 +103,7 @@
         :tx-hash="currentTxHash"
         :error="transactionError"
         @close="resetTransaction"
+        @retry="stakeFunds"
     />
   </div>
 </template>
@@ -148,8 +149,9 @@ const loadPositionState = async () => {
         web3Store.provider
     );
 
-    totalStakedAmount.value = ethers.utils.formatEther(await insurancePool.totalAssetsStaked());
-    console.log((await insurancePool.totalAssetsStaked()).toString());
+    totalStakedAmount.value = Number(
+        ethers.utils.formatEther(await insurancePool.totalAssetsStaked())
+    ).toFixed(2);
 
     const position = await insurancePool.getPoolPosition(web3Store.account);
     const K_coeff = await insurancePool.SHARED_K();
@@ -173,14 +175,8 @@ const loadPositionState = async () => {
 };
 
 // Stake funds
-const stakeFunds = async () => {
+const handleStakeProcess = async (amountInWei) => {
   try {
-    if (!toStakeAmount.value || toStakeAmount.value <= 0) {
-      alert('Please enter a valid amount to stake');
-      return;
-    }
-
-    const amountInWei = ethers.utils.parseEther(toStakeAmount.value.toString());
     const signer = web3Store.provider.getSigner();
     const insurancePool = new ethers.Contract(
         getContractAddress("INSURANCE_POOL", web3Store.chainId),
@@ -192,13 +188,6 @@ const stakeFunds = async () => {
         erc20ABI,
         signer
     );
-
-    // Check BTC balance
-    const balance = await btcContract.balanceOf(web3Store.account);
-    if (balance.lt(amountInWei)) {
-      alert(`Insufficient BTC balance. You have ${ethers.utils.formatEther(balance)} BTC but trying to stake ${toStakeAmount.value} BTC`);
-      return;
-    }
 
     // Check allowance
     const currentAllowance = await btcContract.allowance(
@@ -212,9 +201,13 @@ const stakeFunds = async () => {
       transactionStatus.value = 'approval_pending';
 
       try {
+        // Use the overrides parameter to ensure consistent behavior
         const approveTx = await btcContract.approve(
             insurancePool.address,
-            amountInWei
+            amountInWei,
+            {
+              from: web3Store.account
+            }
         );
         currentTxHash.value = approveTx.hash;
 
@@ -222,14 +215,18 @@ const stakeFunds = async () => {
         transactionStatus.value = 'approval_success';
       } catch (error) {
         transactionStatus.value = 'approval_failed';
-        transactionError.value = error.code === 4001 ? 'Transaction rejected' : 'Approval failed';
+        transactionError.value = error.code === 4001
+            ? 'Transaction rejected by user'
+            : 'Failed to approve tokens';
         throw error;
       }
     }
 
     // Handle staking
     transactionStatus.value = 'stake_pending';
-    const stakeTx = await insurancePool.joinPool(amountInWei);
+    const stakeTx = await insurancePool.joinPool(amountInWei, {
+      from: web3Store.account
+    });
     currentTxHash.value = stakeTx.hash;
 
     await stakeTx.wait();
@@ -240,17 +237,46 @@ const stakeFunds = async () => {
 
     // Auto-close on success after delay
     setTimeout(resetTransaction, 3000);
+  } catch (error) {
+    console.error('Stake process error:', error);
+    throw error;
+  }
+};
 
+const stakeFunds = async () => {
+  try {
+    if (!toStakeAmount.value || toStakeAmount.value <= 0) {
+      transactionError.value = 'Please enter a valid amount to stake';
+      return;
+    }
+
+    const amountInWei = ethers.utils.parseEther(toStakeAmount.value.toString());
+
+    // Check BTC balance first
+    const signer = web3Store.provider.getSigner();
+    const btcContract = new ethers.Contract(
+        getContractAddress("BTC_TOKEN", web3Store.chainId),
+        erc20ABI,
+        signer
+    );
+    const balance = await btcContract.balanceOf(web3Store.account);
+
+    if (balance.lt(amountInWei)) {
+      transactionError.value = `Insufficient BTC balance. You have ${ethers.utils.formatEther(balance)} BTC but trying to stake ${toStakeAmount.value} BTC`;
+      return;
+    }
+
+    await handleStakeProcess(amountInWei);
   } catch (error) {
     console.error('Staking error:', error);
 
     if (transactionStatus.value !== 'approval_failed') {
       transactionStatus.value = 'stake_failed';
       transactionError.value = error.code === 4001
-          ? 'Transaction rejected'
+          ? 'Transaction rejected by user'
           : error.code === -32603
               ? 'Insufficient balance or internal error'
-              : 'Transaction failed';
+              : 'Transaction failed. Please try again';
     }
   }
 };
