@@ -162,7 +162,7 @@ const loadPositionState = async () => {
           ethers.utils.formatEther((position.amount / K_coeff).toString())
       ).toFixed(2);
       dayStaked.value = (
-          ((new Date().getTime()) / 1000 - position.startDate) / 60 / 60 / 24
+          Math.abs(((new Date().getTime()) / 1000 - position.startDate) / 60 / 60 / 24)
       ).toFixed(2);
     } else {
       hasPosition.value = false;
@@ -294,7 +294,7 @@ const unstakePosition = async () => {
     transactionType.value = 'unstake';
     transactionStatus.value = 'pending';
 
-    const unstakeTx = await insurancePool.exitPool();
+    const unstakeTx = await insurancePool.quitPool();
     currentTxHash.value = unstakeTx.hash;
 
     await unstakeTx.wait();
