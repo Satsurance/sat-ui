@@ -1,20 +1,16 @@
 <template>
-  <!-- Remove w-screen class since it can cause overflow -->
   <div class="min-h-screen m-0 p-0 bg-yellow-50">
-    <!-- Remove w-screen from header as well -->
-    <header class="bg-gradient-to-r from-yellow-400 to-yellow-300 shadow-lg">
-      <Navbar />
-    </header>
-
-    <!-- Remove container class to prevent extra margins -->
+    <Navbar />
     <main>
       <router-view></router-view>
     </main>
+    <Footer />
   </div>
 </template>
 
 <script setup>
 import Navbar from "./components/Navbar.vue";
+import Footer from "./components/Footer.vue";
 </script>
 
 <style>
