@@ -34,7 +34,7 @@
           <div class="space-y-4">
             <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded">
               <span class="text-gray-600">Days Staked</span>
-              <span class="font-medium">{{dayStayked}} days</span>
+              <span class="font-medium">{{ dayStaked }} days</span>
             </div>
             <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded">
               <span class="text-gray-600">Staked Amount</span>
@@ -43,7 +43,14 @@
           </div>
 
           <button
-              class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors"
+              @click="unstakePosition"
+              :disabled="transactionStatus !== ''"
+              :class="[
+              'w-full py-3 rounded-lg transition-colors',
+              transactionStatus !== ''
+                ? 'bg-red-300 cursor-not-allowed'
+                : 'bg-red-600 hover:bg-red-700 text-white'
+            ]"
           >
             Unstake Position
           </button>
@@ -59,9 +66,17 @@
                   type="number"
                   placeholder="0.00"
                   class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  :disabled="transactionStatus !== ''"
               >
-              <button @click="stakeFunds"
-                      class="px-8 bg-[#4747ff] text-white rounded-lg hover:bg-blue-700 transition-colors"
+              <button
+                  @click="stakeFunds"
+                  :disabled="transactionStatus !== ''"
+                  :class="[
+                  'px-8 py-3 rounded-lg transition-colors',
+                  transactionStatus !== ''
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-[#4747ff] hover:bg-blue-700 text-white'
+                ]"
               >
                 Stake
               </button>
@@ -79,42 +94,85 @@
         Stake your BTC to earn rewards while providing coverage for the community.
       </div>
     </div>
+
+    <!-- Transaction Status Modal -->
+    <TransactionStatus
+        :show="!!transactionStatus"
+        :status="transactionStatus"
+        :type="transactionType"
+        :tx-hash="currentTxHash"
+        :error="transactionError"
+        @close="resetTransaction"
+    />
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, watch} from 'vue';
-import {ethers} from 'ethers';
-import {useWeb3Store} from '../stores/web3Store';
-import {getContractAddress} from '../constants/contracts.js';
+import { ref, onMounted, watch } from 'vue';
+import { ethers } from 'ethers';
+import { useWeb3Store } from '../stores/web3Store';
+import { getContractAddress } from '../constants/contracts.js';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
 import erc20ABI from '../assets/abis/erc20.json';
+import TransactionStatus from '../components/TransactionStatus.vue';
 
+// State
 const hasPosition = ref(false);
 const totalStakedAmount = ref(0);
 const toStakeAmount = ref(0);
 const stakedAmount = ref(0);
-const dayStayked = ref(0);
+const dayStaked = ref(0);
 const web3Store = useWeb3Store();
 
+// Transaction state
+const transactionStatus = ref('');
+const transactionType = ref('');
+const currentTxHash = ref('');
+const transactionError = ref('');
+
+// Reset transaction state
+const resetTransaction = () => {
+  transactionStatus.value = '';
+  transactionType.value = '';
+  currentTxHash.value = '';
+  transactionError.value = '';
+};
+
+// Load pool position data
 const loadPositionState = async () => {
-  web3Store.isLoadedPosition = true;
-  const insurancePool = new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
-      insurancePoolABI,
-      web3Store.provider
-  );
+  try {
+    web3Store.isLoadedPosition = true;
+    const insurancePool = new ethers.Contract(
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        web3Store.provider
+    );
 
-  totalStakedAmount.value = Number(ethers.utils.formatEther(await insurancePool.totalAssetsStaked())).toFixed(2);
-  const position = await insurancePool.getPoolPosition(web3Store.account);
-  const K_coeff = await insurancePool.SHARED_K();
-  if (position.startDate > 0) {
-    hasPosition.value = true;
-    stakedAmount.value = Number(ethers.utils.formatEther((position.amount / K_coeff).toString())).toFixed(2);
-    dayStayked.value = (((new Date().getTime())/1000- position.startDate) /60/60/24).toFixed(2);
+    totalStakedAmount.value = ethers.utils.formatEther(await insurancePool.totalAssetsStaked());
+    console.log((await insurancePool.totalAssetsStaked()).toString());
+
+    const position = await insurancePool.getPoolPosition(web3Store.account);
+    const K_coeff = await insurancePool.SHARED_K();
+
+    if (position.startDate > 0) {
+      hasPosition.value = true;
+      stakedAmount.value = Number(
+          ethers.utils.formatEther((position.amount / K_coeff).toString())
+      ).toFixed(2);
+      dayStaked.value = (
+          ((new Date().getTime()) / 1000 - position.startDate) / 60 / 60 / 24
+      ).toFixed(2);
+    } else {
+      hasPosition.value = false;
+      stakedAmount.value = 0;
+      dayStaked.value = 0;
+    }
+  } catch (error) {
+    console.error('Error loading position:', error);
   }
-}
+};
 
+// Stake funds
 const stakeFunds = async () => {
   try {
     if (!toStakeAmount.value || toStakeAmount.value <= 0) {
@@ -122,95 +180,122 @@ const stakeFunds = async () => {
       return;
     }
 
-    // Convert the amount to Wei (assuming 18 decimals)
     const amountInWei = ethers.utils.parseEther(toStakeAmount.value.toString());
-
-    // Get signer for sending transactions
     const signer = web3Store.provider.getSigner();
-
-    // Get contract instances with signer
     const insurancePool = new ethers.Contract(
         getContractAddress("INSURANCE_POOL", web3Store.chainId),
         insurancePoolABI,
         signer
     );
-
     const btcContract = new ethers.Contract(
         getContractAddress("BTC_TOKEN", web3Store.chainId),
         erc20ABI,
         signer
     );
 
-    // Check BTC balance first
+    // Check BTC balance
     const balance = await btcContract.balanceOf(web3Store.account);
     if (balance.lt(amountInWei)) {
       alert(`Insufficient BTC balance. You have ${ethers.utils.formatEther(balance)} BTC but trying to stake ${toStakeAmount.value} BTC`);
       return;
     }
 
-    // Check if we have enough allowance
+    // Check allowance
     const currentAllowance = await btcContract.allowance(
         web3Store.account,
         insurancePool.address
     );
 
-    // If allowance is insufficient, request approval
+    // Handle approval if needed
     if (currentAllowance.lt(amountInWei)) {
-      console.log('Requesting approval...');
-      const approveTx = await btcContract.approve(
-          insurancePool.address,
-          amountInWei
-      );
+      transactionType.value = 'stake';
+      transactionStatus.value = 'approval_pending';
 
-      // Wait for approval transaction to be mined
-      console.log('Waiting for approval transaction...');
-      const approveReceipt = await approveTx.wait();
-      console.log('Approval successful:', approveReceipt.transactionHash);
+      try {
+        const approveTx = await btcContract.approve(
+            insurancePool.address,
+            amountInWei
+        );
+        currentTxHash.value = approveTx.hash;
+
+        await approveTx.wait();
+        transactionStatus.value = 'approval_success';
+      } catch (error) {
+        transactionStatus.value = 'approval_failed';
+        transactionError.value = error.code === 4001 ? 'Transaction rejected' : 'Approval failed';
+        throw error;
+      }
     }
 
-    // Submit stake transaction
-    console.log('Staking funds...');
+    // Handle staking
+    transactionStatus.value = 'stake_pending';
     const stakeTx = await insurancePool.joinPool(amountInWei);
+    currentTxHash.value = stakeTx.hash;
 
-    // Wait for stake transaction to be mined
-    console.log('Waiting for stake transaction...');
-    const stakeReceipt = await stakeTx.wait();
+    await stakeTx.wait();
+    transactionStatus.value = 'stake_success';
 
-    console.log('Stake successful:', stakeReceipt.transactionHash);
-
-    // Refresh position state
     await loadPositionState();
-
-    // Clear input
     toStakeAmount.value = 0;
+
+    // Auto-close on success after delay
+    setTimeout(resetTransaction, 3000);
 
   } catch (error) {
     console.error('Staking error:', error);
 
-    // Handle specific error cases
-    if (error.code === 4001) {
-      alert('Transaction rejected by user');
-    } else if (error.code === -32603) {
-      // Parse custom error for better message
-      const match = error.message.match(/ERC20InsufficientBalance\((.*?)\)/);
-      if (match) {
-        alert('Insufficient BTC balance. Please make sure you have enough BTC tokens.');
-      } else {
-        alert('Internal JSON-RPC error. Please check your balance and try again.');
-      }
-    } else {
-      alert('Error while staking: ' + error.message);
+    if (transactionStatus.value !== 'approval_failed') {
+      transactionStatus.value = 'stake_failed';
+      transactionError.value = error.code === 4001
+          ? 'Transaction rejected'
+          : error.code === -32603
+              ? 'Insufficient balance or internal error'
+              : 'Transaction failed';
     }
   }
-}
+};
 
+// Unstake position
+const unstakePosition = async () => {
+  try {
+    const signer = web3Store.provider.getSigner();
+    const insurancePool = new ethers.Contract(
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        signer
+    );
+
+    transactionType.value = 'unstake';
+    transactionStatus.value = 'pending';
+
+    const unstakeTx = await insurancePool.exitPool();
+    currentTxHash.value = unstakeTx.hash;
+
+    await unstakeTx.wait();
+    transactionStatus.value = 'success';
+
+    await loadPositionState();
+
+    // Auto-close on success after delay
+    setTimeout(resetTransaction, 3000);
+
+  } catch (error) {
+    console.error('Unstaking error:', error);
+    transactionStatus.value = 'failed';
+    transactionError.value = error.code === 4001
+        ? 'Transaction rejected'
+        : 'Unstaking failed';
+  }
+};
+
+// Initial load and watchers
 if (web3Store.isConnected) loadPositionState();
 
 watch(() => [web3Store.isConnected, web3Store.account], async (values) => {
   if (values[0]) {
-    await loadPositionState()
+    await loadPositionState();
   }
-})
+});
 </script>
 
 <style scoped>
