@@ -22,7 +22,7 @@
               class="text-gray-600 hover:text-yellow-500"
               active-class="text-blue-600"
             >
-              Stakes
+              Stake
             </router-link>
             <router-link
               to="/claim"
@@ -111,7 +111,7 @@
           class="text-gray-600 hover:text-yellow-500 py-4"
           active-class="text-blue-600"
         >
-          Stakes
+          Stake
         </router-link>
         <router-link
           to="/claim"
