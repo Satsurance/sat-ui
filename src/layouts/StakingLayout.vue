@@ -28,7 +28,7 @@
       </div>
 
       <!-- Staking Interface -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 py-12">
         <h2 class="text-2xl font-normal text-center mb-8">
           {{ hasPosition ? "Your Pool Position" : "Add Pool Position" }}
         </h2>
@@ -79,7 +79,7 @@
                   id="amount"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
                   placeholder="0.99"
-                  :disabled="transactionStatus !== ''"
+                  :disabled="transactionStatus !== '' || !web3Store.isConnected"
                   v-model="toStakeAmount"
                   required
                 />
@@ -92,15 +92,26 @@
               </div>
               <button
                 @click="stakeFunds"
+                v-if="web3Store.isConnected"
                 :disabled="transactionStatus !== ''"
                 class="bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 rounded-lg transition-colors transition duration-300 w-full focus:outline-none"
               >
                 Stake
               </button>
+              <button
+                v-else
+                disabled
+                class="bg-gray-100 border-gray-100 hover:border-gray-100 cursor-not-allowed text-gray-500 px-4 rounded-lg w-full outline-none"
+              >
+                Wallet is not connected
+              </button>
             </div>
           </div>
 
-          <div class="bg-yellow-50 rounded-lg p-4 text-yellow-700">
+          <div
+            v-if="web3Store.isConnected"
+            class="bg-yellow-50 rounded-lg p-4 text-yellow-700"
+          >
             Minimum stake 0.01 BTC. 7-day lock period applies.
           </div>
         </div>
