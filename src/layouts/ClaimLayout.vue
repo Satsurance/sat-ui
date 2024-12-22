@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="min-h-[85vh] bg-gray-50 py-8">
+    <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
       <div class="container mx-auto px-4">
         <h1 class="text-3xl font-semibold text-center mb-8">Insurance claim</h1>
 

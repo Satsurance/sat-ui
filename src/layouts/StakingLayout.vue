@@ -1,6 +1,6 @@
 <!-- src/pages/Stake.vue -->
 <template>
-  <div class="min-h-[85vh]  bg-gray-50 py-8">
+  <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
     <div class="max-w-4xl mx-auto px-4">
       <!-- Header -->
       <h1 class="text-3xl mb-2 font-medium">Insurance Pool</h1>

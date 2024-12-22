@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-[85vh]  bg-gray-50 py-8">
+  <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
     <h1 class="text-3xl mb-2 font-medium">Request a cover</h1>
     <h2 class="mb-4">
       Would you like to purchase a cover? We're here to help you explore the

@@ -1,6 +1,6 @@
 <!-- src/pages/ClaimsManagement.vue -->
 <template>
-  <div class="min-h-[85vh]  bg-gray-50 py-8">
+  <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
     <div class="max-w-6xl mx-auto px-4">
       <h1 class="text-3xl mb-2 font-medium">Claims Management</h1>
       <h2 class="mb-4">Manage and Review Claims with Ease</h2>
