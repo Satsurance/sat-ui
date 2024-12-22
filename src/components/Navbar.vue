@@ -90,7 +90,7 @@
   <nav
     v-if="isMobileNavOpen"
     ref="mobileNav"
-    class="fixed right-0 top-0 w-3/4 h-screen bg-white lg:hidden"
+    class="fixed right-0 top-0 w-3/4 h-screen bg-white lg:hidden z-[999]"
   >
     <div class="flex flex-col w-full h-full justify-evenly items-center">
       <div class="flex justify-between items-center">
