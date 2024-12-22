@@ -6,10 +6,10 @@
       future of decentralized insurance.
     </h2>
     <div
-      class="container mx-auto px-4 w-full flex md:flex-row flex-col justify-between"
+      class="container mx-auto px-4 w-full flex md:flex-row flex-col md:gap-8 justify-center"
     >
       <div
-        class="md:w-1/2 lg:w-2/3 text-start bg-white rounded-lg shadow-sm p-8"
+        class="md:w-1/2  lg:w-1/3  text-start bg-white rounded-lg shadow-sm p-8"
       >
         <div v-if="!isSubmitted" class="w-full">
           <div class="w-full space-y-8">
@@ -85,7 +85,7 @@
                   class="flex flex-row align-center bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 py-2 rounded-lg transition-colors transition duration-300"
                   :disabled="isSubmitting"
                 >
-                  Send
+                  Apply for Cover
                 </button>
                 <button
                   v-if="isSubmitting"
@@ -125,7 +125,7 @@
         </div>
       </div>
       <div
-        class="flex flex-col justify-between md:w-1/2 lg:w-1/3 space-y-8 pt-2 items-center"
+        class="flex flex-col justify-between bg-white rounded-lg shadow-sm md:w-1/2 lg:w-1/3 space-y-8 pt-2 items-center"
       >
         <p class="font-bold mt-2">These links may be helpfull for you 🤓</p>
         <a
