@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-[85vh]  bg-gray-50 py-8">
-    <h1 class="text-3xl mb-2 font-medium">Got some questions?</h1>
+    <h1 class="text-3xl mb-2 font-medium">Request a cover</h1>
     <h2 class="mb-4">
-      Have questions or need assistance? We're here to help you explore the
+      Would you like to purchase a cover? We're here to help you explore the
       future of decentralized insurance.
     </h2>
     <div
