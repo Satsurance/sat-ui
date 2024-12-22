@@ -1,54 +1,95 @@
 <template>
   <div>
     <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
-      <div class="container mx-auto px-4">
-        <h1 class="text-3xl font-semibold text-center mb-8">Insurance claim</h1>
+      <div class="max-w-4xl mx-auto px-4">
+        <!-- Header -->
+        <h1 class="text-3xl mb-2 font-medium">Insurance Claim</h1>
+        <h2 class="mb-8">Submit your insurance claim for coverage assessment.</h2>
 
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-xl font-medium mb-6">
-            Claim for insurance event form:
+        <div class="bg-white rounded-lg text-start shadow-sm p-6 py-12 mb-[1vh]">
+          <h2 class="text-2xl font-normal text-center mb-8">
+            Insurance Claim Form
           </h2>
 
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <form @submit.prevent="handleSubmit" class="max-w-lg mx-auto space-y-6">
             <div>
               <label
-                for="description"
-                class="block text-sm font-medium text-gray-700 mb-2"
+                  for="description"
+                  class="block mb-2 text-sm font-medium text-gray-900"
               >
                 Incident description
               </label>
               <textarea
-                id="description"
-                v-model="formData.description"
-                rows="4"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Please describe the incident in detail..."
-                required
+                  id="description"
+                  v-model="formData.description"
+                  rows="4"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="Please describe the incident in detail..."
+                  required
               ></textarea>
             </div>
 
             <div>
               <label
-                for="transactionLink"
-                class="block text-sm font-medium text-gray-700 mb-2"
+                  for="amount"
+                  class="block mb-2 text-sm font-medium text-gray-900"
+              >
+                Claim amount (BTC)
+              </label>
+              <input
+                  type="number"
+                  id="amount"
+                  v-model="formData.amount"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="0.1"
+                  required
+              />
+            </div>
+
+            <div>
+              <label
+                  for="receiver"
+                  class="block mb-2 text-sm font-medium text-gray-900"
+              >
+                Receiver address
+              </label>
+              <input
+                  type="text"
+                  id="receiver"
+                  v-model="formData.receiver"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="Enter BTC address to receive the claim"
+                  required
+              />
+            </div>
+
+            <div>
+              <label
+                  for="transactionLink"
+                  class="block mb-2 text-sm font-medium text-gray-900"
               >
                 Transaction link
               </label>
               <input
-                type="text"
-                id="transactionLink"
-                v-model="formData.transactionLink"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter transaction hash or link"
-                required
+                  type="text"
+                  id="transactionLink"
+                  v-model="formData.transactionLink"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="Enter transaction hash or link"
+                  required
               />
             </div>
 
             <div class="flex justify-end">
               <button
-                type="submit"
-                class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                :disabled="isSubmitting"
+                  type="submit"
+                  :disabled="isSubmitting"
+                  :class="[
+                  'w-full py-3 rounded-lg transition-colors duration-300',
+                  isSubmitting
+                    ? 'bg-yellow-300 cursor-not-allowed'
+                    : 'bg-yellow-500 hover:bg-white hover:text-yellow-500 border border-yellow-500 text-white'
+                ]"
               >
                 {{ isSubmitting ? "Submitting..." : "Submit Claim" }}
               </button>
@@ -66,6 +107,8 @@ import { ref, reactive } from "vue";
 const isSubmitting = ref(false);
 const formData = reactive({
   description: "",
+  amount: "",
+  receiver: "",
   transactionLink: "",
 });
 
@@ -76,7 +119,10 @@ const handleSubmit = async () => {
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    // Reset form
     formData.description = "";
+    formData.amount = "";
+    formData.receiver = "";
     formData.transactionLink = "";
 
     alert("Claim submitted successfully!");
@@ -88,3 +134,11 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<style scoped>
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+</style>
