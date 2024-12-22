@@ -3,6 +3,12 @@ import { useWeb3Store } from "../stores/web3Store";
 
 const routes = [
   {
+    path: "/",
+    component() {
+      location.href = "https://www.satsurance.xyz/";
+    },
+  },
+  {
     path: "/stake",
     component: () => import("../layouts/StakingLayout.vue"),
   },
