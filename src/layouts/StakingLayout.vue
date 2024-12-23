@@ -57,7 +57,7 @@
               'w-full py-3 rounded-lg transition-colors',
               transactionStatus !== ''
                 ? 'bg-red-300 cursor-not-allowed'
-                : 'bg-red-600 hover:bg-red-700 text-white',
+                : 'bg-slate-600 border border-slate-600 hover:bg-white hover:text-slate-600 hover:border-slate-600 text-white',
             ]"
           >
             Unstake Position
