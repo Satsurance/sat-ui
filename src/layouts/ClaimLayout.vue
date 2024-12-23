@@ -88,7 +88,7 @@
                   'w-full py-3 rounded-lg transition-colors duration-300',
                   isSubmitting
                     ? 'bg-yellow-300 cursor-not-allowed'
-                    : 'bg-yellow-500 hover:bg-white hover:text-yellow-500 border border-yellow-500 text-white'
+                    : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white'
                 ]"
               >
                 {{ isSubmitting ? "Submitting..." : "Submit Claim" }}
@@ -103,6 +103,13 @@
 
 <script setup>
 import { ref, reactive } from "vue";
+import { ethers } from "ethers";
+import { useWeb3Store } from "../stores/web3Store";
+import { getContractAddress } from "../constants/contracts.js";
+import claimerABI from "../assets/abis/claimer.json";
+import {parseEther} from "@ethersproject/units/src.ts";
+
+const web3Store = useWeb3Store();
 
 const isSubmitting = ref(false);
 const formData = reactive({
@@ -115,9 +122,15 @@ const formData = reactive({
 const handleSubmit = async () => {
   try {
     isSubmitting.value = true;
-    console.log("Form submitted:", formData);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const signer = web3Store.provider.getSigner();
+    const claimer = new ethers.Contract(
+        getContractAddress("CLAIMER", web3Store.chainId),
+        claimerABI,
+        signer
+    );
+
+    await claimer.createClaim(ethers.utils.getAddress(formData.receiver), formData.description, ethers.utils.parseEther(formData.amount.toString()));
 
     // Reset form
     formData.description = "";
@@ -125,7 +138,6 @@ const handleSubmit = async () => {
     formData.receiver = "";
     formData.transactionLink = "";
 
-    alert("Claim submitted successfully!");
   } catch (error) {
     console.error("Error submitting claim:", error);
     alert("Failed to submit claim. Please try again.");

@@ -165,7 +165,6 @@ const resetTransaction = () => {
 // Load pool position data
 const loadPositionState = async () => {
   try {
-    web3Store.isLoadedPosition = true;
     const insurancePool = new ethers.Contract(
       getContractAddress("INSURANCE_POOL", web3Store.chainId),
       insurancePoolABI,

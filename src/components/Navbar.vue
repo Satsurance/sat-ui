@@ -36,7 +36,7 @@
               class="text-gray-600 hover:text-yellow-500"
               active-class="text-blue-600"
             >
-              Claims
+              Claim
             </router-link>
             <router-link
               to="/claims_gov"
