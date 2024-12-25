@@ -62,7 +62,7 @@
               <!-- Proposer -->
               <div>
                 <label class="block text-base text-gray-500 mb-2">Proposed By</label>
-                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg">
                   <span class="font-mono text-sm text-gray-900">{{ claim?.proposer || '0x0' }}</span>
                   <button
                       @click="copyToClipboard(claim?.proposer)"
@@ -78,7 +78,7 @@
               <!-- Receiver -->
               <div>
                 <label class="block text-base text-gray-500 mb-2">Funds Recipient</label>
-                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg">
                   <span class="font-mono text-sm text-gray-900">{{ claim?.receiver || '0x0' }}</span>
                   <button
                       @click="copyToClipboard(claim?.receiver)"

@@ -63,68 +63,73 @@
       </div>
 
       <!-- Claims Table -->
-      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-500">
-          <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
-          <tr>
-            <th class="px-6 py-4 text-center font-semibold">ID</th>
-            <th class="px-6 py-4 text-center font-semibold">Date</th>
-            <th class="px-6 py-4 text-center font-semibold">Amount</th>
-            <th class="px-6 py-4 text-center font-semibold">Description</th>
-            <th class="px-6 py-4 text-center font-semibold">Receiver</th>
-            <th class="px-6 py-4 text-center font-semibold">Voting Status</th>
-            <th class="px-6 py-4 text-center font-semibold">Actions</th>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm text-gray-600 divide-y divide-gray-200">
+          <thead>
+          <tr class="bg-white border-b border-gray-200">
+            <th class="px-6 py-5 text-left text-xs font-semibold uppercase tracking-wider text-gray-900">ID</th>
+            <th class="px-6 py-5 text-left text-xs font-semibold uppercase tracking-wider text-gray-900">Date</th>
+            <th class="px-6 py-5 text-right text-xs font-semibold uppercase tracking-wider text-gray-900">Amount</th>
+            <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Description</th>
+            <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Receiver</th>
+            <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Votes</th>
           </tr>
           </thead>
-          <tbody>
+          <tbody class="bg-white divide-y divide-gray-200">
           <tr v-if="claims.length === 0">
-            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
               No active claims
             </td>
           </tr>
           <tr
               v-for="claim in claims"
               :key="claim.id"
-              class="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+              class="hover:bg-gray-50/50 transition-colors group border-gray-200"
               @click="openClaimDetails(claim)"
           >
-            <td class="px-6 py-4 text-center">{{ claim.id }}</td>
-            <td class="px-6 py-4 text-center">{{ formatDate(claim.date) }}</td>
-            <td class="px-6 py-4 text-center">{{ claim.amount.toLocaleString() }} BTC</td>
-            <td class="px-6 py-4">{{ claim.description }}</td>
-            <td class="px-6 py-4 text-center font-mono">{{ formatAddress(claim.receiver) }}</td>
-            <td class="px-6 py-4">
-              <div class="flex flex-col items-center gap-1">
-                <div class="flex items-center gap-2">
-                  <div class="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+            <td class="px-6 py-5">
+          <span class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full group-hover:bg-gray-200 transition-colors">
+            {{ claim.id }}
+          </span>
+            </td>
+            <td class="px-6 py-5 text-gray-600">{{ formatDate(claim.date) }}</td>
+            <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
+              {{ formatAmount(claim.amount) }}
+              <span class="ml-1 text-gray-500 font-normal">BTC</span>
+            </td>
+            <td class="px-6 py-5">
+              <div class="max-w-md truncate" :title="claim.description">
+                {{ claim.description }}
+              </div>
+            </td>
+            <td class="px-6 py-5">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 font-mono group-hover:bg-gray-200 transition-colors">
+            {{ formatAddress(claim.receiver) }}
+          </span>
+            </td>
+            <td class="px-6 py-5">
+              <div class="flex flex-col items-center gap-2">
+                <div class="flex items-center gap-3 w-full max-w-[200px]">
+                  <div class="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                        class="h-full bg-yellow-500"
+                        class="h-full transition-all duration-300"
+                        :class="{
+                    'bg-yellow-500': claim.forPercentage > 50,
+                    'bg-gray-400': claim.forPercentage <= 50
+                  }"
                         :style="{ width: `${claim.forPercentage}%` }"
                     ></div>
                   </div>
-                  <span class="text-sm">{{ claim.forPercentage }}%</span>
+                  <span class="text-sm whitespace-nowrap text-gray-600 font-medium min-w-[4.5rem] text-center">
+                {{ claim.forVotes }} : {{ claim.againstVotes }}
+              </span>
                 </div>
-                <span class="text-xs text-gray-500">
-                    {{ claim.votesNeeded }} more votes needed
-                  </span>
-              </div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex justify-center gap-2">
-                <button
-                    class="px-4 py-2 bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white rounded-lg transition-colors duration-300 focus:outline-none"
-                    :disabled="!sufficientStake"
-                    @click.stop="voteClaim(claim.id, true)"
-                >
-                  For
-                </button>
-                <button
-                    class="px-4 py-2 bg-rose-400 border border-rose-400 hover:bg-white hover:text-rose-400 hover:border-rose-400 text-white rounded-lg transition-colors duration-300 focus:outline-none"
-                    :disabled="!sufficientStake"
-                    @click.stop="voteClaim(claim.id, false)"
-                >
-                  Against
-                </button>
+                <span class="text-xs" :class="{
+              'text-yellow-600': claim.forPercentage > 50,
+              'text-gray-500': claim.forPercentage <= 50
+            }">
+              {{ claim.forPercentage }}% Support
+            </span>
               </div>
             </td>
           </tr>
@@ -272,6 +277,14 @@ const voteClaim = async (claimId, support) => {
 const handleVote = ({ claimId, support }) => {
   voteClaim(claimId, support);
   closeClaimDetails();
+};
+
+const formatAmount = (amount) => {
+  // Format number to have exactly 2 decimal places
+  return Number(amount).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 };
 
 // Watch for wallet connection changes
