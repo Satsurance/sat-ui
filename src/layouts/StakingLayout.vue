@@ -276,11 +276,10 @@ const stakeFunds = async () => {
     const amountInWei = ethers.utils.parseEther(toStakeAmount.value.toString());
 
     // Check BTC balance first
-    const signer = web3Store.provider.getSigner();
     const btcContract = new ethers.Contract(
       getContractAddress("BTC_TOKEN", web3Store.chainId),
       erc20ABI,
-      signer
+        web3Store.provider
     );
     const balance = await btcContract.balanceOf(web3Store.account);
 

@@ -22,9 +22,9 @@
             <div class="flex items-center gap-4">
               <div
                   class="px-4 py-1.5 text-sm rounded-full font-medium"
-                  :class="claim?.executed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                  :class="getStatusClasses"
               >
-                {{ claim?.executed ? 'Executed' : 'Pending' }}
+                {{ getStatusText }}
               </div>
               <button
                   @click="onClose"
@@ -113,7 +113,7 @@
                 <div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-gray-900 font-medium">For</span>
-                    <span class="text-gray-900 font-medium">{{ formatNumber(claim?.forVotes) }}</span>
+                    <span class="text-gray-900 font-medium">{{ formatAmount(claim?.forVotes) }}</span>
                   </div>
                   <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
@@ -126,7 +126,7 @@
                 <div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-gray-900 font-medium">Against</span>
-                    <span class="text-gray-900 font-medium">{{ formatNumber(claim?.againstVotes) }}</span>
+                    <span class="text-gray-900 font-medium">{{ formatAmount(claim?.againstVotes) }}</span>
                   </div>
                   <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
@@ -140,19 +140,30 @@
 
             <!-- Actions -->
             <div v-if="!claim?.executed" class="flex justify-end gap-4 pt-6">
+              <!-- Show voting buttons during voting period -->
+              <template v-if="isVotingPeriodActive">
+                <button
+                    @click="$emit('vote', { claimId: claim?.id, support: false })"
+                    class="px-6 py-2.5 bg-rose-400 border border-rose-400 text-white text-lg rounded-xl hover:bg-white hover:text-rose-400 hover:border-rose-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="!sufficientStake"
+                >
+                  Vote Against
+                </button>
+                <button
+                    @click="$emit('vote', { claimId: claim?.id, support: true })"
+                    class="px-6 py-2.5 bg-yellow-500 border border-yellow-500 text-white text-lg rounded-xl hover:bg-white hover:text-yellow-500 hover:border-yellow-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="!sufficientStake"
+                >
+                  Vote For
+                </button>
+              </template>
+              <!-- Show execute button after voting period if enough support -->
               <button
-                  @click="$emit('vote', { claimId: claim?.id, support: false })"
-                  class="px-6 py-2.5 bg-rose-400 border border-rose-400 text-white text-lg rounded-xl hover:bg-white hover:text-rose-400 hover:border-rose-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="!sufficientStake"
+                  v-else-if="canExecute"
+                  @click="$emit('execute', claim?.id)"
+                  class="px-6 py-2.5 bg-green-500 border border-green-500 text-white text-lg rounded-xl hover:bg-white hover:text-green-500 hover:border-green-500 transition-colors duration-300"
               >
-                Vote Against
-              </button>
-              <button
-                  @click="$emit('vote', { claimId: claim?.id, support: true })"
-                  class="px-6 py-2.5 bg-yellow-500 border border-yellow-500 text-white text-lg rounded-xl hover:bg-white hover:text-yellow-500 hover:border-yellow-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="!sufficientStake"
-              >
-                Vote For
+                Execute Claim
               </button>
             </div>
           </div>
@@ -175,10 +186,50 @@ const props = defineProps({
   sufficientStake: {
     type: Boolean,
     default: false
+  },
+  votingPeriod: {
+    type: Number,
+    required: true
   }
 });
 
-const emit = defineEmits(['close', 'vote']);
+const emit = defineEmits(['close', 'vote', 'execute']);
+import { computed } from 'vue';
+import { ethers } from "ethers";
+
+const isVotingPeriodActive = computed(() => {
+  if (!props.claim?.startTime) return false;
+  const currentTime = Math.floor(Date.now() / 1000);
+  return currentTime < Number(props.claim.startTime) + props.votingPeriod;
+});
+
+const getStatusText = computed(() => {
+  if (props.claim?.executed) return 'Executed';
+  if (!isVotingPeriodActive.value) {
+    if (canExecute.value) return 'Ready to Execute';
+    return 'Voting Ended';
+  }
+  return 'Voting Active';
+});
+
+const getStatusClasses = computed(() => {
+  if (props.claim?.executed) return 'bg-green-100 text-green-800';
+  if (!isVotingPeriodActive.value) {
+    if (canExecute.value) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
+  }
+  return 'bg-blue-100 text-blue-800';
+});
+
+const canExecute = computed(() => {
+  if (!props.claim || props.claim.executed || isVotingPeriodActive.value) return false;
+
+  const totalVotes = Number(props.claim.forVotes) + Number(props.claim.againstVotes);
+  if (totalVotes === 0) return false;
+
+  const supportPercentage = (Number(props.claim.forVotes) / totalVotes) * 100;
+  return supportPercentage > 50; // 50% majority required
+});
 
 const calculateVotePercentage = (votes = 0, totalVotes = 0) => {
   const total = Number(votes) + Number(totalVotes);
@@ -200,17 +251,12 @@ const formatDate = (timestamp) => {
   }).replace(',', '');
 };
 
-const formatNumber = (num) => {
-  if (!num) return '0';
-  return new Intl.NumberFormat().format(num);
-};
-
 const formatAmount = (amount) => {
   if (!amount) return '0.00';
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(amount);
+  }).format(ethers.utils.formatEther(amount.toString()));
 };
 
 const copyToClipboard = async (text) => {
@@ -229,6 +275,7 @@ const onClose = () => {
 const onBackdropClick = () => {
   onClose();
 };
+
 </script>
 
 <style scoped>

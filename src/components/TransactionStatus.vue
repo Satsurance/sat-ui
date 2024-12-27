@@ -1,14 +1,15 @@
 <template>
   <div
-    v-if="show"
-    @click="close"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      v-if="show"
+      @click="close"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
   >
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <!-- Stake Flow -->
       <div v-if="type === 'stake'" class="mb-6">
         <div class="flex items-center mb-6">
           <div
-            :class="[
+              :class="[
               'w-8 h-8 rounded-full flex items-center justify-center text-sm',
               status === 'approval_pending'
                 ? 'bg-blue-100 text-blue-600'
@@ -22,30 +23,30 @@
             1
           </div>
           <div class="ml-3 flex-1">
-            <div class="font-medium">Approve BTC</div>
+            <div class="font-medium">Approve {{ tokenTicker }}</div>
             <div class="text-sm text-gray-500">
-              Allow smart contract to use your BTC
+              Allow smart contract to use your {{ tokenTicker }}
             </div>
           </div>
           <div
-            v-if="status === 'approval_pending'"
-            class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+              v-if="status === 'approval_pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
           ></div>
           <div
-            v-else-if="status === 'approval_success'"
-            class="ml-2 text-green-600"
+              v-else-if="status === 'approval_success'"
+              class="ml-2 text-green-600"
           >
             <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
               ></path>
             </svg>
           </div>
@@ -53,7 +54,7 @@
 
         <div class="flex items-center">
           <div
-            :class="[
+              :class="[
               'w-8 h-8 rounded-full flex items-center justify-center text-sm',
               status === 'stake_pending'
                 ? 'bg-blue-100 text-blue-600'
@@ -67,100 +68,135 @@
             2
           </div>
           <div class="ml-3 flex-1">
-            <div class="font-medium">Stake BTC</div>
+            <div class="font-medium">Stake {{ tokenTicker }}</div>
             <div class="text-sm text-gray-500">
-              Deposit your BTC into the pool
+              Deposit your {{ tokenTicker }} into the pool
             </div>
           </div>
           <div
-            v-if="status === 'stake_pending'"
-            class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+              v-if="status === 'stake_pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
           ></div>
           <div
-            v-else-if="status === 'stake_success'"
-            class="ml-2 text-green-600"
+              v-else-if="status === 'stake_success'"
+              class="ml-2 text-green-600"
           >
             <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
               ></path>
             </svg>
           </div>
         </div>
       </div>
 
-      <div v-else>
+      <!-- Unstake Flow -->
+      <div v-else-if="type === 'unstake'">
         <div class="flex items-center mb-6">
           <div class="ml-3 flex-1">
-            <div class="font-medium">Unstake BTC</div>
+            <div class="font-medium">Unstake {{ tokenTicker }}</div>
             <div class="text-sm text-gray-500">
-              Withdraw your BTC from the pool
+              Withdraw your {{ tokenTicker }} from the pool
             </div>
           </div>
           <div
-            v-if="status === 'pending'"
-            class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+              v-if="status === 'pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
           ></div>
           <div v-else-if="status === 'success'" class="ml-2 text-green-600">
             <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
               ></path>
             </svg>
           </div>
         </div>
       </div>
 
+      <!-- Execute Claim Flow -->
+      <div v-else-if="type === 'execute'">
+        <div class="flex items-center mb-6">
+          <div class="ml-3 flex-1">
+            <div class="font-medium">Execute Claim</div>
+            <div class="text-sm text-gray-500">
+              Process the approved claim payout
+            </div>
+          </div>
+          <div
+              v-if="status === 'pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+          ></div>
+          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
+            <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+              <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Display -->
       <div
-        v-if="error"
-        class="mt-4 p-3 bg-red-50 rounded-lg text-red-600 text-sm"
+          v-if="error"
+          class="mt-4 p-3 bg-red-50 rounded-lg text-red-600 text-sm"
       >
         {{ error }}
       </div>
 
+      <!-- Transaction Hash Display -->
       <div
-        v-if="txHash"
-        class="mt-4 p-3 bg-gray-50 rounded-lg text-sm break-all"
+          v-if="txHash"
+          class="mt-4 p-3 bg-gray-50 rounded-lg text-sm break-all"
       >
         <div class="text-gray-500 mb-1">Transaction Hash:</div>
         <a
-          :href="'https://etherscan.io/tx/' + txHash"
-          target="_blank"
-          class="text-blue-600 hover:text-blue-700"
+            :href="'https://etherscan.io/tx/' + txHash"
+            target="_blank"
+            class="text-blue-600 hover:text-blue-700"
         >
           {{ txHash }}
         </a>
       </div>
 
+      <!-- Action Buttons -->
       <div class="mt-6 space-y-3">
         <button
-          v-if="status.includes('failed')"
-          @click.stop="$emit('retry')"
-          class="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-white hover:text-yellow-500 transition-colors border-yellow-500 hover:border-yellow-500 transition-colors transition duration-300 focus:outline-none"
+            v-if="status.includes('failed')"
+            @click.stop="$emit('retry')"
+            class="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-white hover:text-yellow-500 transition-colors border border-yellow-500 hover:border-yellow-500 transition duration-300 focus:outline-none"
         >
           Retry Transaction
         </button>
 
         <button
-          v-if="status.includes('success') || status.includes('failed')"
-          @click.stop="close"
-          class="w-full py-2 rounded-lg transition-colors br border border-yellow-500 hover:border-yellow-500 hover:text-yellow-500 focus:outline-none"
+            v-if="status.includes('success') || status.includes('failed')"
+            @click.stop="close"
+            class="w-full py-2 rounded-lg transition-colors border border-yellow-500 hover:border-yellow-500 hover:text-yellow-500 focus:outline-none"
         >
           {{ status.includes("success") ? "Close" : "Cancel" }}
         </button>
@@ -170,7 +206,7 @@
 </template>
 
 <script setup>
-import { defineEmits, onMounted, onUnmounted, ref } from "vue";
+import {defineEmits, onMounted, onUnmounted} from "vue";
 
 const props = defineProps({
   show: Boolean,
@@ -178,6 +214,10 @@ const props = defineProps({
   type: String,
   txHash: String,
   error: String,
+  tokenTicker: {
+    type: String,
+    default: 'BTC'
+  }
 });
 
 const emit = defineEmits(["close", "retry"]);
