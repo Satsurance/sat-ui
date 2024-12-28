@@ -1,75 +1,104 @@
 <!-- src/pages/ClaimsManagement.vue -->
 <template>
-  <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
-    <div class="max-w-6xl mx-auto px-4">
-      <h1 class="text-3xl mb-2 font-medium">Claims Management</h1>
-      <h2 class="mb-4">Governance and Claims Review Platform</h2>
-
-      <!-- Staking Management Card -->
+  <!-- Header Section -->
+  <div class="min-h-[85vh] bg-gray-50">
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <!-- Header with background -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Staking Information -->
-          <div class="space-y-4">
-            <div class="flex justify-between items-center py-3 px-4 rounded w-full">
-              <span class="text-gray-600">Amount of SURS token staked:</span>
-              <span class="font-medium">{{ stakedAmount }}</span>
-            </div>
-            <div class="flex justify-between items-center py-3 px-4 rounded">
-              <span class="text-gray-600">Available SURS token:</span>
-              <span class="font-medium">{{ availableTokens }}</span>
-            </div>
-            <div class="flex justify-between items-center py-3 px-4 rounded">
-              <span class="text-gray-600">Voting Power:</span>
-              <span class="font-medium text-yellow-500">{{ votingPower }}</span>
-            </div>
+        <div class="flex justify-between items-center">
+          <div class="space-y-1">
+            <h1 class="text-4xl font-semibold text-gray-900 flex items-center gap-3">
+              <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Claims Management
+            </h1>
+            <p class="text-gray-500">Governance and Claims Review Platform</p>
           </div>
 
-          <!-- Staking Actions -->
-          <div class="space-y-4">
-            <div class="flex flex-col">
-              <label for="stake-amount" class="block mb-2 text-sm text-left font-medium text-gray-900">
-                SURS Amount to Stake
-              </label>
-              <div class="flex items-center space-x-4">
-                <input
-                    id="stake-amount"
-                    v-model="toStakeAmount"
-                    type="number"
-                    placeholder="0.99"
-                    :disabled="transactionStatus !== ''"
-                    class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
-                />
-                <button
-                    @click="stakeSursTokens"
-                    :disabled="transactionStatus !== ''"
-                    class="w-28 px-6 py-2.5 bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed">
-                  Stake
-                </button>
+          <div class="flex items-center space-x-4">
+            <button
+                @click="openSubmitClaimDialog"
+                class="inline-flex items-center px-6 py-2.5 bg-yellow-500 border border-yellow-500 text-white rounded-lg hover:bg-white hover:text-yellow-500 hover:border-yellow-500 transition-colors duration-300 focus:outline-none"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Submit New Claim
+            </button>
+          </div>
+        </div>
+
+        <!-- Staking Management Card -->
+        <div class="bg-white rounded-lg  p-6 mb-8 ">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Staking Information -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center py-3 px-4 rounded w-full">
+                <span class="text-gray-600">Amount of SURS token staked:</span>
+                <span class="font-medium">{{ stakedAmount }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3 px-4 rounded">
+                <span class="text-gray-600">Available SURS token:</span>
+                <span class="font-medium">{{ availableTokens }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3 px-4 rounded">
+                <span class="text-gray-600">Voting Power:</span>
+                <span class="font-medium text-yellow-500">{{ votingPower }}</span>
               </div>
             </div>
-            <div class="flex flex-col">
-              <label for="unstake-amount" class="block mb-2 text-sm text-left font-medium text-gray-900">
-                SURS Amount to Unstake
-              </label>
-              <div class="flex items-center space-x-4">
-                <input
-                    id="unstake-amount"
-                    v-model="toUnstakeAmount"
-                    type="number"
-                    placeholder="0.99"
-                    :disabled="transactionStatus !== ''"
-                    class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
-                />
-                <button
-                    @click="unstakeSursTokens"
-                    :disabled="transactionStatus !== ''"
-                    class="w-28 px-6 py-2.5 bg-slate-600 border border-slate-600 hover:bg-white hover:text-slate-600 hover:border-slate-600 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed">
-                  Unstake
-                </button>
+
+            <!-- Staking Actions -->
+            <div class="space-y-4">
+              <div class="flex flex-col">
+                <label for="stake-amount" class="block mb-2 text-sm text-left font-medium text-gray-900">
+                  SURS Amount to Stake
+                </label>
+                <div class="flex items-center space-x-4">
+                  <input
+                      id="stake-amount"
+                      v-model="toStakeAmount"
+                      type="number"
+                      placeholder="0.99"
+                      :disabled="transactionStatus !== ''"
+                      class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
+                  />
+                  <button
+                      @click="stakeSursTokens"
+                      :disabled="transactionStatus !== ''"
+                      class="w-28 px-6 py-2.5 bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Stake
+                  </button>
+                </div>
               </div>
-            </div>
-            <div v-if="transactionError" class="text-red-600 text-sm mt-2">
-              {{ transactionError }}
+              <div class="flex flex-col">
+                <label for="unstake-amount" class="block mb-2 text-sm text-left font-medium text-gray-900">
+                  SURS Amount to Unstake
+                </label>
+                <div class="flex items-center space-x-4">
+                  <input
+                      id="unstake-amount"
+                      v-model="toUnstakeAmount"
+                      type="number"
+                      placeholder="0.99"
+                      :disabled="transactionStatus !== ''"
+                      class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
+                  />
+                  <button
+                      @click="unstakeSursTokens"
+                      :disabled="transactionStatus !== ''"
+                      class="w-28 px-6 py-2.5 bg-slate-600 border border-slate-600 hover:bg-white hover:text-slate-600 hover:border-slate-600 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Unstake
+                  </button>
+                </div>
+              </div>
+              <div v-if="transactionError" class="text-red-600 text-sm mt-2">
+                {{ transactionError }}
+              </div>
             </div>
           </div>
         </div>
@@ -83,7 +112,8 @@
             <th class="px-6 py-5 text-left text-xs font-semibold uppercase tracking-wider text-gray-900">ID</th>
             <th class="px-6 py-5 text-left text-xs font-semibold uppercase tracking-wider text-gray-900">Date</th>
             <th class="px-6 py-5 text-right text-xs font-semibold uppercase tracking-wider text-gray-900">Amount</th>
-            <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Description</th>
+            <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Description
+            </th>
             <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Receiver</th>
             <th class="px-6 py-5 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Votes</th>
           </tr>
@@ -101,7 +131,8 @@
               @click="openClaimDetails(claim)"
           >
             <td class="px-6 py-5">
-                <span class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full group-hover:bg-gray-200 transition-colors">
+                <span
+                    class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full group-hover:bg-gray-200 transition-colors">
                   {{ claim.id }}
                 </span>
             </td>
@@ -116,7 +147,8 @@
               </div>
             </td>
             <td class="px-6 py-5">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 font-mono group-hover:bg-gray-200 transition-colors">
+                <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 font-mono group-hover:bg-gray-200 transition-colors">
                   {{ formatAddress(claim.receiver) }}
                 </span>
             </td>
@@ -127,9 +159,9 @@
                     <div
                         class="h-full transition-all duration-300"
                         :class="{
-                            'bg-yellow-500': claim.forPercentage > 50,
-                            'bg-gray-400': claim.forPercentage <= 50
-                          }"
+                          'bg-yellow-500': claim.forPercentage > 50,
+                          'bg-gray-400': claim.forPercentage <= 50
+                        }"
                         :style="{ width: `${claim.forPercentage}%` }"
                     ></div>
                   </div>
@@ -150,6 +182,106 @@
         </table>
       </div>
     </div>
+
+    <!-- Submit Claim Dialog -->
+    <Transition name="fade">
+      <div v-if="isSubmitDialogOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="closeSubmitDialog">
+        <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"></div>
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div
+              class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+              @click.stop
+          >
+            <!-- Dialog Header -->
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="text-2xl font-semibold text-gray-900">Submit New Claim</h3>
+              <button
+                  @click="closeSubmitDialog"
+                  class="rounded-full p-2 hover:bg-gray-100 transition-colors"
+              >
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Claim Form -->
+            <form @submit.prevent="handleSubmitClaim" class="space-y-6">
+              <div>
+                <label for="description" class="block mb-2 text-sm font-medium text-gray-900">
+                  Incident description
+                </label>
+                <textarea
+                    id="description"
+                    v-model="submitFormData.description"
+                    rows="4"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                    placeholder="Please describe the incident in detail..."
+                    required
+                ></textarea>
+              </div>
+
+              <div>
+                <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">
+                  Claim amount (BTC)
+                </label>
+                <input
+                    type="number"
+                    id="amount"
+                    v-model="submitFormData.amount"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                    placeholder="0.1"
+                    required
+                />
+              </div>
+
+              <div>
+                <label for="receiver" class="block mb-2 text-sm font-medium text-gray-900">
+                  Receiver address
+                </label>
+                <input
+                    type="text"
+                    id="receiver"
+                    v-model="submitFormData.receiver"
+                    @input="validateAddress"
+                    :class="[
+                    'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
+                    addressError
+                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                      : isValidAddress
+                        ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500'
+                  ]"
+                    placeholder="Enter address to receive the claim"
+                    required
+                />
+                <p v-if="addressError" class="mt-1 text-sm text-red-600">
+                  {{ addressError }}
+                </p>
+                <p v-else-if="isValidAddress" class="mt-1 text-sm text-green-600">
+                  Valid Ethereum address
+                </p>
+              </div>
+
+              <div class="flex justify-end pt-4">
+                <button
+                    type="submit"
+                    :disabled="isSubmitting || (!!submitFormData.receiver && (!isValidAddress || !!addressError))"
+                    :class="[
+                    'w-full py-3 rounded-lg transition-colors duration-300',
+                    (isSubmitting || (!!submitFormData.receiver && (!isValidAddress || !!addressError)))
+                      ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
+                      : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white'
+                  ]"
+                >
+                  {{ isSubmitting ? "Submitting..." : "Submit Claim" }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Claim Details Dialog -->
     <ClaimDetailsDialog
@@ -176,19 +308,11 @@
   </div>
 </template>
 
-<style scoped>
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-</style>
-
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { ethers } from "ethers";
-import { getContractAddress } from "../constants/contracts.js";
-import { useWeb3Store } from "../stores/web3Store";
+import {ref, computed, watch, reactive} from 'vue';
+import {ethers} from "ethers";
+import {getContractAddress} from "../constants/contracts.js";
+import {useWeb3Store} from "../stores/web3Store";
 import claimerABI from "../assets/abis/claimer.json";
 import erc20ABI from "../assets/abis/erc20.json";
 import ClaimDetailsDialog from '../components/ClaimDetailsDialog.vue';
@@ -203,6 +327,7 @@ const availableTokens = ref('0');
 const votingPower = computed(() => `${stakedAmount.value} VP`);
 const sufficientStake = computed(() => Number(stakedAmount.value) >= 1);
 const votingPeriod = ref(0);
+const stakingMode = ref('stake');
 
 // Transaction state
 const transactionStatus = ref('');
@@ -216,6 +341,107 @@ const toUnstakeAmount = ref(null);
 const claims = ref([]);
 const selectedClaim = ref(null);
 const isDialogOpen = ref(false);
+
+// Submit claim form state
+const isSubmitDialogOpen = ref(false);
+const isSubmitting = ref(false);
+const isValidAddress = ref(false);
+const addressError = ref('');
+const submitFormData = reactive({
+  description: '',
+  amount: '',
+  receiver: ''
+});
+
+// Dialog management
+const openSubmitClaimDialog = () => {
+  isSubmitDialogOpen.value = true;
+};
+
+const closeSubmitDialog = () => {
+  isSubmitDialogOpen.value = false;
+  resetSubmitForm();
+};
+
+const resetSubmitForm = () => {
+  submitFormData.description = '';
+  submitFormData.amount = '';
+  submitFormData.receiver = '';
+  isValidAddress.value = false;
+  addressError.value = '';
+};
+
+const validateAddress = () => {
+  try {
+    if (!submitFormData.receiver) {
+      isValidAddress.value = false;
+      addressError.value = '';
+      return;
+    }
+
+    // Check if it's a valid Ethereum address format
+    if (!submitFormData.receiver.match(/^0x[0-9a-fA-F]{40}$/)) {
+      isValidAddress.value = false;
+      addressError.value = 'Invalid Ethereum address format';
+      return;
+    }
+
+    // Validate checksum
+    const checksumAddress = ethers.utils.getAddress(submitFormData.receiver);
+    isValidAddress.value = true;
+    addressError.value = '';
+
+    // Update with checksum address
+    submitFormData.receiver = checksumAddress;
+  } catch (error) {
+    isValidAddress.value = false;
+    addressError.value = 'Invalid Ethereum address';
+  }
+};
+
+const handleSubmitClaim = async () => {
+  try {
+    if (!isValidAddress.value) {
+      return;
+    }
+
+    isSubmitting.value = true;
+    transactionType.value = 'submit_claim';
+    transactionStatus.value = 'pending';
+
+    const signer = web3Store.provider.getSigner();
+    const claimer = new ethers.Contract(
+        getContractAddress("CLAIMER", web3Store.chainId),
+        claimerABI,
+        signer
+    );
+
+    const tx = await claimer.createClaim(
+        submitFormData.receiver,
+        submitFormData.description,
+        ethers.utils.parseEther(submitFormData.amount.toString())
+    );
+    currentTxHash.value = tx.hash;
+
+    await tx.wait();
+    transactionStatus.value = 'success';
+
+    // Reload claims and close dialog
+    await loadClaimsState();
+    closeSubmitDialog();
+
+    // Auto-close transaction status after delay
+    setTimeout(resetTransaction, 3000);
+  } catch (error) {
+    console.error("Error submitting claim:", error);
+    transactionStatus.value = 'failed';
+    transactionError.value = error.code === 4001
+        ? 'Transaction rejected by user'
+        : 'Failed to submit claim';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
 
 // Reset transaction state
 const resetTransaction = () => {
@@ -233,6 +459,8 @@ const retryTransaction = () => {
     unstakeSursTokens();
   } else if (transactionType.value === 'execute' && selectedClaim.value) {
     handleExecute(selectedClaim.value.id);
+  } else if (transactionType.value === 'submit_claim') {
+    handleSubmitClaim();
   }
 };
 
@@ -416,7 +644,7 @@ const loadClaimsState = async () => {
     votingPeriod.value = (await claimer.votingPeriod()).toNumber();
     const latestClaim = (await claimer.claimCounter()).toNumber();
     claims.value = [];
-    console.log("latestClaim", latestClaim);
+
     for (let i = latestClaim; i > 0; i--) {
       const claim = await claimer.claims(i - 1);
       const newClaim = {
@@ -472,7 +700,7 @@ const formatAmount = (amount) => {
   return Number(ethers.utils.formatEther(amount.toString())).toFixed(2);
 };
 
-// Dialog management
+// Claim details dialog management
 const openClaimDetails = (claim) => {
   selectedClaim.value = claim;
   isDialogOpen.value = true;
@@ -483,7 +711,7 @@ const closeClaimDetails = () => {
   selectedClaim.value = null;
 };
 
-const handleVote = async ({ claimId, support }) => {
+const handleVote = async ({claimId, support}) => {
   try {
     const claimer = new ethers.Contract(
         getContractAddress("CLAIMER", web3Store.chainId),
@@ -501,6 +729,7 @@ const handleVote = async ({ claimId, support }) => {
   }
   closeClaimDetails();
 };
+
 
 const handleExecute = async (claimId) => {
   try {

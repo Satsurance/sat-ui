@@ -31,13 +31,13 @@
             >
               Stake
             </router-link>
-            <router-link
-              to="/claim"
-              class="text-gray-600 hover:text-yellow-500"
-              active-class="text-blue-600"
-            >
-              Claim
-            </router-link>
+<!--            <router-link-->
+<!--              to="/claim"-->
+<!--              class="text-gray-600 hover:text-yellow-500"-->
+<!--              active-class="text-blue-600"-->
+<!--            >-->
+<!--              Claim-->
+<!--            </router-link>-->
             <router-link
               to="/claims_gov"
               class="text-gray-600 hover:text-yellow-500"
