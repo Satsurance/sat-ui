@@ -3,7 +3,7 @@
     <button
       v-if="!web3Store.isConnected"
       @click="handleConnect"
-      class="flex flex-row align-center bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 py-2 rounded-lg transition-colors transition duration-300"
+      class="btn-primary flex flex-row align-center px-4 py-2 rounded-lg"
     >
       <span class="mr-2">Connect Wallet</span>
       <svg

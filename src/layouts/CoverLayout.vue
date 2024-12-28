@@ -24,7 +24,7 @@
                     type="name"
                     id="name"
                     v-model="formData.name"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                    class="form-input"
                     placeholder="Satoshi Nakamoto"
                     :disabled="isSubmitting"
                     required
@@ -41,7 +41,7 @@
                     type="company"
                     id="company"
                     v-model="formData.company"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                    class="form-input"
                     placeholder="Bitcoin"
                     :disabled="isSubmitting"
                     required
@@ -58,7 +58,7 @@
                     type="phone"
                     id="phone"
                     v-model="formData.phone"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                    class="form-input"
                     placeholder="+1 (123) 456-7890"
                     :disabled="isSubmitting"
                     required
@@ -75,7 +75,7 @@
                     type="email"
                     id="email"
                     v-model="formData.email"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                    class="form-input"
                     placeholder="satoshi@bitcoin.com"
                     :disabled="isSubmitting"
                     required
@@ -86,7 +86,7 @@
                 <button
                     type="submit"
                     v-if="!isSubmitting"
-                    class="flex flex-row align-center bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 py-2 rounded-lg transition-colors transition duration-300"
+                    class="btn-primary flex flex-row align-center px-4 py-2 rounded-lg"
                     :disabled="isSubmitting"
                 >
                   Apply for Cover
@@ -94,7 +94,7 @@
                 <button
                     v-if="isSubmitting"
                     type="submit"
-                    class="flex flex-row align-center bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 py-2 rounded-lg transition-colors transition duration-300"
+                    class="btn-primary flex flex-row align-center px-4 py-2 rounded-lg"
                     :disabled="isSubmitting"
                 >
                   <svg

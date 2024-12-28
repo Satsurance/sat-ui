@@ -151,7 +151,7 @@
                 </button>
                 <button
                     @click="$emit('vote', { claimId: claim?.id, support: true })"
-                    class="px-6 py-2.5 bg-yellow-500 border border-yellow-500 text-white text-lg rounded-xl hover:bg-white hover:text-yellow-500 hover:border-yellow-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="btn-primary px-6 py-2.5 text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     :disabled="!sufficientStake"
                 >
                   Vote For

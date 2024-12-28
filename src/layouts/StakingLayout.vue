@@ -1,118 +1,151 @@
 <!-- src/pages/Stake.vue -->
 <template>
-  <div class="min-h-[85vh] pt-[7vh] bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4">
-      <!-- Header -->
-      <h1 class="text-3xl mb-2 font-medium">Insurance Pool</h1>
-      <h2 class="mb-4">
-        Stake your BTC to earn rewards while providing coverage for the
-        community.
-      </h2>
-
-      <!-- Pool Info -->
-      <div class="bg-white rounded-lg shadow-sm mb-8">
-        <div class="grid grid-cols-3 divide-x">
-          <div class="p-6 text-center">
-            <div class="text-gray-600 mb-2">APR</div>
-            <div class="text-2xl font-medium">5.2%</div>
-          </div>
-          <div class="p-6 text-center">
-            <div class="text-gray-600 mb-2">Total Staked</div>
-            <div class="text-2xl font-medium">{{ totalStakedAmount }} BTC</div>
-          </div>
-          <div class="p-6 text-center">
-            <div class="text-gray-600 mb-2">Lock Period</div>
-            <div class="text-2xl font-medium">7 days</div>
+  <div class="min-h-[85vh] bg-gray-50">
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <!-- Header with background -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div class="flex justify-between items-center mb-8">
+          <div class="mx-[20px] space-y-1">
+            <h1 class="text-4xl font-semibold text-gray-900 flex items-center gap-3">
+              <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Insurance Pool
+            </h1>
+            <p class="text-gray-500">Stake your BTC to earn rewards while providing coverage for the community</p>
           </div>
         </div>
-      </div>
 
-      <!-- Staking Interface -->
-      <div class="bg-white rounded-lg shadow-sm p-6 py-12">
-        <h2 class="text-2xl font-normal text-center mb-8">
-          {{ hasPosition ? "Your Pool Position" : "Add Pool Position" }}
-        </h2>
-
-        <!-- Active Position View -->
-        <div v-if="hasPosition" class="max-w-lg mx-auto space-y-6">
-          <div class="space-y-4">
-            <div
-              class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded"
-            >
-              <span class="text-gray-600">Days Staked</span>
-              <span class="font-medium">{{ dayStaked }} days</span>
+        <!-- Pool Stats Card -->
+        <div class="bg-white rounded-lg mb-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- APR -->
+            <div class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-2 text-gray-600 mb-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <span>APR</span>
+              </div>
+              <div class="text-2xl font-medium">5.2%</div>
             </div>
-            <div
-              class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded"
-            >
-              <span class="text-gray-600">Staked Amount</span>
-              <span class="font-medium">{{ stakedAmount }} BTC</span>
+
+            <!-- Total Staked -->
+            <div class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-2 text-gray-600 mb-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Total Staked</span>
+              </div>
+              <div class="text-2xl font-medium">{{ totalStakedAmount }} BTC</div>
+            </div>
+
+            <!-- Lock Period -->
+            <div class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-2 text-gray-600 mb-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>Lock Period</span>
+              </div>
+              <div class="text-2xl font-medium">7 days</div>
             </div>
           </div>
+        </div>
 
-          <button
-            @click="unstakePosition"
-            :disabled="transactionStatus !== ''"
-            :class="[
+        <!-- Staking Interface -->
+        <div class="bg-white rounded-lg p-6 py-12">
+          <h2 class="text-2xl font-normal text-center mb-8">
+            {{ hasPosition ? "Your Pool Position" : "Add Pool Position" }}
+          </h2>
+
+          <!-- Active Position View -->
+          <div v-if="hasPosition" class="max-w-lg mx-auto space-y-6">
+            <div class="space-y-4">
+              <div
+                  class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded"
+              >
+                <span class="text-gray-600">Days Staked</span>
+                <span class="font-medium">{{ dayStaked }} days</span>
+              </div>
+              <div
+                  class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded"
+              >
+                <span class="text-gray-600">Staked Amount</span>
+                <span class="font-medium">{{ stakedAmount }} BTC</span>
+              </div>
+            </div>
+
+            <button
+                @click="unstakePosition"
+                :disabled="transactionStatus !== ''"
+                :class="[
               'w-full py-3 rounded-lg transition-colors',
               transactionStatus !== ''
                 ? 'bg-red-300 cursor-not-allowed'
-                : 'bg-slate-600 border border-slate-600 hover:bg-white hover:text-slate-600 hover:border-slate-600 text-white',
+                : 'btn-secondary',
             ]"
-          >
-            Unstake Position
-          </button>
-        </div>
-
-        <!-- Staking Form -->
-        <div v-else class="max-w-lg mx-auto space-y-6">
-          <div class="space-y-2">
-            <div class="flex flex-col">
-              <div class="text-start w-full mb-5">
-                <label
-                  for="amount"
-                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >BTC Amount to Stake</label
-                >
-                <input
-                  type="number"
-                  id="amount"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
-                  placeholder="0.99"
-                  :disabled="transactionStatus !== '' || !web3Store.isConnected"
-                  v-model="toStakeAmount"
-                  required
-                />
-              </div>
-              <div
-                v-if="transactionError"
-                class="mb-4 bg-red-50 rounded-lg p-4 text-red-700"
-              >
-                {{ transactionError }}
-              </div>
-              <button
-                @click="stakeFunds"
-                v-if="web3Store.isConnected"
-                :disabled="transactionStatus !== ''"
-                class="bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white px-4 rounded-lg transition-colors transition duration-300 w-full focus:outline-none"
-              >
-                Stake
-              </button>
-              <button
-                v-else
-                disabled
-                class="bg-gray-100 border-gray-100 hover:border-gray-100 cursor-not-allowed text-gray-500 px-4 rounded-lg w-full outline-none"
-              >
-                Wallet is not connected
-              </button>
-            </div>
+            >
+              Unstake Position
+            </button>
           </div>
 
-          <div
-            v-if="web3Store.isConnected"
-            class="bg-yellow-50 rounded-lg p-4 text-yellow-700"
-          >
-            Minimum stake 0.01 BTC. 7-day lock period applies.
+          <!-- Staking Form -->
+          <div v-else class="max-w-lg mx-auto space-y-6">
+            <div class="space-y-2">
+              <div class="flex flex-col">
+                <div class="text-start w-full mb-5">
+                  <label
+                      for="amount"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >BTC Amount to Stake</label
+                  >
+                  <input
+                      type="number"
+                      id="amount"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                      placeholder="0.99"
+                      :disabled="transactionStatus !== '' || !web3Store.isConnected"
+                      v-model="toStakeAmount"
+                      required
+                  />
+                </div>
+                <div
+                    v-if="transactionError"
+                    class="mb-4 bg-red-50 rounded-lg p-4 text-red-700"
+                >
+                  {{ transactionError }}
+                </div>
+                <button
+                    @click="stakeFunds"
+                    v-if="web3Store.isConnected"
+                    :disabled="transactionStatus !== ''"
+                    class="btn-primary px-4 rounded-lg w-full focus:outline-none"
+                >
+                  Stake
+                </button>
+                <button
+                    v-else
+                    disabled
+                    class="bg-gray-100 border-gray-100 hover:border-gray-100 cursor-not-allowed text-gray-500 px-4 rounded-lg w-full outline-none"
+                >
+                  Wallet is not connected
+                </button>
+              </div>
+            </div>
+
+            <div
+                v-if="web3Store.isConnected"
+                class="bg-yellow-50 rounded-lg p-4 text-yellow-700"
+            >
+              Minimum stake 0.01 BTC. 7-day lock period applies.
+            </div>
           </div>
         </div>
       </div>
@@ -120,13 +153,14 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-      :show="!!transactionStatus"
-      :status="transactionStatus"
-      :type="transactionType"
-      :tx-hash="currentTxHash"
-      :error="transactionError"
-      @close="resetTransaction"
-      @retry="stakeFunds"
+        :show="!!transactionStatus"
+        :status="transactionStatus"
+        :type="transactionType"
+        :tx-hash="currentTxHash"
+        :error="transactionError"
+        @close="resetTransaction"
+        @retry="stakeFunds"
+        token-ticker="BTC"
     />
   </div>
 </template>

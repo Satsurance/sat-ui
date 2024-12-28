@@ -21,7 +21,7 @@
           <div class="flex items-center space-x-4">
             <button
                 @click="openSubmitClaimDialog"
-                class="inline-flex items-center px-6 py-2.5 bg-yellow-500 border border-yellow-500 text-white rounded-lg hover:bg-white hover:text-yellow-500 hover:border-yellow-500 transition-colors duration-300 focus:outline-none"
+                class="btn-primary inline-flex items-center px-6 py-2.5 rounded-lg"
             >
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -63,12 +63,12 @@
                       type="number"
                       placeholder="0.99"
                       :disabled="transactionStatus !== ''"
-                      class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
+                      class="flex-1 form-input"
                   />
                   <button
                       @click="stakeSursTokens"
                       :disabled="transactionStatus !== ''"
-                      class="w-28 px-6 py-2.5 bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
+                      class="btn-primary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
                   >
                     Stake
                   </button>
@@ -85,12 +85,12 @@
                       type="number"
                       placeholder="0.99"
                       :disabled="transactionStatus !== ''"
-                      class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block p-2.5"
+                      class="flex-1 form-input"
                   />
                   <button
                       @click="unstakeSursTokens"
                       :disabled="transactionStatus !== ''"
-                      class="w-28 px-6 py-2.5 bg-slate-600 border border-slate-600 hover:bg-white hover:text-slate-600 hover:border-slate-600 text-white rounded-lg transition-colors duration-300 focus:outline-none disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
+                      class="btn-secondary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
                   >
                     Unstake
                   </button>

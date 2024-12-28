@@ -188,7 +188,7 @@
         <button
             v-if="status.includes('failed')"
             @click.stop="$emit('retry')"
-            class="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-white hover:text-yellow-500 transition-colors border border-yellow-500 hover:border-yellow-500 transition duration-300 focus:outline-none"
+            class="btn-primary w-full py-2 rounded-lg focus:outline-none"
         >
           Retry Transaction
         </button>
@@ -196,7 +196,7 @@
         <button
             v-if="status.includes('success') || status.includes('failed')"
             @click.stop="close"
-            class="w-full py-2 rounded-lg transition-colors border border-yellow-500 hover:border-yellow-500 hover:text-yellow-500 focus:outline-none"
+            class="btn-secondary w-full py-2 rounded-lg focus:outline-none"
         >
           {{ status.includes("success") ? "Close" : "Cancel" }}
         </button>
