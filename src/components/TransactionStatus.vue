@@ -160,6 +160,37 @@
         </div>
       </div>
 
+      <!-- Get Reward Flow -->
+      <div v-else-if="type === 'getreward'">
+        <div class="flex items-center mb-6">
+          <div class="ml-3 flex-1">
+            <div class="font-medium">Get Reward</div>
+            <div class="text-sm text-gray-500">
+              Process the reward payout
+            </div>
+          </div>
+          <div
+              v-if="status === 'pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+          ></div>
+          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
+            <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+              <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <!-- Error Display -->
       <div
           v-if="error"

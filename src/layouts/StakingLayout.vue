@@ -30,7 +30,7 @@
                 </svg>
                 <span>APR</span>
               </div>
-              <div class="text-2xl font-medium">5.2%</div>
+              <div class="text-2xl font-medium">{{ poolAPR }}%</div>
             </div>
 
             <!-- Total Staked -->
@@ -54,7 +54,7 @@
                 </svg>
                 <span>Lock Period</span>
               </div>
-              <div class="text-2xl font-medium">7 days</div>
+              <div class="text-2xl font-medium">90 days</div>
             </div>
           </div>
         </div>
@@ -80,8 +80,25 @@
                 <span class="text-gray-600">Staked Amount</span>
                 <span class="font-medium">{{ stakedAmount }} BTC</span>
               </div>
+              <div
+                  class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded"
+              >
+                <span class="text-gray-600">Earned rewards</span>
+                <span class="font-medium">{{ earnedRewards }} BTC</span>
+              </div>
             </div>
-
+            <button
+                @click="getReward"
+                :disabled="transactionStatus !== ''"
+                :class="[
+              'w-full py-3 rounded-lg transition-colors',
+              transactionStatus !== ''
+                ? 'bg-red-300 cursor-not-allowed'
+                : 'btn-primary',
+            ]"
+            >
+              Get Rewards
+            </button>
             <button
                 @click="unstakePosition"
                 :disabled="transactionStatus !== ''"
@@ -144,7 +161,7 @@
                 v-if="web3Store.isConnected"
                 class="bg-yellow-50 rounded-lg p-4 text-yellow-700"
             >
-              Minimum stake 0.01 BTC. 7-day lock period applies.
+              Minimum stake 0.0001 BTC. 90-day lock period applies.
             </div>
           </div>
         </div>
@@ -166,10 +183,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { ethers } from "ethers";
-import { useWeb3Store } from "../stores/web3Store";
-import { getContractAddress } from "../constants/contracts.js";
+import {ref, watch} from "vue";
+import {ethers} from "ethers";
+import {useWeb3Store} from "../stores/web3Store";
+import {getContractAddress} from "../constants/contracts.js";
 import insurancePoolABI from "../assets/abis/insurancePool.json";
 import erc20ABI from "../assets/abis/erc20.json";
 import TransactionStatus from "../components/TransactionStatus.vue";
@@ -180,6 +197,8 @@ const totalStakedAmount = ref(0);
 const toStakeAmount = ref(null);
 const stakedAmount = ref(0);
 const dayStaked = ref(0);
+const earnedRewards = ref(0);
+const poolAPR = ref(0);
 const web3Store = useWeb3Store();
 
 // Transaction state
@@ -200,30 +219,38 @@ const resetTransaction = () => {
 const loadPositionState = async () => {
   try {
     const insurancePool = new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
-      insurancePoolABI,
-      web3Store.provider
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        web3Store.provider
     );
 
+    const totalAssetsStakedRaw = BigInt(await insurancePool.totalAssetsStaked());
     totalStakedAmount.value = Number(
-      ethers.utils.formatEther(await insurancePool.totalAssetsStaked())
+        ethers.utils.formatEther(totalAssetsStakedRaw)
     ).toFixed(2);
 
     const position = await insurancePool.getPoolPosition(web3Store.account);
     const K_coeff = await insurancePool.SHARED_K();
+    const rewardRate = BigInt(await insurancePool.rewardRate());
+    if (totalAssetsStakedRaw != 0) {
+      poolAPR.value = ((Number((totalAssetsStakedRaw + rewardRate * BigInt(60 * 60 * 24 * 365)) * 10000n / totalAssetsStakedRaw) / 10000 - 1) * 100).toFixed(2);
+    }
+
 
     if (position.startDate > 0) {
       hasPosition.value = true;
       stakedAmount.value = Number(
-        ethers.utils.formatEther((position.amount / K_coeff).toString())
+          ethers.utils.formatEther((position.extendedAmount / K_coeff).toString())
       ).toFixed(2);
       dayStaked.value = (
           Math.abs(((new Date().getTime()) / 1000 - position.startDate) / 60 / 60 / 24)
       ).toFixed(2);
+      earnedRewards.value = ethers.utils.formatEther(await insurancePool.earned(web3Store.account));
     } else {
       hasPosition.value = false;
       stakedAmount.value = 0;
       dayStaked.value = 0;
+      earnedRewards.value = 0;
     }
   } catch (error) {
     console.error("Error loading position:", error);
@@ -235,20 +262,20 @@ const handleStakeProcess = async (amountInWei) => {
   try {
     const signer = web3Store.provider.getSigner();
     const insurancePool = new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
-      insurancePoolABI,
-      signer
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        signer
     );
     const btcContract = new ethers.Contract(
-      getContractAddress("BTC_TOKEN", web3Store.chainId),
-      erc20ABI,
-      signer
+        getContractAddress("BTC_TOKEN", web3Store.chainId),
+        erc20ABI,
+        signer
     );
 
     // Check allowance
     const currentAllowance = await btcContract.allowance(
-      web3Store.account,
-      insurancePool.address
+        web3Store.account,
+        insurancePool.address
     );
 
     // Handle approval if needed
@@ -259,11 +286,11 @@ const handleStakeProcess = async (amountInWei) => {
       try {
         // Use the overrides parameter to ensure consistent behavior
         const approveTx = await btcContract.approve(
-          insurancePool.address,
-          amountInWei,
-          {
-            from: web3Store.account,
-          }
+            insurancePool.address,
+            amountInWei,
+            {
+              from: web3Store.account,
+            }
         );
         currentTxHash.value = approveTx.hash;
 
@@ -272,16 +299,16 @@ const handleStakeProcess = async (amountInWei) => {
       } catch (error) {
         transactionStatus.value = "approval_failed";
         transactionError.value =
-          error.code === 4001
-            ? "Transaction rejected by user"
-            : "Failed to approve tokens";
+            error.code === 4001
+                ? "Transaction rejected by user"
+                : "Failed to approve tokens";
         throw error;
       }
     }
 
     // Handle staking
     transactionStatus.value = "stake_pending";
-    const stakeTx = await insurancePool.joinPool(amountInWei, {
+    const stakeTx = await insurancePool.joinPool(amountInWei, 0, {
       from: web3Store.account,
     });
     currentTxHash.value = stakeTx.hash;
@@ -311,15 +338,15 @@ const stakeFunds = async () => {
 
     // Check BTC balance first
     const btcContract = new ethers.Contract(
-      getContractAddress("BTC_TOKEN", web3Store.chainId),
-      erc20ABI,
+        getContractAddress("BTC_TOKEN", web3Store.chainId),
+        erc20ABI,
         web3Store.provider
     );
     const balance = await btcContract.balanceOf(web3Store.account);
 
     if (balance.lt(amountInWei)) {
       transactionError.value = `Insufficient BTC balance. You have ${ethers.utils.formatEther(
-        balance
+          balance
       )} BTC but trying to stake ${toStakeAmount.value} BTC`;
       return;
     }
@@ -331,11 +358,11 @@ const stakeFunds = async () => {
     if (transactionStatus.value !== "approval_failed") {
       transactionStatus.value = "stake_failed";
       transactionError.value =
-        error.code === 4001
-          ? "Transaction rejected by user"
-          : error.code === -32603
-          ? "Insufficient balance or internal error"
-          : "Transaction failed. Please try again";
+          error.code === 4001
+              ? "Transaction rejected by user"
+              : error.code === -32603
+                  ? "Insufficient balance or internal error"
+                  : "Transaction failed. Please try again";
     }
   }
 };
@@ -345,9 +372,9 @@ const unstakePosition = async () => {
   try {
     const signer = web3Store.provider.getSigner();
     const insurancePool = new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
-      insurancePoolABI,
-      signer
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        signer
     );
 
     transactionType.value = "unstake";
@@ -367,7 +394,37 @@ const unstakePosition = async () => {
     console.error("Unstaking error:", error);
     transactionStatus.value = "failed";
     transactionError.value =
-      error.code === 4001 ? "Transaction rejected" : "Unstaking failed";
+        error.code === 4001 ? "Transaction rejected" : "Unstaking failed";
+  }
+};
+
+const getReward = async () => {
+  try {
+    const signer = web3Store.provider.getSigner();
+    const insurancePool = new ethers.Contract(
+        getContractAddress("INSURANCE_POOL", web3Store.chainId),
+        insurancePoolABI,
+        signer
+    );
+
+    transactionType.value = "getreward";
+    transactionStatus.value = "pending";
+
+    const unstakeTx = await insurancePool.getReward();
+    currentTxHash.value = unstakeTx.hash;
+
+    await unstakeTx.wait();
+    transactionStatus.value = "success";
+
+    await loadPositionState();
+
+    // Auto-close on success after delay
+    setTimeout(resetTransaction, 3000);
+  } catch (error) {
+    console.error("Get reward error:", error);
+    transactionStatus.value = "failed";
+    transactionError.value =
+        error.code === 4001 ? "Transaction rejected" : "Get reward failed";
   }
 };
 
@@ -375,12 +432,12 @@ const unstakePosition = async () => {
 if (web3Store.isConnected) loadPositionState();
 
 watch(
-  () => [web3Store.isConnected, web3Store.account],
-  async (values) => {
-    if (values[0]) {
-      await loadPositionState();
+    () => [web3Store.isConnected, web3Store.account],
+    async (values) => {
+      if (values[0]) {
+        await loadPositionState();
+      }
     }
-  }
 );
 </script>
 
