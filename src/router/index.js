@@ -25,6 +25,11 @@ const routes = [
     component: () => import("../layouts/ClaimGovLayout.vue"),
   },
   {
+    path: "/faucet",
+    component: () => import("../layouts/FaucetLayout.vue"),
+  },
+
+  {
     path: "/docs",
     component() {
       location.href = "https://satsurance.gitbook.io/satsurance";
