@@ -13,10 +13,6 @@ const routes = [
     component: () => import("../layouts/StakingLayout.vue"),
   },
   {
-    path: "/claim",
-    component: () => import("../layouts/ClaimLayout.vue"),
-  },
-  {
     path: "/cover",
     component: () => import("../layouts/CoverLayout.vue"),
   },

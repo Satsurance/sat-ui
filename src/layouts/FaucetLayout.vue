@@ -75,9 +75,8 @@
                       :disabled="isLoading || !web3Store.isConnected"
                       class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
                       placeholder="0.01"
-                      min="0.01"
+                      min="0.00001"
                       max="0.1"
-                      step="0.01"
                       required
                   />
                   <button
@@ -92,7 +91,7 @@
                   Please connect your wallet first
                 </div>
                 <div v-else-if="!isValidAmount && requestAmount" class="mt-2 text-sm text-red-500">
-                  Amount must be between 0.01 and 0.1 BTC
+                  Amount must be between 0.00001 and 0.1 BTC
                 </div>
               </div>
             </div>
@@ -157,7 +156,7 @@ const transactionError = ref('');
 // Computed
 const isValidAmount = computed(() => {
   const amount = Number(requestAmount.value);
-  return amount >= 0.01 && amount <= 0.1;
+  return amount >= 0.00001 && amount <= 0.1;
 });
 
 // Methods
@@ -190,7 +189,7 @@ const requestTokens = async () => {
     transactionStatus.value = 'pending';
 
     // Prepare the request to the faucet API
-    const response = await fetch('/api/faucet/request', {
+    const response = await fetch('http://37.27.217.237:3050/api/faucet/request', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -204,7 +203,7 @@ const requestTokens = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to request tokens');
+      throw new Error(data.error || 'Failed to request tokens');
     }
 
     currentTxHash.value = data.txHash;

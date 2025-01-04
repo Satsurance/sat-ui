@@ -231,6 +231,8 @@
                     v-model="submitFormData.amount"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
                     placeholder="0.1"
+                    step="0.00000001"
+                    min="0"
                     required
                 />
               </div>
