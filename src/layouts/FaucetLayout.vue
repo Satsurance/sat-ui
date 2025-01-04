@@ -12,9 +12,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              Test BTC Faucet
+              Test Faucet
             </h1>
-            <p class="text-gray-500">Request test BTC tokens testing</p>
+            <p class="text-gray-500">Request test BTC and SURS tokens for testing</p>
           </div>
         </div>
 
@@ -30,7 +30,7 @@
                 </svg>
                 <span>Maximum Request</span>
               </div>
-              <div class="text-2xl font-medium">0.1 BTC</div>
+              <div class="text-2xl font-medium">0.1 BTC / 100 SURS</div>
             </div>
 
             <!-- Current Balance -->
@@ -42,7 +42,10 @@
                 </svg>
                 <span>Your Balance</span>
               </div>
-              <div class="text-2xl font-medium">{{ currentBalance }} BTC</div>
+              <div class="text-2xl font-medium">
+                <div>{{ currentBTCBalance }} BTC</div>
+                <div>{{ currentSURSBalance }} SURS</div>
+              </div>
             </div>
 
             <!-- Network -->
@@ -63,15 +66,16 @@
         <div class="bg-white rounded-lg p-6 py-12">
           <div class="max-w-lg mx-auto space-y-6">
             <div class="space-y-4">
+              <!-- BTC Input -->
               <div class="flex flex-col">
-                <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">
+                <label for="btc-amount" class="block mb-2 text-sm font-medium text-gray-900">
                   BTC Amount to Request
                 </label>
                 <div class="flex items-center space-x-4">
                   <input
                       type="number"
-                      id="amount"
-                      v-model="requestAmount"
+                      id="btc-amount"
+                      v-model="requestBTCAmount"
                       :disabled="isLoading || !web3Store.isConnected"
                       class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
                       placeholder="0.01"
@@ -80,18 +84,51 @@
                       required
                   />
                   <button
-                      @click="requestTokens"
-                      :disabled="isLoading || !web3Store.isConnected || !isValidAmount"
+                      @click="requestBTCTokens"
+                      :disabled="isLoading || !web3Store.isConnected || !isValidBTCAmount"
                       class="btn-primary px-8 py-2.5 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
-                    {{ isLoading ? 'Requesting...' : 'Request' }}
+                    {{ isLoading && currentTokenType === 'BTC' ? 'Requesting...' : 'Request BTC' }}
                   </button>
                 </div>
                 <div v-if="!web3Store.isConnected" class="mt-2 text-sm text-gray-500">
                   Please connect your wallet first
                 </div>
-                <div v-else-if="!isValidAmount && requestAmount" class="mt-2 text-sm text-red-500">
+                <div v-else-if="!isValidBTCAmount && requestBTCAmount" class="mt-2 text-sm text-red-500">
                   Amount must be between 0.00001 and 0.1 BTC
+                </div>
+              </div>
+
+              <!-- SURS Input -->
+              <div class="flex flex-col">
+                <label for="surs-amount" class="block mb-2 text-sm font-medium text-gray-900">
+                  SURS Amount to Request
+                </label>
+                <div class="flex items-center space-x-4">
+                  <input
+                      type="number"
+                      id="surs-amount"
+                      v-model="requestSURSAmount"
+                      :disabled="isLoading || !web3Store.isConnected"
+                      class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                      placeholder="10"
+                      min="0.00001"
+                      max="100"
+                      required
+                  />
+                  <button
+                      @click="requestSURSTokens"
+                      :disabled="isLoading || !web3Store.isConnected || !isValidSURSAmount"
+                      class="btn-primary px-8 py-2.5 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    {{ isLoading && currentTokenType === 'SURS' ? 'Requesting...' : 'Request SURS' }}
+                  </button>
+                </div>
+                <div v-if="!web3Store.isConnected" class="mt-2 text-sm text-gray-500">
+                  Please connect your wallet first
+                </div>
+                <div v-else-if="!isValidSURSAmount && requestSURSAmount" class="mt-2 text-sm text-red-500">
+                  Amount must be between 1 and 100 SURS
                 </div>
               </div>
             </div>
@@ -105,7 +142,7 @@
                 <div>
                   <p class="font-medium">Important Notes:</p>
                   <ul class="mt-1 ml-4 list-disc text-sm">
-                    <li>Maximum request amount is 0.1 BTC</li>
+                    <li>Maximum request amount is 0.1 BTC or 100 SURS</li>
                     <li>Tokens are for testing purposes only</li>
                     <li>Please allow a few moments for the transaction to process</li>
                   </ul>
@@ -125,8 +162,8 @@
         :tx-hash="currentTxHash"
         :error="transactionError"
         @close="resetTransaction"
-        @retry="requestTokens"
-        token-ticker="BTC"
+        @retry="retryTransaction"
+        :token-ticker="currentTokenType"
     />
   </div>
 </template>
@@ -143,9 +180,12 @@ import TransactionStatus from '../components/TransactionStatus.vue';
 const web3Store = useWeb3Store();
 
 // State
-const currentBalance = ref(0);
-const requestAmount = ref(null);
+const currentBTCBalance = ref(0);
+const currentSURSBalance = ref(0);
+const requestBTCAmount = ref(null);
+const requestSURSAmount = ref(null);
 const isLoading = ref(false);
+const currentTokenType = ref('');
 
 // Transaction state
 const transactionStatus = ref('');
@@ -154,16 +194,22 @@ const currentTxHash = ref('');
 const transactionError = ref('');
 
 // Computed
-const isValidAmount = computed(() => {
-  const amount = Number(requestAmount.value);
+const isValidBTCAmount = computed(() => {
+  const amount = Number(requestBTCAmount.value);
   return amount >= 0.00001 && amount <= 0.1;
 });
 
+const isValidSURSAmount = computed(() => {
+  const amount = Number(requestSURSAmount.value);
+  return amount >= 0.00001 && amount <= 100;
+});
+
 // Methods
-const loadBalance = async () => {
+const loadBalances = async () => {
   try {
     if (!web3Store.isConnected) {
-      currentBalance.value = 0;
+      currentBTCBalance.value = 0;
+      currentSURSBalance.value = 0;
       return;
     }
 
@@ -173,30 +219,51 @@ const loadBalance = async () => {
         web3Store.provider
     );
 
-    const balance = await btcContract.balanceOf(web3Store.account);
-    currentBalance.value = Number(ethers.utils.formatEther(balance)).toFixed(2);
+    const sursContract = new ethers.Contract(
+        getContractAddress('SURS_TOKEN', web3Store.chainId),
+        erc20ABI,
+        web3Store.provider
+    );
+
+    const [btcBalance, sursBalance] = await Promise.all([
+      btcContract.balanceOf(web3Store.account),
+      sursContract.balanceOf(web3Store.account)
+    ]);
+
+    currentBTCBalance.value = Number(ethers.utils.formatEther(btcBalance)).toFixed(2);
+    currentSURSBalance.value = Number(ethers.utils.formatEther(sursBalance)).toFixed(2);
   } catch (error) {
-    console.error('Error loading balance:', error);
+    console.error('Error loading balances:', error);
   }
 };
 
-const requestTokens = async () => {
-  if (!isValidAmount.value || isLoading.value) return;
+const requestBTCTokens = async () => {
+  if (!isValidBTCAmount.value || isLoading.value) return;
+  currentTokenType.value = 'BTC';
+  await requestTokens('BTC', requestBTCAmount.value);
+};
 
+const requestSURSTokens = async () => {
+  if (!isValidSURSAmount.value || isLoading.value) return;
+  currentTokenType.value = 'SURS';
+  await requestTokens('SURS', requestSURSAmount.value);
+};
+
+const requestTokens = async (tokenType, amount) => {
   try {
     isLoading.value = true;
     transactionType.value = 'faucet_request';
     transactionStatus.value = 'pending';
 
-    // Prepare the request to the faucet API
-    const response = await fetch('http://37.27.217.237:3050/api/faucet/request', {
+    const response = await fetch('http://127.0.0.1:3050/api/faucet/request', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         address: web3Store.account,
-        amount: requestAmount.value
+        amount,
+        tokenType
       })
     });
 
@@ -210,8 +277,12 @@ const requestTokens = async () => {
     transactionStatus.value = 'success';
 
     // Reset form and reload balance
-    requestAmount.value = null;
-    await loadBalance();
+    if (tokenType === 'BTC') {
+      requestBTCAmount.value = null;
+    } else {
+      requestSURSAmount.value = null;
+    }
+    await loadBalances();
 
     // Auto-close success message
     setTimeout(resetTransaction, 3000);
@@ -224,11 +295,20 @@ const requestTokens = async () => {
   }
 };
 
+const retryTransaction = () => {
+  if (currentTokenType.value === 'BTC') {
+    requestBTCTokens();
+  } else {
+    requestSURSTokens();
+  }
+};
+
 const resetTransaction = () => {
   transactionStatus.value = '';
   transactionType.value = '';
   currentTxHash.value = '';
   transactionError.value = '';
+  currentTokenType.value = '';
 };
 
 // Watchers
@@ -236,9 +316,10 @@ watch(
     () => [web3Store.isConnected, web3Store.account],
     async ([isConnected]) => {
       if (isConnected) {
-        await loadBalance();
+        await loadBalances();
       } else {
-        currentBalance.value = 0;
+        currentBTCBalance.value = 0;
+        currentSURSBalance.value = 0;
       }
     },
     { immediate: true }
