@@ -181,6 +181,33 @@
           </tbody>
         </table>
       </div>
+      <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+        <div class="flex flex-1 justify-between items-center">
+          <div class="text-sm text-gray-700">
+            Showing claims {{ isLoadingClaims ? '...' : `${((currentPage - 1) * itemsPerPage) + 1} - ${Math.min(currentPage * itemsPerPage, totalClaims)}` }}
+            of {{ totalClaims }}
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+                @click="prevPage"
+                :disabled="currentPage === 1 || isLoadingClaims"
+                class="btn-secondary px-3 py-1 rounded-lg disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span class="text-gray-700">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+            <button
+                @click="nextPage"
+                :disabled="currentPage >= totalPages || isLoadingClaims"
+                class="btn-secondary px-3 py-1 rounded-lg disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Submit Claim Dialog -->
@@ -343,6 +370,13 @@ const toUnstakeAmount = ref(null);
 const claims = ref([]);
 const selectedClaim = ref(null);
 const isDialogOpen = ref(false);
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+const totalClaims = ref(0);
+const isLoadingClaims = ref(false);
+
+// Add computed for total pages
+const totalPages = computed(() => Math.ceil(totalClaims.value / itemsPerPage.value));
 
 // Submit claim form state
 const isSubmitDialogOpen = ref(false);
@@ -625,6 +659,7 @@ const unstakeSursTokens = async () => {
 // Load claims
 const loadClaimsState = async () => {
   try {
+    isLoadingClaims.value = true;
     const claimer = new ethers.Contract(
         getContractAddress("CLAIMER", web3Store.chainId),
         claimerABI,
@@ -644,10 +679,14 @@ const loadClaimsState = async () => {
     ).toFixed(2);
 
     votingPeriod.value = (await claimer.votingPeriod()).toNumber();
-    const latestClaim = (await claimer.claimCounter()).toNumber();
+    totalClaims.value = (await claimer.claimCounter()).toNumber();
+    const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
+    const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value) ;
+
     claims.value = [];
 
-    for (let i = latestClaim; i > 0; i--) {
+
+    for (let i = endIndex; i > startIndex && i >= 0; i--)  {
       const claim = await claimer.claims(i - 1);
       const newClaim = {
         id: i - 1,
@@ -668,6 +707,8 @@ const loadClaimsState = async () => {
     }
   } catch (error) {
     console.error("Error loading claims:", error);
+  } finally {
+    isLoadingClaims.value = false;
   }
 };
 
@@ -762,6 +803,23 @@ const handleExecute = async (claimId) => {
     transactionError.value = error.code === 4001
         ? 'Transaction rejected by user'
         : 'Execution failed. Please try again.';
+  }
+};
+
+const goToPage = async (page) => {
+  currentPage.value = page;
+  await loadClaimsState();
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    goToPage(currentPage.value + 1);
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    goToPage(currentPage.value - 1);
   }
 };
 
