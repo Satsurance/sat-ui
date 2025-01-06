@@ -225,12 +225,13 @@ const loadPositionState = async () => {
     );
 
     const totalAssetsStakedRaw = BigInt(await insurancePool.totalAssetsStaked());
+    const totalSharesAmount = BigInt(await insurancePool.totalPoolShares());
     totalStakedAmount.value = Number(
         ethers.utils.formatEther(totalAssetsStakedRaw)
     ).toFixed(2);
 
     const position = await insurancePool.getPoolPosition(web3Store.account);
-    const K_coeff = await insurancePool.SHARED_K();
+
     const rewardRate = BigInt(await insurancePool.rewardRate());
     if (totalAssetsStakedRaw != 0) {
       poolAPR.value = ((Number((totalAssetsStakedRaw + rewardRate * BigInt(60 * 60 * 24 * 365)) * 10000n / totalAssetsStakedRaw) / 10000 - 1) * 100).toFixed(2);
@@ -238,9 +239,10 @@ const loadPositionState = async () => {
 
 
     if (position.startDate > 0) {
+      console.log("position", position);
       hasPosition.value = true;
       stakedAmount.value = Number(
-          ethers.utils.formatEther((position.extendedAmount / K_coeff).toString())
+          ethers.utils.formatEther(((BigInt(position.shares) * totalAssetsStakedRaw) / totalSharesAmount).toString())
       ).toFixed(2);
       dayStaked.value = (
           Math.abs(((new Date().getTime()) / 1000 - position.startDate) / 60 / 60 / 24)
