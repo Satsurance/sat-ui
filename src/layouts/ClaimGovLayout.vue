@@ -184,7 +184,7 @@
       <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
         <div class="flex flex-1 justify-between items-center">
           <div class="text-sm text-gray-700">
-            Showing claims {{ isLoadingClaims ? '...' : `${((currentPage - 1) * itemsPerPage) + 1} - ${Math.min(currentPage * itemsPerPage, totalClaims)}` }}
+            Showing claims {{ isLoadingClaims ? '...' : `${((currentPage - 1) * itemsPerPage) + Number(totalClaims>0)  } - ${Math.min(currentPage * itemsPerPage, totalClaims)}` }}
             of {{ totalClaims }}
           </div>
           <div class="flex items-center space-x-2">
@@ -376,7 +376,7 @@ const totalClaims = ref(0);
 const isLoadingClaims = ref(false);
 
 // Add computed for total pages
-const totalPages = computed(() => Math.ceil(totalClaims.value / itemsPerPage.value));
+const totalPages = computed(() => Math.max(Math.ceil(totalClaims.value / itemsPerPage.value), 1));
 
 // Submit claim form state
 const isSubmitDialogOpen = ref(false);
