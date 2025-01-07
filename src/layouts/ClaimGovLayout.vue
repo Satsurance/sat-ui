@@ -255,16 +255,14 @@
       >
         <div class="flex flex-1 justify-between items-center">
           <div class="text-sm text-gray-700">
-            Showing claims
             {{
               isLoadingClaims
                 ? "..."
-                : `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
-                    currentPage * itemsPerPage,
-                    totalClaims
-                  )}`
+                : `${
+                    (currentPage - 1) * itemsPerPage + Number(totalClaims > 0)
+                  } - ${Math.min(currentPage * itemsPerPage, totalClaims)}`
             }}
-            of {{ totalClaims }}
+            {{ totalClaims }}
           </div>
           <div class="flex items-center space-x-2">
             <button
@@ -492,7 +490,7 @@ const isLoadingClaims = ref(false);
 
 // Add computed for total pages
 const totalPages = computed(() =>
-  Math.ceil(totalClaims.value / itemsPerPage.value)
+  Math.max(Math.ceil(totalClaims.value / itemsPerPage.value), 1)
 );
 
 // Submit claim form state

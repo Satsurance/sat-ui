@@ -1,7 +1,6 @@
 <template>
   <div
       v-if="show"
-      @click="close"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
   >
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -206,7 +205,7 @@
       >
         <div class="text-gray-500 mb-1">Transaction Hash:</div>
         <a
-            :href="'https://etherscan.io/tx/' + txHash"
+            :href="'https://testnet-scan.bitlayer.org/tx/' + txHash"
             target="_blank"
             class="text-blue-600 hover:text-blue-700"
         >
@@ -257,17 +256,4 @@ const close = () => {
   emit("close");
 };
 
-const handleKeydown = (e) => {
-  if (e.key === "Escape") {
-    close();
-  }
-};
-
-onMounted(() => {
-  window.addEventListener("keydown", handleKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeydown);
-});
 </script>
