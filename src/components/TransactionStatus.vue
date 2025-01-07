@@ -206,7 +206,7 @@
       >
         <div class="text-gray-500 mb-1">Transaction Hash:</div>
         <a
-            :href="'https://etherscan.io/tx/' + txHash"
+            :href="'https://testnet-scan.bitlayer.org/tx/' + txHash"
             target="_blank"
             class="text-blue-600 hover:text-blue-700"
         >
