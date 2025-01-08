@@ -18,6 +18,13 @@
         <div class="hidden lg:flex absolute left-1/2 -translate-x-1/2">
           <div class="flex items-center space-x-8">
             <router-link
+                to="/faucet"
+                class="text-gray-600 hover:text-yellow-500"
+                active-class="text-blue-600"
+            >
+              Faucet
+            </router-link>
+            <router-link
               to="/cover"
               class="text-gray-600 hover:text-yellow-500"
               active-class="text-blue-600"
@@ -37,13 +44,6 @@
               active-class="text-blue-600"
             >
               Manage Claims
-            </router-link>
-            <router-link
-              to="/faucet"
-              class="text-gray-600 hover:text-yellow-500"
-              active-class="text-blue-600"
-            >
-              Faucet
             </router-link>
             <a
               href="https://satsurance.gitbook.io/satsurance"

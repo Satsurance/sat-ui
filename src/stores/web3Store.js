@@ -20,16 +20,19 @@ export const useWeb3Store = defineStore('web3', {
                 });
 
                 // Create ethers provider and signer
-                const provider = MulticallWrapper.wrap(new ethers.providers.Web3Provider(window.ethereum, "any"));
+                let provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+                this.chainId = (await provider.getNetwork()).chainId;
+                // Do not use multicall for local network
+                if(this.chainId != 31337) {
+                    provider = MulticallWrapper.wrap(new ethers.providers.Web3Provider(window.ethereum, "any"));
+                }
+
                 const signer = provider.getSigner();
 
                 this.account = accounts[0];
                 this.provider = provider;
                 this.signer = signer;
 
-                // Get initial chain ID
-                const network = await provider.getNetwork();
-                this.chainId = network.chainId;
 
                 // Setup event listeners
                 this.setupEventListeners();

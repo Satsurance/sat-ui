@@ -27,7 +27,7 @@
                 <span class="text-yellow-600 font-medium">1</span>
               </div>
               <div>
-                <p class="text-gray-700">First, visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees</p>
+                <p class="text-gray-700">First, add to your metamask wallet <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc</a>.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -35,12 +35,20 @@
                 <span class="text-yellow-600 font-medium">2</span>
               </div>
               <div>
-                <p class="text-gray-700">Request fake BTC and SURS tokens using the form below</p>
+                <p class="text-gray-700">Second, visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
               <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                 <span class="text-yellow-600 font-medium">3</span>
+              </div>
+              <div>
+                <p class="text-gray-700">Request fake BTC and SURS tokens using the form below.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <span class="text-yellow-600 font-medium">4</span>
               </div>
               <div>
                 <p class="text-gray-700">Go and test Satsurance functionality!</p>

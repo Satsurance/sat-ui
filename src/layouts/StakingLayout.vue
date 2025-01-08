@@ -54,7 +54,7 @@
                 </svg>
                 <span>Lock Period</span>
               </div>
-              <div class="text-2xl font-medium">90 days</div>
+              <div class="text-2xl font-medium">90-360 days</div>
             </div>
           </div>
         </div>
