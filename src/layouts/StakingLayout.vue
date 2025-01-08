@@ -318,15 +318,23 @@ const loadPositionState = async () => {
         web3Store.provider
     );
 
-    const totalAssetsStakedRaw = BigInt(await insurancePool.totalAssetsStaked());
-    const totalSharesAmount = BigInt(await insurancePool.totalPoolShares());
+    const retValues = await Promise.all([
+      insurancePool.totalAssetsStaked(),
+      insurancePool.totalPoolShares(),
+      insurancePool.rewardRate(),
+      insurancePool.getPoolPosition(web3Store.account),
+      insurancePool.earned(web3Store.account)
+    ]);
+    const totalAssetsStakedRaw = BigInt(retValues[0]);
+    const totalSharesAmount = BigInt(retValues[1]);
+    const rewardRate = BigInt(retValues[2]);
+    const position = retValues[3];
+    const earned = retValues[4];
+
     totalStakedAmount.value = Number(
         ethers.utils.formatEther(totalAssetsStakedRaw)
     ).toFixed(2);
 
-    const position = await insurancePool.getPoolPosition(web3Store.account);
-
-    const rewardRate = BigInt(await insurancePool.rewardRate());
     if (totalAssetsStakedRaw != 0) {
       poolAPR.value = ((Number((totalAssetsStakedRaw + rewardRate * BigInt(60 * 60 * 24 * 365)) * 10000n / totalAssetsStakedRaw) / 10000 - 1) * 100).toFixed(2);
     }
@@ -341,8 +349,7 @@ const loadPositionState = async () => {
       const timeInfo = calculateStakingTime(position.startDate, position.minTimeStake);
       dayStaked.value = timeInfo.timeDisplay;
       isUnlockReady.value = timeInfo.isUnlocked;
-
-      earnedRewards.value = ethers.utils.formatEther(await insurancePool.earned(web3Store.account));
+      earnedRewards.value = ethers.utils.formatEther(earned);
     } else {
       hasPosition.value = false;
       stakedAmount.value = 0;

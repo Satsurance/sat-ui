@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ethers } from 'ethers';
+import { MulticallWrapper } from "ethers-multicall-provider";
 
 export const useWeb3Store = defineStore('web3', {
     state: () => ({
@@ -19,7 +20,7 @@ export const useWeb3Store = defineStore('web3', {
                 });
 
                 // Create ethers provider and signer
-                const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+                const provider = MulticallWrapper.wrap(new ethers.providers.Web3Provider(window.ethereum, "any"));
                 const signer = provider.getSigner();
 
                 this.account = accounts[0];

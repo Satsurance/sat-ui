@@ -656,6 +656,41 @@ const unstakeSursTokens = async () => {
   }
 };
 
+const loadClaimsTable = async () => {
+  const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
+  const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value) ;
+
+  // Make multicall in promise
+  let promises = [];
+  for (let i = endIndex; i > startIndex && i >= 0; i--)  {
+    promises.push(claimer.claims(i - 1));
+  }
+  const retClaims = await Promise.all(promises);
+
+  claims.value = [];
+  let orderCounter = 0;
+  for (let i = endIndex; i > startIndex && i >= 0; i--)  {
+    const claim = retClaims(orderCounter);
+    const newClaim = {
+      id: i - 1,
+      date: new Date(claim.startTime * 1000),
+      amount: claim.amount,
+      description: claim.description,
+      receiver: claim.receiver,
+      proposer: claim.proposer,
+      forVotes: claim.forVotes,
+      againstVotes: claim.againstVotes,
+      startTime: Number(claim.startTime),
+      executed: claim.executed,
+      exists: claim.exists,
+      forPercentage: calculateVotePercentage(Number(claim.forVotes), Number(claim.againstVotes)),
+      votesNeeded: calculateVotesNeeded(Number(claim.forVotes), Number(claim.againstVotes))
+    };
+    claims.value.push(newClaim);
+    orderCounter++;
+  }
+}
+
 // Load claims
 const loadClaimsState = async () => {
   try {
@@ -670,41 +705,30 @@ const loadClaimsState = async () => {
         erc20ABI,
         web3Store.provider
     );
-    const accountStake = await claimer.stakes(web3Store.account);
+
+    const retValues = await Promise.all([
+        claimer.stakes(web3Store.account),
+        sursToken.balanceOf(web3Store.account),
+        claimer.votingPeriod(),
+        claimer.claimCounter()
+    ]);
+    const accountStake = retValues[0];
+    const sursBalance = retValues[1];
+    const vPeriod = retValues[2];
+    const claimCounter = retValues[3];
+
+
     stakedAmount.value = Number(
         ethers.utils.formatEther(accountStake.currentAmount)
     ).toFixed(2);
     availableTokens.value = Number(
-        ethers.utils.formatEther(await sursToken.balanceOf(web3Store.account))
+        ethers.utils.formatEther(sursBalance)
     ).toFixed(2);
 
-    votingPeriod.value = (await claimer.votingPeriod()).toNumber();
-    totalClaims.value = (await claimer.claimCounter()).toNumber();
-    const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
-    const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value) ;
+    votingPeriod.value = (vPeriod).toNumber();
+    totalClaims.value = (claimCounter).toNumber();
 
-    claims.value = [];
-
-
-    for (let i = endIndex; i > startIndex && i >= 0; i--)  {
-      const claim = await claimer.claims(i - 1);
-      const newClaim = {
-        id: i - 1,
-        date: new Date(claim.startTime * 1000),
-        amount: claim.amount,
-        description: claim.description,
-        receiver: claim.receiver,
-        proposer: claim.proposer,
-        forVotes: claim.forVotes,
-        againstVotes: claim.againstVotes,
-        startTime: Number(claim.startTime),
-        executed: claim.executed,
-        exists: claim.exists,
-        forPercentage: calculateVotePercentage(Number(claim.forVotes), Number(claim.againstVotes)),
-        votesNeeded: calculateVotesNeeded(Number(claim.forVotes), Number(claim.againstVotes))
-      };
-      claims.value.push(newClaim);
-    }
+    await loadClaimsTable();
   } catch (error) {
     console.error("Error loading claims:", error);
   } finally {
@@ -808,7 +832,7 @@ const handleExecute = async (claimId) => {
 
 const goToPage = async (page) => {
   currentPage.value = page;
-  await loadClaimsState();
+  await loadClaimsTable();
 };
 
 const nextPage = () => {

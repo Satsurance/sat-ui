@@ -16,6 +16,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "ethers": "^5.7.2",
+    "ethers-multicall-provider": "^3.1.2",
     "lucide-vue-next": "^0.468.0",
     "pinia": "^2.3.0",
     "radix-vue": "^1.9.11",
