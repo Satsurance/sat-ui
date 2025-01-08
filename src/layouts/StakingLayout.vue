@@ -467,7 +467,7 @@ const stakeFunds = async () => {
 
 const calculateStakingTime = (startTime, minTimeStake) => {
   const now = Math.floor(Date.now() / 1000);
-  const elapsedSeconds = now - Number(startTime);
+  const elapsedSeconds = Math.abs(now - Number(startTime));
   const totalLockDays = Math.floor(Number(minTimeStake) / (24 * 60 * 60));
 
   // Calculate elapsed days and hours
