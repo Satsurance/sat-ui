@@ -17,6 +17,6 @@ services:
       - vue-builder
 
 networks:
-  backend-network:
+  satsnet:
     external: true
     name: satsnet
