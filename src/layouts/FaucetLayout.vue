@@ -255,7 +255,7 @@ const requestTokens = async (tokenType, amount) => {
     transactionType.value = 'faucet_request';
     transactionStatus.value = 'pending';
 
-    const response = await fetch('http://127.0.0.1:3050/api/faucet/request', {
+    const response = await fetch('/api/faucet/request', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

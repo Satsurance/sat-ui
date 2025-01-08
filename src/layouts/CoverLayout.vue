@@ -222,7 +222,7 @@ const handleSubmit = async () => {
     isSubmitting.value = true;
     hasError.value = false;
 
-    const response = await fetch('http://37.27.217.237:3050/submit', {
+    const response = await fetch('/api/submit', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
