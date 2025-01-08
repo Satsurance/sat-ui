@@ -18,9 +18,9 @@
         <div class="hidden lg:flex absolute left-1/2 -translate-x-1/2">
           <div class="flex items-center space-x-8">
             <router-link
-                to="/cover"
-                class="text-gray-600 hover:text-yellow-500"
-                active-class="text-blue-600"
+              to="/cover"
+              class="text-gray-600 hover:text-yellow-500"
+              active-class="text-blue-600"
             >
               Get Cover
             </router-link>
@@ -39,9 +39,9 @@
               Manage Claims
             </router-link>
             <router-link
-                to="/faucet"
-                class="text-gray-600 hover:text-yellow-500"
-                active-class="text-blue-600"
+              to="/faucet"
+              class="text-gray-600 hover:text-yellow-500"
+              active-class="text-blue-600"
             >
               Faucet
             </router-link>
@@ -107,18 +107,18 @@
       </div>
       <div class="flex flex-col w-full items-center">
         <router-link
+          to="/cover"
+          class="text-gray-600 hover:text-yellow-500 py-4"
+          active-class="text-blue-600"
+        >
+          Get Cover
+        </router-link>
+        <router-link
           to="/stake"
           class="text-gray-600 hover:text-yellow-500 py-4"
           active-class="text-blue-600"
         >
           Stake
-        </router-link>
-        <router-link
-          to="/claim"
-          class="text-gray-600 hover:text-yellow-500 py-4"
-          active-class="text-blue-600"
-        >
-          Claims
         </router-link>
         <router-link
           to="/claims_gov"
@@ -127,21 +127,21 @@
         >
           Manage Claims
         </router-link>
+        <router-link
+          to="/faucet"
+          class="text-gray-600 hover:text-yellow-500 py-4"
+          active-class="text-blue-600"
+        >
+          Faucet
+        </router-link>
         <a
           href="https://satsurance.gitbook.io/satsurance"
           target="_blank"
-          class="text-gray-600 hover:text-yellow-500"
+          class="text-gray-600 hover:text-yellow-500 py-4"
           active-class="text-blue-600"
         >
           Docs
         </a>
-        <router-link
-          to="/cover"
-          class="text-gray-600 hover:text-yellow-500 py-4"
-          active-class="text-blue-600"
-        >
-          Contact Us
-        </router-link>
       </div>
       <ConnectWallet />
     </div>

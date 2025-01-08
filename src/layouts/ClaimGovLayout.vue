@@ -1,18 +1,15 @@
 <!-- src/pages/ClaimsManagement.vue -->
 <template>
-  <!-- Header Section -->
   <div class="min-h-[85vh] bg-gray-50">
-    <!-- Main Content -->
     <div class="max-w-6xl mx-auto px-4 py-8">
-      <!-- Header with background -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div class="flex justify-between items-center">
-          <div class="space-y-1">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex flex-col items-center text-center space-y-1">
             <h1
-              class="text-4xl font-semibold text-gray-900 flex items-center gap-3"
+              class="text-2xl md:text-4xl font-semibold text-gray-900 flex items-center gap-3"
             >
               <svg
-                class="w-8 h-8 text-yellow-500"
+                class="w-8 h-8 text-yellow-500 hidden md:flex"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -29,10 +26,10 @@
             <p class="text-gray-500">Governance and Claims Review Platform</p>
           </div>
 
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-4 mt-4 md:mt-0 w-full md:w-max">
             <button
               @click="openSubmitClaimDialog"
-              class="btn-primary inline-flex items-center px-6 py-2.5 rounded-lg"
+              class="flex items-center text-center justify-center w-full btn-primary px-6 py-2.5 rounded-lg"
             >
               <svg
                 class="w-5 h-5 mr-2"
@@ -52,22 +49,24 @@
           </div>
         </div>
 
-        <!-- Staking Management Card -->
         <div class="bg-white rounded-lg p-6 mb-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Staking Information -->
             <div class="space-y-4">
               <div
-                class="flex justify-between items-center py-3 px-4 rounded w-full"
+                class="flex justify-between items-center py-3 md:px-4 rounded w-full text-start"
               >
                 <span class="text-gray-600">Amount of SURS token staked:</span>
                 <span class="font-medium">{{ stakedAmount }}</span>
               </div>
-              <div class="flex justify-between items-center py-3 px-4 rounded">
+              <div
+                class="flex justify-between items-center py-3 md:px-4 rounded"
+              >
                 <span class="text-gray-600">Available SURS token:</span>
                 <span class="font-medium">{{ availableTokens }}</span>
               </div>
-              <div class="flex justify-between items-center py-3 px-4 rounded">
+              <div
+                class="flex justify-between items-center py-3 md:px-4 rounded"
+              >
                 <span class="text-gray-600">Voting Power:</span>
                 <span class="font-medium text-yellow-500">{{
                   votingPower
@@ -137,7 +136,7 @@
 
       <!-- Claims Table -->
       <div
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-scroll"
       >
         <table class="w-full text-sm text-gray-600 divide-y divide-gray-200">
           <thead>
