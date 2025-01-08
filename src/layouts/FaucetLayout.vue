@@ -18,6 +18,37 @@
           </div>
         </div>
 
+        <!-- Instructions Steps -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Follow these steps:</h2>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <span class="text-yellow-600 font-medium">1</span>
+              </div>
+              <div>
+                <p class="text-gray-700">First, visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <span class="text-yellow-600 font-medium">2</span>
+              </div>
+              <div>
+                <p class="text-gray-700">Request fake BTC and SURS tokens using the form below</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <span class="text-yellow-600 font-medium">3</span>
+              </div>
+              <div>
+                <p class="text-gray-700">Go and test Satsurance functionality!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Info Stats Card -->
         <div class="bg-white rounded-lg mb-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -140,11 +171,10 @@
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <div>
-                  <p class="font-medium">Important Notes:</p>
-                  <ul class="mt-1 ml-4 list-disc text-sm">
+                  <p class="font-medium text-left">Important Notes:</p>
+                  <ul class="mt-1 ml-4 list-disc text-sm text-left">
                     <li>Maximum request amount is 0.1 BTC or 100 SURS</li>
                     <li>Tokens are for testing purposes only</li>
-                    <li>Please allow a few moments for the transaction to process</li>
                   </ul>
                 </div>
               </div>

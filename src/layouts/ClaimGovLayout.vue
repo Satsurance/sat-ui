@@ -657,6 +657,12 @@ const unstakeSursTokens = async () => {
 };
 
 const loadClaimsTable = async () => {
+  const claimer = new ethers.Contract(
+      getContractAddress("CLAIMER", web3Store.chainId),
+      claimerABI,
+      web3Store.provider.getSigner()
+  );
+
   const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
   const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value) ;
 
@@ -670,7 +676,7 @@ const loadClaimsTable = async () => {
   claims.value = [];
   let orderCounter = 0;
   for (let i = endIndex; i > startIndex && i >= 0; i--)  {
-    const claim = retClaims(orderCounter);
+    const claim = retClaims[orderCounter];
     const newClaim = {
       id: i - 1,
       date: new Date(claim.startTime * 1000),
