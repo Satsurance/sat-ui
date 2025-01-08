@@ -12,11 +12,11 @@ services:
       - ./dist:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
-      - backend-network
+      - satsnet
     depends_on:
       - vue-builder
 
 networks:
   backend-network:
     external: true
-    name: backend-network
+    name: satsnet
