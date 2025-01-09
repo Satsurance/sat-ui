@@ -27,7 +27,7 @@
                 <span class="text-yellow-600 font-medium">1</span>
               </div>
               <div>
-                <p class="text-gray-700">First, add to your metamask wallet <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc</a>.</p>
+                <p class="text-gray-700">First, follow <a href="https://support.metamask.io/configure/networks/how-to-add-a-custom-network-rpc/#adding-a-network-manually" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">this instruction</a> to add a custom rpc to your metamask wallet. Use <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc params</a>.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
