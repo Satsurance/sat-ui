@@ -2,20 +2,20 @@
 <template>
   <Transition name="fade">
     <div
-      v-if="isOpen"
-      class="fixed inset-0 z-50 overflow-y-auto"
-      @click="onBackdropClick"
+        v-if="isOpen"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        @click="onBackdropClick"
     >
       <!-- Backdrop -->
       <div
-        class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"
+          class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"
       ></div>
 
       <!-- Dialog -->
       <div class="flex min-h-full items-center justify-center p-4">
         <div
-          class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
-          @click.stop
+            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+            @click.stop
         >
           <!-- Header -->
           <div class="flex items-center justify-between mb-2.5 md:mb-10">
@@ -24,31 +24,31 @@
                 Claim Details
               </h3>
               <span class="text-xl text-gray-400 font-medium"
-                >#{{ claim?.id }}</span
+              >#{{ claim?.id }}</span
               >
             </div>
             <div class="flex items-center gap-4">
               <div
-                class="hidden md:flex px-4 py-1.5 text-sm rounded-full font-medium"
-                :class="getStatusClasses"
+                  class="hidden md:flex px-4 py-1.5 text-sm rounded-full font-medium"
+                  :class="getStatusClasses"
               >
                 {{ getStatusText }}
               </div>
               <button
-                @click="onClose"
-                class="rounded-full p-2 hover:bg-gray-100 transition-colors"
+                  @click="onClose"
+                  class="rounded-full p-2 hover:bg-gray-100 transition-colors"
               >
                 <svg
-                  class="h-5 w-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </button>
@@ -56,8 +56,8 @@
           </div>
 
           <div
-            class="flex md:hidden px-4 py-1.5 text-sm rounded-full font-medium w-max mb-2.5"
-            :class="getStatusClasses"
+              class="flex md:hidden px-4 py-1.5 text-sm rounded-full font-medium w-max mb-2.5"
+              :class="getStatusClasses"
           >
             {{ getStatusText }}
           </div>
@@ -66,7 +66,7 @@
             <div class="w-full flex flex-row justify-between mb-2.5 md:mb-10">
               <div>
                 <label class="block text-base text-gray-500 mb-2"
-                  >Claim Amount</label
+                >Claim Amount</label
                 >
                 <span class="text-2xl font-semibold text-gray-900">
                   {{ formatAmount(claim?.amount) }} BTC
@@ -74,7 +74,7 @@
               </div>
               <div>
                 <label class="block text-base text-gray-500 mb-2"
-                  >Creation Date</label
+                >Creation Date</label
                 >
                 <span class="text-base text-gray-900 font-medium">
                   {{ formatDate(claim?.startTime) }}
@@ -85,31 +85,31 @@
             <div class="space-y-6">
               <div>
                 <label class="block text-base text-gray-500 mb-2"
-                  >Proposed By</label
+                >Proposed By</label
                 >
                 <div
-                  class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg"
+                    class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg"
                 >
                   <span
-                    class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block"
-                    >{{ claim?.proposer || "0x0" }}</span
+                      class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block"
+                  >{{ claim?.proposer || "0x0" }}</span
                   >
                   <button
-                    @click="copyToClipboard(claim?.proposer)"
-                    class="text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Copy address"
+                      @click="copyToClipboard(claim?.proposer)"
+                      class="text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Copy address"
                   >
                     <svg
-                      class="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                       />
                     </svg>
                   </button>
@@ -118,31 +118,31 @@
               <!-- Receiver -->
               <div>
                 <label class="block text-base text-gray-500 mb-2"
-                  >Funds Recipient</label
+                >Funds Recipient</label
                 >
                 <div
-                  class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg"
+                    class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg"
                 >
                   <span
-                    class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block"
-                    >{{ claim?.receiver || "0x0" }}</span
+                      class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block"
+                  >{{ claim?.receiver || "0x0" }}</span
                   >
                   <button
-                    @click="copyToClipboard(claim?.receiver)"
-                    class="text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Copy address"
+                      @click="copyToClipboard(claim?.receiver)"
+                      class="text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Copy address"
                   >
                     <svg
-                      class="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                       />
                     </svg>
                   </button>
@@ -153,7 +153,7 @@
             <!-- Description -->
             <div>
               <label class="block text-base text-gray-500 mb-2 mt-4"
-                >Claim Description</label
+              >Claim Description</label
               >
               <div class="bg-gray-50 rounded-lg">
                 <div class="max-h-[200px] overflow-y-auto">
@@ -167,7 +167,7 @@
             <!-- Voting Progress -->
             <div class="space-y-4">
               <label class="block text-base text-gray-500 mb-2 mt-4"
-                >Current Voting Status</label
+              >Current Voting Status</label
               >
               <div class="space-y-4">
                 <!-- For votes -->
@@ -175,13 +175,13 @@
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-gray-900 font-medium">For</span>
                     <span class="text-gray-900 font-medium">{{
-                      formatAmount(claim?.forVotes)
-                    }}</span>
+                        formatAmount(claim?.forVotes)
+                      }}</span>
                   </div>
                   <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      class="h-full bg-yellow-500 transition-all"
-                      :style="{
+                        class="h-full bg-yellow-500 transition-all"
+                        :style="{
                         width: `${calculateVotePercentage(
                           claim?.forVotes,
                           claim?.againstVotes
@@ -195,13 +195,13 @@
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-gray-900 font-medium">Against</span>
                     <span class="text-gray-900 font-medium">{{
-                      formatAmount(claim?.againstVotes)
-                    }}</span>
+                        formatAmount(claim?.againstVotes)
+                      }}</span>
                   </div>
                   <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      class="h-full bg-rose-400 transition-all"
-                      :style="{
+                        class="h-full bg-rose-400 transition-all"
+                        :style="{
                         width: `${calculateVotePercentage(
                           claim?.againstVotes,
                           claim?.forVotes
@@ -213,30 +213,37 @@
               </div>
             </div>
 
+            <!-- Error Message -->
+            <div v-if="errorMessage" class="mt-6">
+              <div class="p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3 items-start">
+                <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+              </div>
+            </div>
+
             <!-- Actions -->
             <div v-if="!claim?.executed" class="flex justify-end gap-4 pt-6">
               <!-- Show voting buttons during voting period -->
               <template v-if="isVotingPeriodActive">
                 <button
-                  @click="$emit('vote', { claimId: claim?.id, support: false })"
-                  class="px-6 py-2.5 bg-rose-400 border border-rose-400 text-white text-lg rounded-xl hover:bg-white hover:text-rose-400 hover:border-rose-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="!sufficientStake"
+                    @click="$emit('vote', { claimId: claim?.id, support: false })"
+                    class="px-6 py-2.5 bg-rose-400 border border-rose-400 text-white text-lg rounded-xl hover:bg-white hover:text-rose-400 hover:border-rose-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="!sufficientStake"
                 >
                   Vote Against
                 </button>
                 <button
-                  @click="$emit('vote', { claimId: claim?.id, support: true })"
-                  class="btn-primary px-6 py-2.5 text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="!sufficientStake"
+                    @click="$emit('vote', { claimId: claim?.id, support: true })"
+                    class="btn-primary px-6 py-2.5 text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="!sufficientStake"
                 >
                   Vote For
                 </button>
               </template>
               <!-- Show execute button after voting period if enough support -->
               <button
-                v-else-if="canExecute"
-                @click="$emit('execute', claim?.id)"
-                class="px-6 py-2.5 bg-green-500 border border-green-500 text-white text-lg rounded-xl hover:bg-white hover:text-green-500 hover:border-green-500 transition-colors duration-300"
+                  v-else-if="canExecute"
+                  @click="$emit('execute', claim?.id)"
+                  class="px-6 py-2.5 bg-green-500 border border-green-500 text-white text-lg rounded-xl hover:bg-white hover:text-green-500 hover:border-green-500 transition-colors duration-300"
               >
                 Execute Claim
               </button>
@@ -261,6 +268,10 @@ const props = defineProps({
   sufficientStake: {
     type: Boolean,
     default: false,
+  },
+  errorMessage: {
+    type: String,
+    default: "",
   },
   votingPeriod: {
     type: Number,
@@ -301,7 +312,7 @@ const canExecute = computed(() => {
     return false;
 
   const totalVotes =
-    Number(props.claim.forVotes) + Number(props.claim.againstVotes);
+      Number(props.claim.forVotes) + Number(props.claim.againstVotes);
   if (totalVotes === 0) return false;
 
   const supportPercentage = (Number(props.claim.forVotes) / totalVotes) * 100;
@@ -318,16 +329,16 @@ const formatDate = (timestamp) => {
   if (!timestamp) return "Not available";
   const date = new Date(timestamp * 1000);
   return date
-    .toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    })
-    .replace(",", "");
+      .toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      .replace(",", "");
 };
 
 const formatAmount = (amount) => {

@@ -430,6 +430,7 @@
       :is-open="isDialogOpen"
       :sufficient-stake="sufficientStake"
       :votingPeriod="votingPeriod"
+      :error-message="currentClaimError"
       @close="closeClaimDetails"
       @vote="handleVote"
       @execute="handleExecute"
@@ -486,6 +487,7 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const totalClaims = ref(0);
 const isLoadingClaims = ref(false);
+const currentClaimError = ref('');
 
 // Add computed for total pages
 const totalPages = computed(() =>
@@ -904,14 +906,15 @@ const openClaimDetails = (claim) => {
 const closeClaimDetails = () => {
   isDialogOpen.value = false;
   selectedClaim.value = null;
+  currentClaimError.value = '';
 };
 
 const handleVote = async ({ claimId, support }) => {
   try {
     const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      web3Store.provider.getSigner()
+        getContractAddress("CLAIMER", web3Store.chainId),
+        claimerABI,
+        web3Store.provider.getSigner()
     );
 
     const tx = await claimer.vote(claimId, support);
@@ -919,10 +922,18 @@ const handleVote = async ({ claimId, support }) => {
 
     // Reload the claims state after voting
     await loadClaimsState();
+    closeClaimDetails();
   } catch (error) {
     console.error("Error voting on claim:", error);
+
+    // Parse the error message
+    let errorMessage = "Transaction failed";
+
+    if (error.reason) {
+      errorMessage = error.reason;
+    }
+    currentClaimError.value = errorMessage;
   }
-  closeClaimDetails();
 };
 
 const handleExecute = async (claimId) => {
