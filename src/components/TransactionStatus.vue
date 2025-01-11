@@ -190,6 +190,68 @@
         </div>
       </div>
 
+      <!-- Transaction Confirmation Flow -->
+      <div v-else-if="type === 'transaction'">
+        <div class="flex items-center mb-6">
+          <div
+              :class="[
+              'w-8 h-8 rounded-full flex items-center justify-center text-sm',
+              status === 'pending'
+                ? 'bg-blue-100 text-blue-600'
+                : status === 'success'
+                ? 'bg-green-100 text-green-600'
+                : status === 'failed'
+                ? 'bg-red-100 text-red-600'
+                : 'bg-gray-100 text-gray-600',
+            ]"
+          >
+            <svg
+                v-if="status !== 'pending'"
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+              <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              ></path>
+            </svg>
+            <div
+                v-else
+                class="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+            ></div>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="font-medium">Confirm Transaction</div>
+            <div class="text-sm text-gray-500">
+              Waiting for transaction confirmation
+            </div>
+          </div>
+          <div
+              v-if="status === 'pending'"
+              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+          ></div>
+          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
+            <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+              <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <!-- Error Display -->
       <div
           v-if="error"

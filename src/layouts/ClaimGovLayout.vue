@@ -558,7 +558,7 @@ const handleSubmitClaim = async () => {
     }
 
     isSubmitting.value = true;
-    transactionType.value = "submit_claim";
+    transactionType.value = "transaction";
     transactionStatus.value = "pending";
 
     const signer = web3Store.provider.getSigner();
@@ -911,6 +911,9 @@ const closeClaimDetails = () => {
 
 const handleVote = async ({ claimId, support }) => {
   try {
+    transactionType.value = "transaction";
+    transactionStatus.value = "pending";
+
     const claimer = new ethers.Contract(
         getContractAddress("CLAIMER", web3Store.chainId),
         claimerABI,
@@ -918,21 +921,27 @@ const handleVote = async ({ claimId, support }) => {
     );
 
     const tx = await claimer.vote(claimId, support);
+    currentTxHash.value = tx.hash;
+
     await tx.wait();
+    transactionStatus.value = "success";
 
     // Reload the claims state after voting
     await loadClaimsState();
     closeClaimDetails();
   } catch (error) {
     console.error("Error voting on claim:", error);
+    transactionStatus.value = "failed";
 
-    // Parse the error message
-    let errorMessage = "Transaction failed";
-
-    if (error.reason) {
-      errorMessage = error.reason;
+    if (error.code === 4001) {
+      transactionError.value = "Transaction rejected by user";
+    } else if (error.reason) {
+      transactionError.value = error.reason;
+    } else {
+      transactionError.value = "Voting failed. Please try again.";
     }
-    currentClaimError.value = errorMessage;
+
+    currentClaimError.value = transactionError.value;
   }
 };
 
