@@ -143,9 +143,8 @@ const handlePurchase = async (purchaseParams) => {
     const endDate = startDate + (duration * 24 * 60 * 60);
 
     // Convert amounts to wei
-    const coverAmountWei = ethers.utils.parseEther(coverAmount.toString());
-    const premiumWei = ethers.utils.parseEther(premium.toString());
-    console.log('premium: ', premiumWei.toString());
+    const coverAmountWei = ethers.utils.parseEther(coverAmount.toFixed(18));
+    const premiumWei = ethers.utils.parseEther(premium.toFixed(18));
 
     const web3Store = useWeb3Store();
     const signer = web3Store.provider.getSigner();
