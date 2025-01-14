@@ -89,12 +89,12 @@
                     v-model="toStakeAmount"
                     type="number"
                     placeholder="0.99"
-                    :disabled="transactionStatus !== ''"
+                    :disabled="firstTxStatus !== ''"
                     class="flex-1 form-input"
                   />
                   <button
                     @click="stakeSursTokens"
-                    :disabled="transactionStatus !== ''"
+                    :disabled="firstTxStatus !== ''"
                     class="btn-primary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
                   >
                     Stake
@@ -114,12 +114,12 @@
                     v-model="toUnstakeAmount"
                     type="number"
                     placeholder="0.99"
-                    :disabled="transactionStatus !== ''"
+                    :disabled="firstTxStatus !== ''"
                     class="flex-1 form-input"
                   />
                   <button
                     @click="unstakeSursTokens"
-                    :disabled="transactionStatus !== ''"
+                    :disabled="firstTxStatus !== ''"
                     class="btn-secondary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
                   >
                     Unstake
@@ -438,14 +438,12 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-      :show="!!transactionStatus"
-      :status="transactionStatus"
-      :type="transactionType"
-      :tx-hash="currentTxHash"
-      :error="transactionError"
-      @close="resetTransaction"
-      @retry="retryTransaction"
-      token-ticker="SURS"
+        :show="!!(firstTxStatus || secondTxStatus)"
+        :steps="transactionSteps"
+        :tx-hash="currentTxHash"
+        :error="transactionError"
+        @close="resetTransaction"
+        @retry="retryTransaction"
     />
   </div>
 </template>
@@ -472,7 +470,8 @@ const votingPeriod = ref(0);
 const stakingMode = ref("stake");
 
 // Transaction state
-const transactionStatus = ref("");
+const firstTxStatus = ref("");
+const secondTxStatus = ref("");
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
@@ -503,6 +502,70 @@ const submitFormData = reactive({
   description: "",
   amount: "",
   receiver: "",
+});
+
+const transactionSteps = computed(() => {
+  switch (transactionType.value) {
+    case 'stake':
+      return [
+        {
+          id: 'approve',
+          title: 'Approve SURS',
+          description: 'Allow smart contract to use your SURS tokens',
+          status: firstTxStatus.value,
+          showNumber: true
+        },
+        {
+          id: 'stake',
+          title: 'Stake SURS',
+          description: 'Stake your SURS tokens',
+          status: secondTxStatus.value,
+          showNumber: true
+        }
+      ];
+    case 'unstake':
+      return [
+        {
+          id: 'unstake',
+          title: 'Unstake SURS',
+          description: 'Withdraw your SURS tokens',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'submit_claim':
+      return [
+        {
+          id: 'submit',
+          title: 'Submit Claim',
+          description: 'Submit your new claim',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'vote':
+      return [
+        {
+          id: 'vote',
+          title: 'Submit Vote',
+          description: 'Cast your vote on the claim',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'execute':
+      return [
+        {
+          id: 'execute',
+          title: 'Execute Claim',
+          description: 'Execute the approved claim',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    default:
+      return [];
+  }
 });
 
 // Dialog management
@@ -558,8 +621,8 @@ const handleSubmitClaim = async () => {
     }
 
     isSubmitting.value = true;
-    transactionType.value = "transaction";
-    transactionStatus.value = "pending";
+    transactionType.value = "submit_claim";
+    firstTxStatus.value = "pending";
 
     const signer = web3Store.provider.getSigner();
     const claimer = new ethers.Contract(
@@ -576,7 +639,7 @@ const handleSubmitClaim = async () => {
     currentTxHash.value = tx.hash;
 
     await tx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     // Reload claims and close dialog
     await loadClaimsState();
@@ -586,7 +649,7 @@ const handleSubmitClaim = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error submitting claim:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
     transactionError.value =
       error.code === 4001
         ? "Transaction rejected by user"
@@ -598,7 +661,8 @@ const handleSubmitClaim = async () => {
 
 // Reset transaction state
 const resetTransaction = () => {
-  transactionStatus.value = "";
+  firstTxStatus.value = "";
+  secondTxStatus.value = "";
   transactionType.value = "";
   currentTxHash.value = "";
   transactionError.value = "";
@@ -641,7 +705,7 @@ const handleStakeProcess = async (amountInWei) => {
     // Handle approval if needed
     if (currentAllowance.lt(amountInWei)) {
       transactionType.value = "stake";
-      transactionStatus.value = "approval_pending";
+      firstTxStatus.value = "pending";
 
       try {
         const approveTx = await sursToken.approve(
@@ -654,9 +718,9 @@ const handleStakeProcess = async (amountInWei) => {
         currentTxHash.value = approveTx.hash;
 
         await approveTx.wait();
-        transactionStatus.value = "approval_success";
+        firstTxStatus.value = "success";
       } catch (error) {
-        transactionStatus.value = "approval_failed";
+        firstTxStatus.value = "failed";
         transactionError.value =
           error.code === 4001
             ? "Transaction rejected by user"
@@ -666,14 +730,14 @@ const handleStakeProcess = async (amountInWei) => {
     }
 
     // Handle staking
-    transactionStatus.value = "stake_pending";
+    secondTxStatus.value = "pending";
     const stakeTx = await claimer.stake(amountInWei, {
       from: web3Store.account,
     });
     currentTxHash.value = stakeTx.hash;
 
     await stakeTx.wait();
-    transactionStatus.value = "stake_success";
+    secondTxStatus.value = "success";
 
     await loadClaimsState();
     toStakeAmount.value = null;
@@ -715,8 +779,8 @@ const stakeSursTokens = async () => {
   } catch (error) {
     console.error("Staking error:", error);
 
-    if (transactionStatus.value !== "approval_failed") {
-      transactionStatus.value = "stake_failed";
+    if (firstTxStatus.value !== "failed") {
+      secondTxStatus.value = "failed";
       transactionError.value =
         error.code === 4001
           ? "Transaction rejected by user"
@@ -754,7 +818,7 @@ const unstakeSursTokens = async () => {
     }
 
     transactionType.value = "unstake";
-    transactionStatus.value = "pending";
+    firstTxStatus.value = "pending";
 
     const signer = web3Store.provider.getSigner();
     const claimerWithSigner = claimer.connect(signer);
@@ -765,7 +829,7 @@ const unstakeSursTokens = async () => {
     currentTxHash.value = unstakeTx.hash;
 
     await unstakeTx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     await loadClaimsState();
     toUnstakeAmount.value = null;
@@ -774,7 +838,7 @@ const unstakeSursTokens = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Unstaking error:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
     transactionError.value =
       error.code === 4001 ? "Transaction rejected by user" : "Unstaking failed";
   }
@@ -911,8 +975,8 @@ const closeClaimDetails = () => {
 
 const handleVote = async ({ claimId, support }) => {
   try {
-    transactionType.value = "transaction";
-    transactionStatus.value = "pending";
+    transactionType.value = "vote";
+    firstTxStatus.value = "pending";
 
     const claimer = new ethers.Contract(
         getContractAddress("CLAIMER", web3Store.chainId),
@@ -924,14 +988,14 @@ const handleVote = async ({ claimId, support }) => {
     currentTxHash.value = tx.hash;
 
     await tx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     // Reload the claims state after voting
     await loadClaimsState();
     closeClaimDetails();
   } catch (error) {
     console.error("Error voting on claim:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
 
     if (error.code === 4001) {
       transactionError.value = "Transaction rejected by user";
@@ -948,7 +1012,7 @@ const handleVote = async ({ claimId, support }) => {
 const handleExecute = async (claimId) => {
   try {
     transactionType.value = "execute";
-    transactionStatus.value = "pending";
+    firstTxStatus.value = "pending";
 
     const claimer = new ethers.Contract(
       getContractAddress("CLAIMER", web3Store.chainId),
@@ -960,7 +1024,7 @@ const handleExecute = async (claimId) => {
     currentTxHash.value = executeTx.hash;
 
     await executeTx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     // Reload claims after successful execution
     await loadClaimsState();
@@ -970,7 +1034,7 @@ const handleExecute = async (claimId) => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Execution error:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
     transactionError.value =
       error.code === 4001
         ? "Transaction rejected by user"

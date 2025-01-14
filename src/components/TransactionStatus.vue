@@ -1,240 +1,54 @@
+<!-- src/components/TransactionStatus.vue -->
 <template>
   <div
       v-if="show"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
   >
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-      <!-- Stake Flow -->
-      <div v-if="type === 'stake'" class="mb-6">
-        <div class="flex items-center mb-6">
+      <!-- Steps Progress -->
+      <div class="mb-6">
+        <div
+            v-for="(step, index) in steps"
+            :key="step.id"
+            class="flex items-center mb-6 last:mb-0"
+        >
+          <!-- Step Indicator -->
           <div
+              v-if="step.showNumber"
               :class="[
               'w-8 h-8 rounded-full flex items-center justify-center text-sm',
-              status === 'approval_pending'
-                ? 'bg-blue-100 text-blue-600'
-                : status === 'approval_success'
-                ? 'bg-green-100 text-green-600'
-                : status === 'approval_failed'
-                ? 'bg-red-100 text-red-600'
-                : 'bg-gray-100 text-gray-600',
+              getStepStatusClasses(step.status)
             ]"
           >
-            1
-          </div>
-          <div class="ml-3 flex-1">
-            <div class="font-medium">Approve {{ tokenTicker }}</div>
-            <div class="text-sm text-gray-500">
-              Allow smart contract to use your {{ tokenTicker }}
-            </div>
-          </div>
-          <div
-              v-if="status === 'approval_pending'"
-              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div
-              v-else-if="status === 'approval_success'"
-              class="ml-2 text-green-600"
-          >
-            <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="flex items-center">
-          <div
-              :class="[
-              'w-8 h-8 rounded-full flex items-center justify-center text-sm',
-              status === 'stake_pending'
-                ? 'bg-blue-100 text-blue-600'
-                : status === 'stake_success'
-                ? 'bg-green-100 text-green-600'
-                : status === 'stake_failed'
-                ? 'bg-red-100 text-red-600'
-                : 'bg-gray-100 text-gray-600',
-            ]"
-          >
-            2
-          </div>
-          <div class="ml-3 flex-1">
-            <div class="font-medium">Stake {{ tokenTicker }}</div>
-            <div class="text-sm text-gray-500">
-              Deposit your {{ tokenTicker }} into the pool
-            </div>
-          </div>
-          <div
-              v-if="status === 'stake_pending'"
-              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div
-              v-else-if="status === 'stake_success'"
-              class="ml-2 text-green-600"
-          >
-            <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Unstake Flow -->
-      <div v-else-if="type === 'unstake'">
-        <div class="flex items-center mb-6">
-          <div class="ml-3 flex-1">
-            <div class="font-medium">Unstake {{ tokenTicker }}</div>
-            <div class="text-sm text-gray-500">
-              Withdraw your {{ tokenTicker }} from the pool
-            </div>
-          </div>
-          <div
-              v-if="status === 'pending'"
-              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
-            <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Execute Claim Flow -->
-      <div v-else-if="type === 'execute'">
-        <div class="flex items-center mb-6">
-          <div class="ml-3 flex-1">
-            <div class="font-medium">Execute Claim</div>
-            <div class="text-sm text-gray-500">
-              Process the approved claim payout
-            </div>
-          </div>
-          <div
-              v-if="status === 'pending'"
-              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
-            <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Get Reward Flow -->
-      <div v-else-if="type === 'getreward'">
-        <div class="flex items-center mb-6">
-          <div class="ml-3 flex-1">
-            <div class="font-medium">Get Reward</div>
-            <div class="text-sm text-gray-500">
-              Process the reward payout
-            </div>
-          </div>
-          <div
-              v-if="status === 'pending'"
-              class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
-            <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Transaction Confirmation Flow -->
-      <div v-else-if="type === 'transaction'">
-        <div class="flex items-center mb-6">
-          <div
-              :class="[
-              'w-8 h-8 rounded-full flex items-center justify-center text-sm',
-              status === 'pending'
-                ? 'bg-blue-100 text-blue-600'
-                : status === 'success'
-                ? 'bg-green-100 text-green-600'
-                : status === 'failed'
-                ? 'bg-red-100 text-red-600'
-                : 'bg-gray-100 text-gray-600',
-            ]"
-          >
-            <svg
-                v-if="status !== 'pending'"
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-              <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              ></path>
-            </svg>
+            <template v-if="step.status !== 'pending'">
+              <template v-if="step.icon">
+                <component :is="step.icon" class="w-4 h-4" />
+              </template>
+              <template v-else>
+                {{ index + 1 }}
+              </template>
+            </template>
             <div
                 v-else
                 class="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"
-            ></div>
+            />
           </div>
+
+          <!-- Step Content -->
           <div class="ml-3 flex-1">
-            <div class="font-medium">Confirm Transaction</div>
-            <div class="text-sm text-gray-500">
-              Waiting for transaction confirmation
-            </div>
+            <div class="font-medium">{{ step.title }}</div>
+            <div class="text-sm text-gray-500">{{ step.description }}</div>
           </div>
+
+          <!-- Step Status Indicator -->
           <div
-              v-if="status === 'pending'"
+              v-if="step.status === 'pending'"
               class="ml-2 animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-          ></div>
-          <div v-else-if="status === 'success'" class="ml-2 text-green-600">
+          />
+          <div
+              v-else-if="step.status === 'success'"
+              class="ml-2 text-green-600"
+          >
             <svg
                 class="w-5 h-5"
                 fill="none"
@@ -246,7 +60,7 @@
                   stroke-linejoin="round"
                   stroke-width="2"
                   d="M5 13l4 4L19 7"
-              ></path>
+              />
             </svg>
           </div>
         </div>
@@ -278,19 +92,19 @@
       <!-- Action Buttons -->
       <div class="mt-6 space-y-3">
         <button
-            v-if="status.includes('failed')"
-            @click.stop="$emit('retry')"
+            v-if="hasFailedStep"
+            @click="$emit('retry')"
             class="btn-primary w-full py-2 rounded-lg focus:outline-none"
         >
           Retry Transaction
         </button>
 
         <button
-            v-if="status.includes('success') || status.includes('failed')"
-            @click.stop="close"
+            v-if="isCompleted || hasFailedStep"
+            @click="close"
             class="btn-secondary w-full py-2 rounded-lg focus:outline-none"
         >
-          {{ status.includes("success") ? "Close" : "Cancel" }}
+          {{ isCompleted ? "Close" : "Cancel" }}
         </button>
       </div>
     </div>
@@ -298,24 +112,46 @@
 </template>
 
 <script setup>
-import {defineEmits, onMounted, onUnmounted} from "vue";
+import { computed, watchEffect } from 'vue';
 
 const props = defineProps({
   show: Boolean,
-  status: String,
-  type: String,
+  steps: {
+    type: Array,
+    required: true,
+    validator: (steps) =>
+        steps.every(step =>
+            step.id &&
+            step.title &&
+            ['pending', 'success', 'failed', 'idle'].includes(step.status)
+        )
+  },
   txHash: String,
   error: String,
-  tokenTicker: {
-    type: String,
-    default: 'BTC'
-  }
 });
 
-const emit = defineEmits(["close", "retry"]);
+const emit = defineEmits(['close', 'retry']);
 
 const close = () => {
-  emit("close");
+  emit('close');
 };
 
+// Computed properties for status checks
+const hasFailedStep = computed(() =>
+    props.steps.some(step => step.status === 'failed')
+);
+
+const isCompleted = computed(() =>
+    props.steps.every(step => step.status === 'success')
+);
+
+// Utility function for step status styling
+const getStepStatusClasses = (status) => {
+  return {
+    'pending': 'bg-blue-100 text-blue-600',
+    'success': 'bg-green-100 text-green-600',
+    'failed': 'bg-red-100 text-red-600',
+    'idle': 'bg-gray-100 text-gray-600'
+  }[status] || 'bg-gray-100 text-gray-600';
+};
 </script>

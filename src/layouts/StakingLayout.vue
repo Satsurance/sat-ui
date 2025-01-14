@@ -89,10 +89,10 @@
             </div>
             <button
                 @click="getReward"
-                :disabled="transactionStatus !== ''"
+                :disabled="firstTxStatus !== ''"
                 :class="[
       'w-full py-3 rounded-lg transition-colors',
-      transactionStatus !== ''
+      firstTxStatus !== ''
         ? 'bg-red-300 cursor-not-allowed'
         : 'btn-primary',
     ]"
@@ -101,10 +101,10 @@
             </button>
             <button
                 @click="unstakePosition"
-                :disabled="transactionStatus !== '' || !isUnlockReady"
+                :disabled="firstTxStatus !== '' || !isUnlockReady"
                 :class="[
       'w-full py-3 rounded-lg transition-colors',
-      transactionStatus !== '' || !isUnlockReady
+      firstTxStatus !== '' || !isUnlockReady
         ? 'bg-red-300 cursor-not-allowed'
         : 'btn-secondary',
     ]"
@@ -128,7 +128,7 @@
                       id="amount"
                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
                       placeholder="0.99"
-                      :disabled="transactionStatus !== '' || !web3Store.isConnected"
+                      :disabled="firstTxStatus !== '' || !web3Store.isConnected"
                       v-model="toStakeAmount"
                       required
                   />
@@ -234,7 +234,7 @@
                 <button
                     @click="stakeFunds"
                     v-if="web3Store.isConnected"
-                    :disabled="transactionStatus !== ''"
+                    :disabled="firstTxStatus !== ''"
                     class="btn-primary px-4 rounded-lg w-full focus:outline-none"
                 >
                   Stake
@@ -262,20 +262,18 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!transactionStatus"
-        :status="transactionStatus"
-        :type="transactionType"
+        :show="!!firstTxStatus"
+        :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
         @close="resetTransaction"
         @retry="stakeFunds"
-        token-ticker="BTC"
     />
   </div>
 </template>
 
 <script setup>
-import {ref, watch} from "vue";
+import {ref, watch, computed} from "vue";
 import {ethers} from "ethers";
 import {useWeb3Store} from "../stores/web3Store";
 import {getContractAddress} from "../constants/contracts.js";
@@ -296,14 +294,17 @@ const isUnlockReady = ref(false);
 const web3Store = useWeb3Store();
 
 // Transaction state
-const transactionStatus = ref("");
+const firstTxStatus = ref("");
+const secondTxStatus = ref("");
+
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
 
 // Reset transaction state
 const resetTransaction = () => {
-  transactionStatus.value = "";
+  firstTxStatus.value = "";
+  secondTxStatus.value = "";
   transactionType.value = "";
   currentTxHash.value = "";
   transactionError.value = "";
@@ -347,6 +348,8 @@ const loadPositionState = async () => {
       ).toFixed(2);
 
       const timeInfo = calculateStakingTime(position.startDate, position.minTimeStake);
+      console.log(timeInfo);
+      console.log(firstTxStatus.value)
       dayStaked.value = timeInfo.timeDisplay;
       isUnlockReady.value = timeInfo.isUnlocked;
       earnedRewards.value = ethers.utils.formatEther(earned);
@@ -361,6 +364,48 @@ const loadPositionState = async () => {
     console.error("Error loading position:", error);
   }
 };
+
+const transactionSteps = computed(() => {
+  if (transactionType.value === 'stake') {
+    return [
+      {
+        id: 'approve',
+        title: `Approve BTC`,
+        description: `Allow smart contract to use your BTC`,
+        status: firstTxStatus.value,
+        showNumber: true
+      },
+      {
+        id: 'stake',
+        title: `Stake BTC`,
+        description: `Deposit your BTC into the pool`,
+        status: secondTxStatus.value,
+        showNumber: true
+      }
+    ];
+  } else if (transactionType.value === 'unstake') {
+    return [
+      {
+        id: 'unstake',
+        title: `Unstake BTC`,
+        description: `Withdraw your BTC from the pool`,
+        status: firstTxStatus.value,
+        showNumber: false
+      }
+    ];
+  } else if (transactionType.value === 'getreward') {
+    return [
+      {
+        id: 'getreward',
+        title: 'Get Reward',
+        description: 'Process the reward payout',
+        status: firstTxStatus.value,
+        showNumber: false
+      }
+    ];
+  }
+  return [];
+});
 
 // Stake funds
 const handleStakeProcess = async (amountInWei) => {
@@ -386,7 +431,7 @@ const handleStakeProcess = async (amountInWei) => {
     // Handle approval if needed
     if (currentAllowance.lt(amountInWei)) {
       transactionType.value = "stake";
-      transactionStatus.value = "approval_pending";
+      firstTxStatus.value = "approval_pending";
 
       try {
         // Use the overrides parameter to ensure consistent behavior
@@ -400,9 +445,9 @@ const handleStakeProcess = async (amountInWei) => {
         currentTxHash.value = approveTx.hash;
 
         await approveTx.wait();
-        transactionStatus.value = "approval_success";
+        firstTxStatus.value = "success";
       } catch (error) {
-        transactionStatus.value = "approval_failed";
+        firstTxStatus.value = "failed";
         transactionError.value =
             error.code === 4001
                 ? "Transaction rejected by user"
@@ -412,14 +457,14 @@ const handleStakeProcess = async (amountInWei) => {
     }
 
     // Handle staking
-    transactionStatus.value = "stake_pending";
+    secondTxStatus.value = "pending";
     const stakeTx = await insurancePool.joinPool(amountInWei, selectedLockPeriod.value * 60 * 60 * 24, {
       from: web3Store.account,
     });
     currentTxHash.value = stakeTx.hash;
 
     await stakeTx.wait();
-    transactionStatus.value = "stake_success";
+    secondTxStatus.value = "success";
 
     await loadPositionState();
     toStakeAmount.value = 0;
@@ -460,8 +505,8 @@ const stakeFunds = async () => {
   } catch (error) {
     console.error("Staking error:", error);
 
-    if (transactionStatus.value !== "approval_failed") {
-      transactionStatus.value = "stake_failed";
+    if (firstTxStatus.value !== "failed") {
+      secondTxStatus.value = "failed";
       transactionError.value =
           error.code === 4001
               ? "Transaction rejected by user"
@@ -475,6 +520,7 @@ const stakeFunds = async () => {
 const calculateStakingTime = (startTime, minTimeStake) => {
   const now = Math.floor(Date.now() / 1000);
   const elapsedSeconds = Math.abs(now - Number(startTime));
+  console.log(startTime.toString(), now, elapsedSeconds);
   const totalLockDays = Math.floor(Number(minTimeStake) / (24 * 60 * 60));
 
   // Calculate elapsed days and hours
@@ -505,13 +551,13 @@ const unstakePosition = async () => {
     );
 
     transactionType.value = "unstake";
-    transactionStatus.value = "pending";
+    firstTxStatus.value = "pending";
 
     const unstakeTx = await insurancePool.quitPool();
     currentTxHash.value = unstakeTx.hash;
 
     await unstakeTx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     await loadPositionState();
 
@@ -519,7 +565,7 @@ const unstakePosition = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Unstaking error:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
     transactionError.value =
         error.code === 4001 ? "Transaction rejected" : "Unstaking failed";
   }
@@ -535,13 +581,13 @@ const getReward = async () => {
     );
 
     transactionType.value = "getreward";
-    transactionStatus.value = "pending";
+    firstTxStatus.value = "pending";
 
     const unstakeTx = await insurancePool.getReward();
     currentTxHash.value = unstakeTx.hash;
 
     await unstakeTx.wait();
-    transactionStatus.value = "success";
+    firstTxStatus.value = "success";
 
     await loadPositionState();
 
@@ -549,7 +595,7 @@ const getReward = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Get reward error:", error);
-    transactionStatus.value = "failed";
+    firstTxStatus.value = "failed";
     transactionError.value =
         error.code === 4001 ? "Transaction rejected" : "Get reward failed";
   }

@@ -1,3 +1,4 @@
+<!-- BuyCoverLayout.vue -->
 <template>
   <div class="min-h-[85vh] bg-gray-50">
     <div class="max-w-6xl mx-auto px-4 py-8">
@@ -57,16 +58,15 @@
         v-if="selectedProject"
         :project="selectedProject"
         :show="!!selectedProject"
-        :is-submitting="transactionStatus !== ''"
+        :is-submitting="firstTxStatus !== ''"
         @close="handleClose"
         @purchase="handlePurchase"
     />
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!transactionStatus"
-        :status="transactionStatus"
-        :type="transactionType"
+        :show="!!firstTxStatus"
+        :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
         @close="resetTransaction"
@@ -87,10 +87,17 @@ import { useWeb3Store } from '../stores/web3Store';
 import coverABI from '../assets/abis/coverpurchaser.json';
 import erc20ABI from '../assets/abis/erc20.json';
 
-
 const categories = ['All', 'Slashing', 'Defi', 'Bridges'];
 const selectedCategory = ref('All');
 const selectedProject = ref(null);
+
+// Transaction state
+const firstTxStatus = ref('');
+const secondTxStatus = ref('');
+const transactionType = ref('');
+const currentTxHash = ref('');
+const transactionError = ref('');
+const currentPurchaseParams = ref(null);
 
 const filteredProjects = computed(() => {
   const projectsArray = Object.entries(COVER_PROJECTS).map(([name, data]) => ({
@@ -104,6 +111,28 @@ const filteredProjects = computed(() => {
   return projectsArray.filter(project => project.category === selectedCategory.value);
 });
 
+const transactionSteps = computed(() => {
+  if (transactionType.value === 'cover_purchase') {
+    return [
+      {
+        id: 'approve',
+        title: 'Approve BTC',
+        description: 'Allow smart contract to use your BTC',
+        status: firstTxStatus.value,
+        showNumber: true
+      },
+      {
+        id: 'purchase',
+        title: 'Purchase Cover',
+        description: 'Process your cover purchase',
+        status: secondTxStatus.value,
+        showNumber: true
+      }
+    ];
+  }
+  return [];
+});
+
 const openPurchaseModal = (projectName) => {
   selectedProject.value = {
     name: projectName,
@@ -111,15 +140,9 @@ const openPurchaseModal = (projectName) => {
   };
 };
 
-// Transaction state
-const transactionStatus = ref('');
-const transactionType = ref('');
-const currentTxHash = ref('');
-const transactionError = ref('');
-const currentPurchaseParams = ref(null);
-
 const resetTransaction = () => {
-  transactionStatus.value = '';
+  firstTxStatus.value = '';
+  secondTxStatus.value = '';
   transactionType.value = '';
   currentTxHash.value = '';
   transactionError.value = '';
@@ -130,6 +153,7 @@ const handleClose = () => {
   selectedProject.value = null;
   resetTransaction();
 };
+
 const handlePurchase = async (purchaseParams) => {
   try {
     const { coverAmount, duration, premium } = purchaseParams;
@@ -173,8 +197,7 @@ const handlePurchase = async (purchaseParams) => {
     // First step: Token approval if needed
     if (currentAllowance.lt(premiumWei)) {
       try {
-        // Set approval pending status
-        transactionStatus.value = 'approval_pending';
+        firstTxStatus.value = 'pending';
 
         const approveTx = await paymentToken.approve(
             coverContract.address,
@@ -183,10 +206,10 @@ const handlePurchase = async (purchaseParams) => {
         currentTxHash.value = approveTx.hash;
 
         await approveTx.wait();
-        transactionStatus.value = 'approval_success';
+        firstTxStatus.value = 'success';
       } catch (error) {
         console.error('Approval error:', error);
-        transactionStatus.value = 'approval_failed';
+        firstTxStatus.value = 'failed';
         transactionError.value = error.code === 4001
             ? 'Transaction rejected by user'
             : 'Failed to approve tokens';
@@ -196,7 +219,7 @@ const handlePurchase = async (purchaseParams) => {
 
     // Second step: Purchase cover
     try {
-      transactionStatus.value = 'pending';
+      secondTxStatus.value = 'pending';
 
       const purchaseTx = await coverContract.purchaseCover(
           selectedProject.value.name,
@@ -208,12 +231,11 @@ const handlePurchase = async (purchaseParams) => {
 
       currentTxHash.value = purchaseTx.hash;
       await purchaseTx.wait();
-
-      transactionStatus.value = 'success';
+      secondTxStatus.value = 'success';
 
     } catch (error) {
       console.error('Purchase error:', error);
-      transactionStatus.value = 'failed';
+      secondTxStatus.value = 'failed';
       transactionError.value = error.code === 4001
           ? 'Transaction rejected by user'
           : error.code === -32603
