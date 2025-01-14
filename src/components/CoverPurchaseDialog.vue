@@ -53,9 +53,9 @@
                     type="number"
                     id="cover-amount"
                     v-model="coverAmount"
-                    @input="coverAmountError = ''"
+                    @input="handleCoverAmountInput"
                     placeholder="0.0001"
-                    step="0.0000000001"
+                    step="any"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 transition-colors duration-200"
                     :class="{'border-red-300': coverAmountError}"
                     :aria-invalid="!!coverAmountError"
@@ -174,7 +174,7 @@
               <div class="flex justify-between text-sm font-semibold pt-2 border-t">
                 <span class="text-gray-900">Total Premium:</span>
                 <span class="text-yellow-600">
-                  {{ calculatePremium }} BTC
+                  {{ formatPremium }}
                 </span>
               </div>
             </div>
@@ -239,16 +239,67 @@ const hasErrors = computed(() => {
 });
 
 const calculatePremium = computed(() => {
-  const yearlyPremium = (coverAmount.value * props.project.rate) / 100;
-  const durationInYears = Number(duration.value) / 365;
-  return (yearlyPremium * durationInYears).toFixed(4);
+  if (!coverAmount.value || isNaN(coverAmount.value)) return 0;
+
+  // Convert all numbers to strings and use high precision arithmetic
+  const amount = Number(coverAmount.value);
+  const rate = Number(props.project.rate);
+  const days = Number(duration.value);
+
+  // Calculate with maximum precision: (amount * rate * days) / (100 * 365)
+  const yearlyPremium = (amount * rate) / 100;
+  const durationInYears = days / 365;
+  const premium = yearlyPremium * durationInYears;
+
+  return premium;
 });
 
+const formatPremium = computed(() => {
+  const premium = calculatePremium.value;
+
+  // Handle different ranges of numbers with appropriate precision
+  if (premium === 0) return '0 BTC';
+  if (premium < 0.00000001) return premium.toExponential(8) + ' BTC';
+  if (premium < 0.0001) return premium.toFixed(8) + ' BTC';
+  if (premium < 0.01) return premium.toFixed(6) + ' BTC';
+  return premium.toFixed(4) + ' BTC';
+});
+
+const handleCoverAmountInput = (event) => {
+  const value = event.target.value;
+
+  // Allow empty input for better UX
+  if (value === '') {
+    coverAmount.value = '';
+    coverAmountError.value = '';
+    return;
+  }
+
+  // Parse the input value
+  const numValue = Number(value);
+
+  // Validate the input
+  if (isNaN(numValue)) {
+    coverAmountError.value = 'Please enter a valid number';
+    return;
+  }
+
+  // Round to 8 decimal places for BTC
+  coverAmount.value = parseFloat(numValue.toFixed(8));
+  coverAmountError.value = '';
+};
+
 const validateCoverAmount = (value) => {
-  if (value < props.project.minCover) {
+  const numValue = Number(value);
+  if (isNaN(numValue)) {
+    coverAmountError.value = 'Please enter a valid number';
+    return false;
+  }
+  if (numValue < props.project.minCover) {
     coverAmountError.value = `Cover amount must be at least ${props.project.minCover} BTC`;
     return false;
-  } else if (value > props.project.maxCover) {
+  }
+  if (numValue > props.project.maxCover) {
     coverAmountError.value = `Cover amount cannot exceed ${props.project.maxCover} BTC`;
     return false;
   }
