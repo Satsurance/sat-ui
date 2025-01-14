@@ -41,8 +41,13 @@
           </button>
         </div>
 
+        <!-- Wallet Not Connected State -->
+        <div v-if="!web3Store.isConnected" class="text-center py-12">
+          <p class="text-gray-500">Please connect your wallet to view your covers.</p>
+        </div>
+
         <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
+        <div v-else-if="loading" class="flex justify-center items-center py-12">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
         </div>
 

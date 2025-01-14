@@ -124,8 +124,11 @@
                   />
                   <button
                       @click="requestBTCTokens"
-                      :disabled="isLoading || !web3Store.isConnected || !isValidBTCAmount"
-                      class="btn-primary px-8 py-2.5 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      :disabled="(isLoading || !web3Store.isConnected)"
+                      :class="[
+                        'px-8 py-2.5 rounded-lg',
+                        (isLoading|| !web3Store.isConnected) ? 'bg-gray-300 hover:border-slate-600 cursor-not-allowed' : 'btn-primary'
+                      ]"
                   >
                     {{ isLoading && currentTokenType === 'BTC' ? 'Requesting...' : 'Request BTC' }}
                   </button>
@@ -133,8 +136,8 @@
                 <div v-if="!web3Store.isConnected" class="mt-2 text-sm text-gray-500">
                   Please connect your wallet first
                 </div>
-                <div v-else-if="!isValidBTCAmount && requestBTCAmount" class="mt-2 text-sm text-red-500">
-                  Amount must be between 0.00001 and 0.1 BTC
+                <div v-if="btcError" class="mt-2 text-sm text-red-500">
+                  {{ btcError }}
                 </div>
               </div>
 
@@ -157,8 +160,11 @@
                   />
                   <button
                       @click="requestSURSTokens"
-                      :disabled="isLoading || !web3Store.isConnected || !isValidSURSAmount"
-                      class="btn-primary px-8 py-2.5 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      :disabled="isLoading || !web3Store.isConnected"
+                      :class="[
+                        'px-8 py-2.5 rounded-lg',
+                        (isLoading || !web3Store.isConnected) ? 'bg-gray-300 hover:border-slate-600  cursor-not-allowed' : 'btn-primary'
+                      ]"
                   >
                     {{ isLoading && currentTokenType === 'SURS' ? 'Requesting...' : 'Request SURS' }}
                   </button>
@@ -166,8 +172,8 @@
                 <div v-if="!web3Store.isConnected" class="mt-2 text-sm text-gray-500">
                   Please connect your wallet first
                 </div>
-                <div v-else-if="!isValidSURSAmount && requestSURSAmount" class="mt-2 text-sm text-red-500">
-                  Amount must be between 1 and 100 SURS
+                <div v-if="sursError" class="mt-2 text-sm text-red-500">
+                  {{ sursError }}
                 </div>
               </div>
             </div>
@@ -224,23 +230,14 @@ const requestBTCAmount = ref(null);
 const requestSURSAmount = ref(null);
 const isLoading = ref(false);
 const currentTokenType = ref('');
+const btcError = ref('');
+const sursError = ref('');
 
 // Transaction state
 const transactionStatus = ref('');
 const transactionType = ref('');
 const currentTxHash = ref('');
 const transactionError = ref('');
-
-// Computed
-const isValidBTCAmount = computed(() => {
-  const amount = Number(requestBTCAmount.value);
-  return amount >= 0.00001 && amount <= 0.1;
-});
-
-const isValidSURSAmount = computed(() => {
-  const amount = Number(requestSURSAmount.value);
-  return amount >= 0.00001 && amount <= 100;
-});
 
 // Methods
 const loadBalances = async () => {
@@ -275,14 +272,42 @@ const loadBalances = async () => {
   }
 };
 
+const validateBTCAmount = (amount) => {
+  if (!amount) {
+    btcError.value = 'Please enter an amount';
+    return false;
+  }
+  const numAmount = Number(amount);
+  if (numAmount < 0.00001 || numAmount > 0.1) {
+    btcError.value = 'Amount must be between 0.00001 and 0.1 BTC';
+    return false;
+  }
+  btcError.value = '';
+  return true;
+};
+
+const validateSURSAmount = (amount) => {
+  if (!amount) {
+    sursError.value = 'Please enter an amount';
+    return false;
+  }
+  const numAmount = Number(amount);
+  if (numAmount < 0.00001 || numAmount > 100) {
+    sursError.value = 'Amount must be between 0.00001 and 100 SURS';
+    return false;
+  }
+  sursError.value = '';
+  return true;
+};
+
 const requestBTCTokens = async () => {
-  if (!isValidBTCAmount.value || isLoading.value) return;
+  if (!validateBTCAmount(requestBTCAmount.value)) return;
   currentTokenType.value = 'BTC';
   await requestTokens('BTC', requestBTCAmount.value);
 };
 
 const requestSURSTokens = async () => {
-  if (!isValidSURSAmount.value || isLoading.value) return;
+  if (!validateSURSAmount(requestSURSAmount.value)) return;
   currentTokenType.value = 'SURS';
   await requestTokens('SURS', requestSURSAmount.value);
 };
@@ -347,6 +372,8 @@ const resetTransaction = () => {
   currentTxHash.value = '';
   transactionError.value = '';
   currentTokenType.value = '';
+  btcError.value = '';
+  sursError.value = '';
 };
 
 // Watchers

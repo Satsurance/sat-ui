@@ -60,7 +60,7 @@
                     :class="{'border-red-300': coverAmountError}"
                     :aria-invalid="!!coverAmountError"
                     :aria-describedby="coverAmountError ? 'cover-amount-error' : undefined"
-                    :disabled="isSubmitting"
+                    :disabled="isSubmitting || !web3Store.isConnected"
                     required
                 />
                 <!-- Error message container with fixed height -->
@@ -112,7 +112,7 @@
                       class="w-20 bg-transparent border-none focus:outline-none text-gray-900 text-sm p-1"
                       :aria-invalid="!!durationError"
                       :aria-describedby="durationError ? 'duration-error' : undefined"
-                      :disabled="isSubmitting"
+                      :disabled="isSubmitting || !web3Store.isConnected"
                   />
                   <span class="text-sm text-gray-600 ml-1">days</span>
                 </div>
@@ -149,7 +149,7 @@
                     :max="360"
                     step="1"
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-                    :disabled="isSubmitting"
+                    :disabled="isSubmitting || !web3Store.isConnected"
                 />
                 <div class="flex justify-between px-1 text-xs text-gray-500">
                   <span>30d</span>
@@ -183,10 +183,21 @@
             <div class="flex justify-end pt-4">
               <button
                   type="submit"
-                  :disabled="isSubmitting || hasErrors"
-                  class="w-full py-3 btn-primary rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
+                  :disabled="isSubmitting || hasErrors || !web3Store.isConnected"
+                  class="w-full py-3 rounded-lg transition-colors"
+                  :class="[
+                    web3Store.isConnected
+                      ? 'btn-primary disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed'
+                      : 'bg-gray-100 border-gray-100 hover:border-gray-100 cursor-not-allowed text-gray-500'
+                  ]"
               >
-                {{ isSubmitting ? "Processing..." : "Purchase Cover" }}
+                {{
+                  !web3Store.isConnected
+                      ? 'Wallet is not connected'
+                      : isSubmitting
+                          ? 'Processing...'
+                          : 'Purchase Cover'
+                }}
               </button>
             </div>
           </form>
@@ -198,6 +209,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useWeb3Store } from '../stores/web3Store';
 
 const props = defineProps({
   project: {
@@ -215,6 +227,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'purchase']);
+const web3Store = useWeb3Store();
 
 const coverAmount = ref('');
 const duration = ref(30);
