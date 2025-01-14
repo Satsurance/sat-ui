@@ -17,6 +17,14 @@ const routes = [
     component: () => import("../layouts/CoverLayout.vue"),
   },
   {
+    path: "/cover_buy",
+    component: () => import("../layouts/BuyCoverLayout.vue"),
+  },
+  {
+    path: "/cover_my",
+    component: () => import("../layouts/MyCoversLayout.vue"),
+  },
+  {
     path: "/claims_gov",
     component: () => import("../layouts/ClaimGovLayout.vue"),
   },

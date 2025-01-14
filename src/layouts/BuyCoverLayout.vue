@@ -1,0 +1,236 @@
+<template>
+  <div class="min-h-[85vh] bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <!-- Header Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div class="flex flex-col items-center justify-between mb-6">
+          <h1 class="text-2xl md:text-4xl font-semibold text-gray-900 flex items-center gap-3">
+            <svg
+                class="w-8 h-8 text-yellow-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+              <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+            Buy Cover
+          </h1>
+          <p class="text-gray-500 mt-2">Select a protocol to protect your assets</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex justify-center space-x-4 mb-8">
+          <button
+              v-for="category in categories"
+              :key="category"
+              @click="selectedCategory = category"
+              :class="[
+              'px-6 py-2 rounded-lg transition-colors',
+              selectedCategory === category
+                ? 'btn-primary bg-yellow-500 border border-yellow-500 text-white hover:bg-white hover:text-yellow-500'
+                : 'btn-secondary bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+            ]"
+          >
+            {{ category }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="grid grid-cols-4 gap-6">
+        <ProjectCard
+            v-for="project in filteredProjects"
+            :key="project.name"
+            :project="project"
+            @click="openPurchaseModal(project.name)"
+        />
+      </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <CoverPurchaseDialog
+        v-if="selectedProject"
+        :project="selectedProject"
+        :show="!!selectedProject"
+        :is-submitting="transactionStatus !== ''"
+        @close="handleClose"
+        @purchase="handlePurchase"
+    />
+
+    <!-- Transaction Status Modal -->
+    <TransactionStatus
+        :show="!!transactionStatus"
+        :status="transactionStatus"
+        :type="transactionType"
+        :tx-hash="currentTxHash"
+        :error="transactionError"
+        @close="resetTransaction"
+        @retry="retryTransaction"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { ethers } from 'ethers';
+import ProjectCard from '../components/CoverCard.vue';
+import CoverPurchaseDialog from '../components/CoverPurchaseDialog.vue';
+import TransactionStatus from '../components/TransactionStatus.vue';
+import { COVER_PROJECTS } from '../constants/projects';
+import { getContractAddress } from '../constants/contracts';
+import { useWeb3Store } from '../stores/web3Store';
+import coverABI from '../assets/abis/coverpurchaser.json';
+import erc20ABI from '../assets/abis/erc20.json';
+
+
+const categories = ['All', 'Slashing', 'Defi', 'Bridges'];
+const selectedCategory = ref('All');
+const selectedProject = ref(null);
+
+const filteredProjects = computed(() => {
+  const projectsArray = Object.entries(COVER_PROJECTS).map(([name, data]) => ({
+    name,
+    ...data
+  }));
+
+  if (selectedCategory.value === 'All') {
+    return projectsArray;
+  }
+  return projectsArray.filter(project => project.category === selectedCategory.value);
+});
+
+const openPurchaseModal = (projectName) => {
+  selectedProject.value = {
+    name: projectName,
+    ...COVER_PROJECTS[projectName]
+  };
+};
+
+// Transaction state
+const transactionStatus = ref('');
+const transactionType = ref('');
+const currentTxHash = ref('');
+const transactionError = ref('');
+const currentPurchaseParams = ref(null);
+
+const resetTransaction = () => {
+  transactionStatus.value = '';
+  transactionType.value = '';
+  currentTxHash.value = '';
+  transactionError.value = '';
+  currentPurchaseParams.value = null;
+};
+
+const handleClose = () => {
+  selectedProject.value = null;
+  resetTransaction();
+};
+const handlePurchase = async (purchaseParams) => {
+  try {
+    const { coverAmount, duration, premium } = purchaseParams;
+    console.log('params: ', coverAmount, duration, premium);
+
+    // Store params for retry functionality
+    currentPurchaseParams.value = purchaseParams;
+
+    // Calculate dates
+    const startDate = Math.floor(Date.now() / 1000);
+    const endDate = startDate + (duration * 24 * 60 * 60);
+
+    // Convert amounts to wei
+    const coverAmountWei = ethers.utils.parseEther(coverAmount.toString());
+    const premiumWei = ethers.utils.parseEther(premium.toString());
+    console.log('premium: ', premiumWei.toString());
+
+    const web3Store = useWeb3Store();
+    const signer = web3Store.provider.getSigner();
+
+    // Get contract instances
+    const coverContract = new ethers.Contract(
+        getContractAddress('COVER_PURCHASER', web3Store.chainId),
+        coverABI,
+        signer
+    );
+
+    const paymentToken = new ethers.Contract(
+        getContractAddress('BTC_TOKEN', web3Store.chainId),
+        erc20ABI,
+        signer
+    );
+
+    // Check and handle allowance
+    const currentAllowance = await paymentToken.allowance(
+        web3Store.account,
+        coverContract.address
+    );
+
+    transactionType.value = 'cover_purchase';
+
+    // First step: Token approval if needed
+    if (currentAllowance.lt(premiumWei)) {
+      try {
+        // Set approval pending status
+        transactionStatus.value = 'approval_pending';
+
+        const approveTx = await paymentToken.approve(
+            coverContract.address,
+            premiumWei
+        );
+        currentTxHash.value = approveTx.hash;
+
+        await approveTx.wait();
+        transactionStatus.value = 'approval_success';
+      } catch (error) {
+        console.error('Approval error:', error);
+        transactionStatus.value = 'approval_failed';
+        transactionError.value = error.code === 4001
+            ? 'Transaction rejected by user'
+            : 'Failed to approve tokens';
+        throw error;
+      }
+    }
+
+    // Second step: Purchase cover
+    try {
+      transactionStatus.value = 'pending';
+
+      const purchaseTx = await coverContract.purchaseCover(
+          selectedProject.value.name,
+          startDate,
+          endDate,
+          coverAmountWei,
+          premiumWei
+      );
+
+      currentTxHash.value = purchaseTx.hash;
+      await purchaseTx.wait();
+
+      transactionStatus.value = 'success';
+
+    } catch (error) {
+      console.error('Purchase error:', error);
+      transactionStatus.value = 'failed';
+      transactionError.value = error.code === 4001
+          ? 'Transaction rejected by user'
+          : error.code === -32603
+              ? 'Insufficient balance or internal error'
+              : 'Transaction failed. Please try again';
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('Cover purchase process error:', error);
+  }
+};
+
+const retryTransaction = async () => {
+  if (currentPurchaseParams.value) {
+    await handlePurchase(currentPurchaseParams.value);
+  }
+};
+</script>
