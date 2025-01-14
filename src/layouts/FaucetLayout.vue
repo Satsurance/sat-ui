@@ -51,7 +51,7 @@
                 <span class="text-yellow-600 font-medium">4</span>
               </div>
               <div>
-                <p class="text-gray-700">Go and test Satsurance functionality!</p>
+                <p class="text-gray-700 italic "><strong>Go and test Satsurance functionality!</strong></p>
               </div>
             </div>
           </div>
