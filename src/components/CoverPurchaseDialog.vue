@@ -151,12 +151,12 @@
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
                     :disabled="isSubmitting || !web3Store.isConnected"
                 />
-                <div class="flex justify-between px-1 text-xs text-gray-500">
-                  <span>30d</span>
-                  <span>90d</span>
-                  <span>180d</span>
-                  <span>270d</span>
-                  <span>360d</span>
+                <div class="relative h-4 text-xs text-gray-500">
+                  <span class="absolute left-0 -translate-x-1/2" style="left: 2%">30d</span>
+                  <span class="absolute -translate-x-1/2" style="left: 19.5%">90d</span>
+                  <span class="absolute -translate-x-1/2" style="left: 46%">180d</span>
+                  <span class="absolute -translate-x-1/2" style="left: 72.72%">270d</span>
+                  <span class="absolute -translate-x-1/2" style="left: 97%">360d</span>
                 </div>
               </div>
             </div>
