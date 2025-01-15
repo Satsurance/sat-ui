@@ -41,7 +41,7 @@
         </div>
 
         <div v-if="isActive" class="flex justify-between text-sm">
-          <span class="text-gray-500">Time Remaining:</span>
+          <span class="text-gray-500">Time Left:</span>
           <span
               :class="{'text-red-500': isExpiringSoon, 'text-green-600': !isExpiringSoon}"
               class="font-medium"
@@ -84,11 +84,11 @@ const timeRemaining = computed(() => {
   if (!isActive.value) return '';
 
   const diff = props.cover.endDate - Date.now();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
   if (days > 1) {
-    return `${days} days`;
+    return `${days} days ${hours} hours`;
   }
   return `${hours} hours`;
 });

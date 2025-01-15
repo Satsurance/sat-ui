@@ -87,7 +87,7 @@
 
             <!-- Time Remaining -->
             <div v-if="isActive">
-              <label class="block text-base text-gray-500 mb-2">Time Remaining</label>
+              <label class="block text-base text-gray-500 mb-2">Time Left</label>
               <div class="p-3 bg-gray-50 rounded-lg">
                 <span
                     class="text-base font-medium"
@@ -161,11 +161,11 @@ const timeRemaining = computed(() => {
   if (!isActive.value) return '';
 
   const diff = props.cover.endDate - Date.now();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
   if (days > 1) {
-    return `${days} days`;
+    return `${days} days ${hours} hours`;
   }
   return `${hours} hours`;
 });
