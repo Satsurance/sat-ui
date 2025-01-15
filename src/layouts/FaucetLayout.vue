@@ -27,7 +27,7 @@
                 <span class="text-yellow-600 font-medium">1</span>
               </div>
               <div>
-                <p class="text-gray-700">First, follow <a href="https://support.metamask.io/configure/networks/how-to-add-a-custom-network-rpc/#adding-a-network-manually" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">this instruction</a> to add a custom rpc to your metamask wallet. Use <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc params</a>.</p>
+                <p class="text-gray-700">Follow <a href="https://support.metamask.io/configure/networks/how-to-add-a-custom-network-rpc/#adding-a-network-manually" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">this instruction</a> to add a custom rpc to your metamask wallet. Use <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc params</a>.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -35,7 +35,7 @@
                 <span class="text-yellow-600 font-medium">2</span>
               </div>
               <div>
-                <p class="text-gray-700">Second, visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees.</p>
+                <p class="text-gray-700">Visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
