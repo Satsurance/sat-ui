@@ -107,17 +107,6 @@
         :is-open="!!selectedCover"
         @close="closeCoverDetails"
     />
-
-    <!-- Transaction Status Modal -->
-    <TransactionStatus
-        :show="!!transactionStatus"
-        :status="transactionStatus"
-        :type="transactionType"
-        :tx-hash="currentTxHash"
-        :error="transactionError"
-        @close="resetTransaction"
-        token-ticker="BTC"
-    />
   </div>
 </template>
 
@@ -127,7 +116,6 @@ import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress } from '../constants/contracts.js';
 import coverABI from '../assets/abis/coverpurchaser.json';
-import TransactionStatus from '../components/TransactionStatus.vue';
 import UserCoverCard from '../components/UserCoverCard.vue';
 import UserCoverDetails from '../components/UserCoverDetails.vue';
 import { COVER_PROJECTS } from '../constants/projects';
@@ -142,12 +130,6 @@ const error = ref(null);
 const selectedCover = ref(null);
 const projectsInfo = COVER_PROJECTS;
 
-// Transaction state
-const transactionStatus = ref('');
-const transactionType = ref('');
-const currentTxHash = ref('');
-const transactionError = ref('');
-
 // Computed Properties
 const emptyStateMessage = computed(() => {
   if (!userCovers.value.length) {
@@ -158,14 +140,6 @@ const emptyStateMessage = computed(() => {
   }
   return '';
 });
-
-// Reset transaction state
-const resetTransaction = () => {
-  transactionStatus.value = '';
-  transactionType.value = '';
-  currentTxHash.value = '';
-  transactionError.value = '';
-};
 
 // Load user covers from smart contract
 const loadUserCovers = async () => {
