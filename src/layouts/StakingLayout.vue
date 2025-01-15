@@ -478,6 +478,7 @@ const handleStakeProcess = async (amountInWei) => {
 
 const stakeFunds = async () => {
   try {
+    resetTransaction()
     if (!toStakeAmount.value || toStakeAmount.value < 0.01) {
       transactionError.value = "Please enter a valid amount to stake";
       return;
@@ -542,6 +543,7 @@ const calculateStakingTime = (startTime, minTimeStake) => {
 // Unstake position
 const unstakePosition = async () => {
   try {
+    resetTransaction()
     const signer = web3Store.provider.getSigner();
     const insurancePool = new ethers.Contract(
         getContractAddress("INSURANCE_POOL", web3Store.chainId),

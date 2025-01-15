@@ -684,6 +684,7 @@ const retryTransaction = () => {
 // Staking functionality
 const handleStakeProcess = async (amountInWei) => {
   try {
+    resetTransaction()
     const signer = web3Store.provider.getSigner();
     const claimer = new ethers.Contract(
       getContractAddress("CLAIMER", web3Store.chainId),
