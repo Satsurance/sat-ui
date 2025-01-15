@@ -233,6 +233,8 @@ const handlePurchase = async (purchaseParams) => {
       await purchaseTx.wait();
       secondTxStatus.value = 'success';
 
+      setTimeout(handleClose, 2000);
+
     } catch (error) {
       console.error('Purchase error:', error);
       secondTxStatus.value = 'failed';
