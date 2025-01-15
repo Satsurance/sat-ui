@@ -20,18 +20,12 @@
               getStepStatusClasses(step.status)
             ]"
           >
-            <template v-if="step.status !== 'pending'">
               <template v-if="step.icon">
                 <component :is="step.icon" class="w-4 h-4" />
               </template>
               <template v-else>
                 {{ index + 1 }}
               </template>
-            </template>
-            <div
-                v-else
-                class="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"
-            />
           </div>
 
           <!-- Step Content -->

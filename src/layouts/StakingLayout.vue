@@ -262,7 +262,7 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!firstTxStatus"
+        :show="!!(firstTxStatus || secondTxStatus)"
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
@@ -427,11 +427,10 @@ const handleStakeProcess = async (amountInWei) => {
         web3Store.account,
         insurancePool.address
     );
-
+    transactionType.value = "stake";
     // Handle approval if needed
     if (currentAllowance.lt(amountInWei)) {
-      transactionType.value = "stake";
-      firstTxStatus.value = "approval_pending";
+      firstTxStatus.value = "pending";
 
       try {
         // Use the overrides parameter to ensure consistent behavior
