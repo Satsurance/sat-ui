@@ -330,69 +330,109 @@
             <form @submit.prevent="handleSubmitClaim" class="space-y-6">
               <div>
                 <label
-                  for="description"
-                  class="block mb-2 text-sm font-medium text-gray-900"
+                    for="description"
+                    class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Incident description
                 </label>
                 <textarea
-                  id="description"
-                  v-model="submitFormData.description"
-                  rows="4"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
-                  placeholder="Please describe the incident in detail..."
-                  required
+                    id="description"
+                    v-model="submitFormData.description"
+                    rows="4"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                    placeholder="Please describe the incident in detail..."
+                    required
                 ></textarea>
               </div>
 
               <div>
                 <label
-                  for="amount"
-                  class="block mb-2 text-sm font-medium text-gray-900"
+                    for="cover"
+                    class="block mb-2 text-sm font-medium text-gray-900"
                 >
-                  Claim amount (BTC)
+                  Select Cover
                 </label>
-                <input
-                  type="number"
-                  id="amount"
-                  v-model="submitFormData.amount"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
-                  placeholder="0.1"
-                  step="0.00000001"
-                  min="0"
-                  required
-                />
+                <select
+                    id="cover"
+                    v-model="submitFormData.selectedCover"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                    required
+                >
+                  <option value="">Select a cover</option>
+                  <option
+                      v-for="cover in userCovers"
+                      :key="`${cover.protocol}-${cover.startDate}`"
+                      :value="cover"
+                      :class="isCoverExpired(cover) ? 'text-gray-500' : 'text-gray-900'"
+                  >
+                    {{ cover.protocol }} - {{ cover.coverAmount }} BTC
+                    (Valid: {{ formatDate(cover.startDate) }} - {{ formatDate(cover.endDate) }})
+                    {{ isCoverExpired(cover) ? '(EXPIRED)' : '' }}
+                  </option>
+                </select>
+                <p
+                    v-if="submitFormData.selectedCover && isCoverExpired(submitFormData.selectedCover)"
+                    class="mt-1 text-yellow-600 text-sm"
+                >
+                  Warning: This cover has expired
+                </p>
               </div>
 
               <div>
                 <label
-                  for="receiver"
-                  class="block mb-2 text-sm font-medium text-gray-900"
+                    for="amount"
+                    class="block mb-2 text-sm font-medium text-gray-900"
+                >
+                  Claim amount (BTC)
+                </label>
+                <input
+                    type="number"
+                    id="amount"
+                    v-model="submitFormData.amount"
+                    :max="submitFormData.selectedCover ? submitFormData.selectedCover.coverAmount : 0"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                    placeholder="0.1"
+                    step="0.00000001"
+                    min="0"
+                    required
+                />
+                <p
+                    v-if="submitFormData.selectedCover && submitFormData.amount > submitFormData.selectedCover.coverAmount"
+                    class="mt-1 text-red-600 text-sm"
+                >
+                  Maximum available: {{ submitFormData.selectedCover.coverAmount }} BTC
+                </p>
+              </div>
+
+              <div>
+                <label
+                    for="receiver"
+                    class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Receiver address
                 </label>
                 <input
-                  type="text"
-                  id="receiver"
-                  v-model="submitFormData.receiver"
-                  @input="validateAddress"
-                  :class="[
-                    'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
-                    addressError
-                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                      : isValidAddress
-                      ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
-                      : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500',
-                  ]"
-                  placeholder="Enter address to receive the claim"
-                  required
+                    type="text"
+                    id="receiver"
+                    v-model="submitFormData.receiver"
+                    @input="validateAddress"
+                    :class="[
+        'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
+        addressError
+          ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+          : isValidAddress
+          ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
+          : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500',
+      ]"
+                    placeholder="Enter address to receive the claim"
+                    required
                 />
                 <p v-if="addressError" class="mt-1 text-sm text-red-600">
                   {{ addressError }}
                 </p>
                 <p
-                  v-else-if="isValidAddress"
-                  class="mt-1 text-sm text-green-600"
+                    v-else-if="isValidAddress"
+                    class="mt-1 text-sm text-green-600"
                 >
                   Valid Ethereum address
                 </p>
@@ -400,20 +440,22 @@
 
               <div class="flex justify-end pt-4">
                 <button
-                  type="submit"
-                  :disabled="
-                    isSubmitting ||
-                    (!!submitFormData.receiver &&
-                      (!isValidAddress || !!addressError))
-                  "
-                  :class="[
-                    'w-full py-3 rounded-lg transition-colors duration-300',
-                    isSubmitting ||
-                    (!!submitFormData.receiver &&
-                      (!isValidAddress || !!addressError))
-                      ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
-                      : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white',
-                  ]"
+                    type="submit"
+                    :disabled="
+        isSubmitting ||
+        (!!submitFormData.receiver &&
+          (!isValidAddress || !!addressError)) ||
+        !isValidAmount
+      "
+                    :class="[
+        'w-full py-3 rounded-lg transition-colors duration-300',
+        isSubmitting ||
+        (!!submitFormData.receiver &&
+          (!isValidAddress || !!addressError)) ||
+        !isValidAmount
+          ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
+          : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white',
+      ]"
                 >
                   {{ isSubmitting ? "Submitting..." : "Submit Claim" }}
                 </button>
@@ -455,8 +497,10 @@ import { getContractAddress } from "../constants/contracts.js";
 import { useWeb3Store } from "../stores/web3Store";
 import claimerABI from "../assets/abis/claimer.json";
 import erc20ABI from "../assets/abis/erc20.json";
+import coverABI from '../assets/abis/coverpurchaser.json';
 import ClaimDetailsDialog from "../components/ClaimDetailsDialog.vue";
 import TransactionStatus from "../components/TransactionStatus.vue";
+import { COVER_PROJECTS } from '../constants/projects';
 
 // Store and contract setup
 const web3Store = useWeb3Store();
@@ -487,6 +531,7 @@ const itemsPerPage = ref(5);
 const totalClaims = ref(0);
 const isLoadingClaims = ref(false);
 const currentClaimError = ref('');
+const userCovers = ref([]);
 
 // Add computed for total pages
 const totalPages = computed(() =>
@@ -502,6 +547,7 @@ const submitFormData = reactive({
   description: "",
   amount: "",
   receiver: "",
+  selectedCover: null
 });
 
 const transactionSteps = computed(() => {
@@ -571,6 +617,7 @@ const transactionSteps = computed(() => {
 // Dialog management
 const openSubmitClaimDialog = () => {
   isSubmitDialogOpen.value = true;
+  loadUserCovers();
 };
 
 const closeSubmitDialog = () => {
@@ -582,6 +629,7 @@ const resetSubmitForm = () => {
   submitFormData.description = "";
   submitFormData.amount = "";
   submitFormData.receiver = "";
+  submitFormData.selectedCover = null;
   isValidAddress.value = false;
   addressError.value = "";
 };
@@ -614,6 +662,43 @@ const validateAddress = () => {
   }
 };
 
+const isCoverExpired = (cover) => {
+  return cover.endDate < Date.now();
+};
+
+
+const isValidAmount = computed(() => {
+  if (!submitFormData.amount || !submitFormData.selectedCover) return false;
+  return parseFloat(submitFormData.amount) <= parseFloat(submitFormData.selectedCover.coverAmount);
+});
+
+const loadUserCovers = async () => {
+  try {
+    const coverContract = new ethers.Contract(
+        getContractAddress('COVER_PURCHASER', web3Store.chainId),
+        coverABI,
+        web3Store.provider
+    );
+
+    const userCoversCount = (await coverContract.getUserCoversCount(web3Store.account)).toNumber();
+    let coversPromise = [];
+    for(let i = 0; i < userCoversCount; i++) {
+      coversPromise.push(coverContract.covers(web3Store.account, i))
+    }
+    const covers = await Promise.all(coversPromise);
+
+    userCovers.value = covers.map(cover => ({
+      user: cover.user,
+      protocol: cover.protocol,
+      startDate: parseInt(cover.startDate) * 1000,
+      endDate: parseInt(cover.endDate) * 1000,
+      coverAmount: ethers.utils.formatEther(cover.coverAmount)
+    }));
+  } catch (e) {
+    console.error('Error loading covers:', e);
+  }
+};
+
 const handleSubmitClaim = async () => {
   try {
     if (!isValidAddress.value) {
@@ -624,36 +709,46 @@ const handleSubmitClaim = async () => {
     transactionType.value = "submit_claim";
     firstTxStatus.value = "pending";
 
+    // Create the new format JSON
+    const claimData = {
+      version: 1,
+      cover: {
+        protocol: submitFormData.selectedCover.protocol,
+        startDate: submitFormData.selectedCover.startDate,
+        endDate: submitFormData.selectedCover.endDate,
+        amount: submitFormData.selectedCover.coverAmount
+      },
+      description: submitFormData.description
+    };
+
     const signer = web3Store.provider.getSigner();
     const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      signer
+        getContractAddress("CLAIMER", web3Store.chainId),
+        claimerABI,
+        signer
     );
 
     const tx = await claimer.createClaim(
-      submitFormData.receiver,
-      submitFormData.description,
-      ethers.utils.parseEther(submitFormData.amount.toString())
+        submitFormData.receiver,
+        JSON.stringify(claimData), // Store the JSON string
+        ethers.utils.parseEther(submitFormData.amount.toString())
     );
     currentTxHash.value = tx.hash;
 
     await tx.wait();
     firstTxStatus.value = "success";
 
-    // Reload claims and close dialog
     await loadClaimsState();
     closeSubmitDialog();
 
-    // Auto-close transaction status after delay
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error submitting claim:", error);
     firstTxStatus.value = "failed";
     transactionError.value =
-      error.code === 4001
-        ? "Transaction rejected by user"
-        : "Failed to submit claim";
+        error.code === 4001
+            ? "Transaction rejected by user"
+            : "Failed to submit claim";
   } finally {
     isSubmitting.value = false;
   }
@@ -845,6 +940,26 @@ const unstakeSursTokens = async () => {
   }
 };
 
+const parseClaimDescription = (rawDescription) => {
+  try {
+    const parsedData = JSON.parse(rawDescription);
+    // Validate the expected structure
+    if (parsedData.version === 1 && parsedData.cover && parsedData.description) {
+      return {
+        description: parsedData.description,
+        cover: parsedData.cover
+      };
+    }
+  } catch (e) {
+    // If parsing fails, treat as old format
+  }
+
+  // Return original description for backward compatibility
+  return {
+    description: rawDescription
+  };
+};
+
 const loadClaimsTable = async () => {
   const claimer = new ethers.Contract(
       getContractAddress("CLAIMER", web3Store.chainId),
@@ -853,24 +968,28 @@ const loadClaimsTable = async () => {
   );
 
   const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
-  const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value) ;
+  const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value);
 
-  // Make multicall in promise
   let promises = [];
-  for (let i = endIndex; i > startIndex && i >= 0; i--)  {
+  for (let i = endIndex; i > startIndex && i >= 0; i--) {
     promises.push(claimer.claims(i - 1));
   }
   const retClaims = await Promise.all(promises);
 
   claims.value = [];
   let orderCounter = 0;
-  for (let i = endIndex; i > startIndex && i >= 0; i--)  {
+  for (let i = endIndex; i > startIndex && i >= 0; i--) {
     const claim = retClaims[orderCounter];
+
+    // Parse the description field
+    const parsedDescription = parseClaimDescription(claim.description);
+
     const newClaim = {
       id: i - 1,
       date: new Date(claim.startTime * 1000),
       amount: claim.amount,
-      description: claim.description,
+      description: parsedDescription.description,
+      ...(parsedDescription.cover && { cover: parsedDescription.cover }), // Only include cover if it exists
       receiver: claim.receiver,
       proposer: claim.proposer,
       forVotes: claim.forVotes,
@@ -1066,10 +1185,13 @@ watch(
   async (values) => {
     if (values[0]) {
       await loadClaimsState();
+      await loadUserCovers();
     }
   }
 );
 
 // Initial load if wallet is connected
-if (web3Store.isConnected) loadClaimsState();
+if (web3Store.isConnected) {
+  loadClaimsState();
+}
 </script>
