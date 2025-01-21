@@ -547,7 +547,7 @@ const submitFormData = reactive({
   description: "",
   amount: "",
   receiver: "",
-  selectedCover: null
+  selectedCover: ""
 });
 
 const transactionSteps = computed(() => {
@@ -629,7 +629,7 @@ const resetSubmitForm = () => {
   submitFormData.description = "";
   submitFormData.amount = "";
   submitFormData.receiver = "";
-  submitFormData.selectedCover = null;
+  submitFormData.selectedCover = "";
   isValidAddress.value = false;
   addressError.value = "";
 };
