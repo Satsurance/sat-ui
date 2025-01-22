@@ -3,9 +3,9 @@
   <div class="min-h-[85vh] bg-gray-50">
     <div class="max-w-6xl mx-auto px-4 py-8">
       <!-- Main Container -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <!-- Header with Your Overview Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
           <!-- Left: Title and Description -->
           <div class="flex flex-col justify-center">
             <h1 class="text-2xl md:text-4xl font-semibold text-gray-900 flex items-center gap-3 mb-2">
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-4 mb-8">
+        <div class="flex flex-wrap gap-4">
           <button
               @click="openNewPositionDialog"
               class="flex-1 md:flex-none inline-flex items-center justify-center btn-primary px-6 py-3 rounded-lg"
@@ -67,7 +67,10 @@
             Claim Rewards
           </button>
         </div>
+      </div>
 
+        <!-- Table Section with added margin -->
+        <div class="mt-8">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
           <div class="p-4 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-900">Active Positions</h2>
@@ -142,9 +145,10 @@
               </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </div>
-      </div>
+
     </div>
 
     <!-- New Position Dialog -->
