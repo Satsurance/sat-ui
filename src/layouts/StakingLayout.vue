@@ -186,7 +186,6 @@ const positions = ref([]);
 const totalStakedAmount = ref(0);
 const earnedRewards = ref(0);
 const poolAPR = ref(0);
-const baseAPR = ref(5); // Base APR rate
 const insurancePool = ref(null);
 const isNewPositionDialogOpen = ref(false);
 
@@ -260,7 +259,7 @@ const loadPositionState = async () => {
     earnedRewards.value = ethers.utils.formatEther(earned);
 
     if (totalAssetsStakedRaw != 0) {
-      poolAPR.value = ((Number((BigInt(totalAssetsStakedRaw) + BigInt(rewardRate) * BigInt(60 * 60 * 24 * 365)) * 10000n / BigInt(totalAssetsStakedRaw)) / 10000 - 1) * 100).toFixed(2);
+      poolAPR.value = ((Number((BigInt(totalAssetsStakedRaw) + BigInt(rewardRate) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(totalAssetsStakedRaw)) / 10000 - 1) * 100).toFixed(2);
     }
 
     let processedPositions = [];
