@@ -34,7 +34,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="text-sm text-gray-600 mb-1">Your Total Stake</div>
-                <div class="text-xl font-semibold">{{ totalStakedAmount }} BTC</div>
+                <div class="text-xl font-semibold">{{ userTotalStakedAmount }} BTC</div>
               </div>
               <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="text-sm text-gray-600 mb-1">Pool TVL</div>
@@ -184,6 +184,7 @@ import { formatDate } from "../utils.js";
 // State
 const positions = ref([]);
 const totalStakedAmount = ref(0);
+const userTotalStakedAmount = ref(0);
 const earnedRewards = ref(0);
 const poolAPR = ref(0);
 const insurancePool = ref(null);
@@ -242,8 +243,9 @@ const loadPositionState = async () => {
 
     const positionsNumber = (await insurancePool.value.positionCounter(web3Store.account)).toNumber();
 
-    const [totalAssetsStakedRaw, totalSharesAmount, rewardRate, earned, ...userPositions] = await Promise.all([
+    const [totalAssetsStakedRaw, userTotalShares, totalSharesAmount, rewardRate, earned, ...userPositions] = await Promise.all([
       insurancePool.value.totalAssetsStaked(),
+      insurancePool.value.userTotalShares(web3Store.account),
       insurancePool.value.totalPoolShares(),
       insurancePool.value.rewardRate(),
       insurancePool.value.earned(web3Store.account),
@@ -257,6 +259,7 @@ const loadPositionState = async () => {
         ethers.utils.formatEther(totalAssetsStakedRaw)
     ).toFixed(2);
     earnedRewards.value = ethers.utils.formatEther(earned);
+    userTotalStakedAmount.value = Number(ethers.utils.formatEther((BigInt(userTotalShares) * BigInt(totalAssetsStakedRaw))/BigInt(totalSharesAmount))).toFixed(2);
 
     if (totalAssetsStakedRaw != 0) {
       poolAPR.value = ((Number((BigInt(totalAssetsStakedRaw) + BigInt(rewardRate) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(totalAssetsStakedRaw)) / 10000 - 1) * 100).toFixed(2);
