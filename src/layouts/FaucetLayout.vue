@@ -267,9 +267,9 @@ const faucetDetails = computed(() => {
     }
   } else {
     return {
-      networkName: "Localhost with Bitlayer",
-      rpcPage: "https://docs.inkonchain.com/tools/rpc#1-gelato",
-      gasPage: "https://inkonchain.com/faucet",
+      networkName: "Wallet not connected",
+      rpcPage: "https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet",
+      gasPage: "https://www.bitlayer.org/faucet",
     }
   }
 });
