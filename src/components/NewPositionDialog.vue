@@ -167,6 +167,7 @@
       :steps="transactionSteps"
       :tx-hash="currentTxHash"
       :error="transactionError"
+      :block-explorer="SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0]"
       @close="resetTransaction"
       @retry="retryTransaction"
   />
@@ -176,7 +177,7 @@
 import { ref, computed } from 'vue';
 import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
-import { getContractAddress } from '../constants/contracts.js';
+import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts.js';
 import erc20ABI from '../assets/abis/erc20.json';
 import { formatDate } from '../utils.js';
 import TransactionStatus from '../components/TransactionStatus.vue';

@@ -27,7 +27,7 @@
                 <span class="text-yellow-600 font-medium">1</span>
               </div>
               <div>
-                <p class="text-gray-700">Follow <a href="https://support.metamask.io/configure/networks/how-to-add-a-custom-network-rpc/#adding-a-network-manually" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">this instruction</a> to add a custom rpc to your metamask wallet. Use <a href="https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">Bitlayer's testnet rpc params</a>.</p>
+                <p class="text-gray-700">Follow <a href="https://support.metamask.io/configure/networks/how-to-add-a-custom-network-rpc/#adding-a-network-manually" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">this instruction</a> to add a custom rpc to your metamask wallet. Use <a :href="faucetDetails.rpcPage" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">testnet rpc params</a>.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -35,7 +35,7 @@
                 <span class="text-yellow-600 font-medium">2</span>
               </div>
               <div>
-                <p class="text-gray-700">Visit <a href="https://www.bitlayer.org/faucet" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">bitlayer.org/faucet</a> to get gas tokens for paying transaction fees.</p>
+                <p class="text-gray-700">Visit <a :href="faucetDetails.gasPage" target="_blank" class="text-yellow-600 hover:text-yellow-700 underline">faucet</a> to get gas tokens for paying transaction fees.</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -96,7 +96,7 @@
                 </svg>
                 <span>Network</span>
               </div>
-              <div class="text-2xl font-medium">Bitlayer Testnet</div>
+              <div class="text-2xl font-medium">{{ faucetDetails.networkName }}</div>
             </div>
           </div>
         </div>
@@ -201,13 +201,12 @@
     <!-- Transaction Status Modal -->
     <TransactionStatus
         :show="!!transactionStatus"
-        :status="transactionStatus"
-        :type="transactionType"
+        :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
+        :block-explorer="SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0]"
         @close="resetTransaction"
         @retry="retryTransaction"
-        :token-ticker="currentTokenType"
     />
   </div>
 </template>
@@ -216,7 +215,7 @@
 import { ref, computed, watch } from 'vue';
 import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
-import { getContractAddress } from '../constants/contracts.js';
+import {SUPPORTED_NETWORKS, getContractAddress, NETWORKS} from '../constants/contracts.js';
 import erc20ABI from '../assets/abis/erc20.json';
 import TransactionStatus from '../components/TransactionStatus.vue';
 
@@ -239,6 +238,41 @@ const transactionType = ref('');
 const currentTxHash = ref('');
 const transactionError = ref('');
 
+const transactionSteps = computed(() => {
+  if (transactionType.value === 'faucet_request') {
+    return [
+      {
+        id: 'faucet',
+        title: `Request ${currentTokenType.value}`,
+        description: `Receiving faucet token.`,
+        status: transactionStatus.value,
+        showNumber: false
+      }
+    ];
+  }
+  return [];
+});
+const faucetDetails = computed(() => {
+  if(web3Store.chainId === NETWORKS.BITLAYER_TESTNET) {
+    return {
+      networkName: "Bitlayer Testnet",
+      rpcPage: "https://docs.bitlayer.org/docs/Build/GettingStarted/QuickStart/#bitlayer-testnet",
+      gasPage: "https://www.bitlayer.org/faucet",
+    }
+  } else if(web3Store.chainId === NETWORKS.INK_TESTNET) {
+    return {
+      networkName: "Ink Sepolia",
+      rpcPage: "https://docs.inkonchain.com/tools/rpc#1-gelato",
+      gasPage: "https://inkonchain.com/faucet",
+    }
+  } else {
+    return {
+      networkName: "Localhost with Bitlayer",
+      rpcPage: "https://docs.inkonchain.com/tools/rpc#1-gelato",
+      gasPage: "https://inkonchain.com/faucet",
+    }
+  }
+});
 // Methods
 const loadBalances = async () => {
   try {
@@ -325,8 +359,9 @@ const requestTokens = async (tokenType, amount) => {
       },
       body: JSON.stringify({
         address: web3Store.account,
+        chainId: web3Store.chainId,
         amount,
-        tokenType
+        tokenType,
       })
     });
 

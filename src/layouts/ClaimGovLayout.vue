@@ -484,6 +484,7 @@
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
+        :block-explorer="SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0]"
         @close="resetTransaction"
         @retry="retryTransaction"
     />
@@ -493,7 +494,7 @@
 <script setup>
 import { ref, computed, watch, reactive } from "vue";
 import { ethers } from "ethers";
-import { getContractAddress } from "../constants/contracts.js";
+import {getContractAddress, SUPPORTED_NETWORKS} from "../constants/contracts.js";
 import { useWeb3Store } from "../stores/web3Store";
 import claimerABI from "../assets/abis/claimer.json";
 import erc20ABI from "../assets/abis/erc20.json";

@@ -82,10 +82,10 @@ const web3Store = useWeb3Store();
 const networkName = computed(() => {
   if (!web3Store.isConnected) return "Not connected";
   switch (web3Store.chainId) {
-    case 200901:
-      return "Bitlayer";
     case 200810:
       return "Bitlayer Testnet";
+    case 763373:
+      return "Ink Sepolia";
     case 31337:
       return "Local Hardhat";
     default:

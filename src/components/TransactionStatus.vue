@@ -75,7 +75,7 @@
       >
         <div class="text-gray-500 mb-1">Transaction Hash:</div>
         <a
-            :href="'https://testnet-scan.bitlayer.org/tx/' + txHash"
+            :href="blockExplorer + '/tx/' + txHash"
             target="_blank"
             class="text-blue-600 hover:text-blue-700"
         >
@@ -121,6 +121,7 @@ const props = defineProps({
         )
   },
   txHash: String,
+  blockExplorer: String,
   error: String,
 });
 

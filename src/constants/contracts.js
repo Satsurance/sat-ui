@@ -1,18 +1,60 @@
 // src/constants/contracts.js
 const NETWORKS = {
-    BITLAYER_MAINNET: 200901,
     BITLAYER_TESTNET: 200810,
+    INK_TESTNET: 763373,
     LOCALHOST: 31337
 }
 
+const SUPPORTED_NETWORKS =
+    {
+        [NETWORKS.INK_TESTNET]: {
+            chainId: NETWORKS.INK_TESTNET,
+            name: 'Ink Sepolia',
+            rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18,
+            },
+            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com/'],
+        },
+        [NETWORKS.BITLAYER_TESTNET]: {
+            chainId: NETWORKS.BITLAYER_TESTNET,
+            name: 'Bitlayer Testnet',
+            rpcUrls: ['https://testnet-rpc.bitlayer.org'],
+            nativeCurrency: {
+                name: 'BTC',
+                symbol: 'BTC',
+                decimals: 18,
+            },
+            blockExplorerUrls: ['https://testnet-scan.bitlayer.org'],
+        },
+
+        ...(import.meta.env.DEV ? [{
+            chainId: NETWORKS.LOCALHOST,
+            // Use bitlayer testnet id for test purposes
+            name: 'Localhost',
+            rpcUrls: ['http://localhost:8545'],
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18,
+            },
+            blockExplorerUrls: ['http://localhost:8545'],
+        }]: [])
+    };
+
+
 const CONTRACTS = {
-    // [NETWORKS.BITLAYER_MAINNET]: {
-    //     INSURANCE_POOL: '0x1234...5678',
-    //     SURS_TOKEN: '0xabcd...efgh',
-    //     BTC_TOKEN: '0x9876...5432',
-    //     TIMELOCK: '0xijkl...mnop',
-    //     GOVERNOR: '0xqrst...uvwx'
-    // },
+    [NETWORKS.INK_TESTNET]: {
+        INSURANCE_POOL: '0xDcf7abA5455190666AC39B87079051d138208A76',
+        SURS_TOKEN: '0xA4578E67AF84Afdcd466315bAb60EB93BF052ef5',
+        BTC_TOKEN: '0x15457083e65ee016C672dd8724b9A275C1DAC250',
+        TIMELOCK: '0x2e6fD8a4A18A9129d7b8e2581dA810866fD5Ae14',
+        GOVERNOR: '0x9AB040EEbD758da56d9c4Af41C061fA4E5349D20',
+        CLAIMER: '0x17980406Da3CB02A4Ea0876fA8864A378145B572',
+        COVER_PURCHASER: '0xc0A92fA2a634f84F6e294E2Fdd44aD4C5faD3b2B',
+    },
     [NETWORKS.BITLAYER_TESTNET]: {
         INSURANCE_POOL: '0x6F0ed23026e2D606079c838D6d30b1E936F51787',
         SURS_TOKEN: '0xF77757063afd7d8976A13A359EeDB2428c14A248',
@@ -46,4 +88,4 @@ export const getContractAddress = (contractName, networkId) => {
     return address
 }
 
-export { NETWORKS }
+export { NETWORKS, SUPPORTED_NETWORKS }

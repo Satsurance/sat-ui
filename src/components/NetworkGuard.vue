@@ -63,44 +63,10 @@
 <script setup>
 import { computed } from 'vue';
 import { useWeb3Store } from '../stores/web3Store';
-import { NETWORKS } from '../constants/contracts';
+import { NETWORKS, SUPPORTED_NETWORKS } from '../constants/contracts';
 
 const web3Store = useWeb3Store();
-
-const supportedNetworks = [
-  // {
-  //   chainId: NETWORKS.BITLAYER_MAINNET,
-  //   name: 'Bitlayer Mainnet',
-  //   rpcUrls: ['https://rpc.bitlayer.org','https://rpc.bitlayer-rpc.com'],
-  //   nativeCurrency: {
-  //     name: 'BTC',
-  //     symbol: 'BTC',
-  //     decimals: 18,
-  //   },
-  //   blockExplorerUrls: ['https://www.btrscan.com'],
-  // },
-  {
-    chainId: NETWORKS.BITLAYER_TESTNET,
-    name: 'Bitlayer Testnet',
-    rpcUrls: ['https://testnet-rpc.bitlayer.org'],
-    nativeCurrency: {
-      name: 'BTC',
-      symbol: 'BTC',
-      decimals: 18,
-    },
-    blockExplorerUrls: ['https://testnet-scan.bitlayer.org'],
-  },
-  ...(import.meta.env.DEV ? [{
-    chainId: NETWORKS.LOCALHOST,
-    name: 'Localhost',
-    rpcUrls: ['http://localhost:8545'],
-    nativeCurrency: {
-      name: 'ETH',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  }] : []),
-];
+const supportedNetworks = Object.values(SUPPORTED_NETWORKS);
 
 const isNetworkSupported = computed(() => {
   return Object.values(NETWORKS).includes(web3Store.chainId);
@@ -108,6 +74,7 @@ const isNetworkSupported = computed(() => {
 
 const switchNetwork = async (network) => {
   try {
+    console.log({ chainId: `0x${network.chainId.toString(16)}` });
     // Try switching to existing network
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
@@ -115,8 +82,18 @@ const switchNetwork = async (network) => {
     });
   } catch (error) {
     // If network doesn't exist, add it
-    if (error.code === 4902) {
+    if (error.code === 4902 || error.code === -32603) {
       try {
+        console.log({
+          method: 'wallet_addEthereumChain',
+              params: [{
+            chainId: `0x${network.chainId.toString(16)}`,
+            chainName: network.name,
+            nativeCurrency: network.nativeCurrency,
+            rpcUrls: network.rpcUrls,
+            blockExplorerUrls: network.blockExplorerUrls,
+          }],
+        });
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{

@@ -69,6 +69,7 @@
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
+        :block-explorer="SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0]"
         @close="resetTransaction"
         @retry="retryTransaction"
     />
@@ -82,7 +83,7 @@ import ProjectCard from '../components/CoverCard.vue';
 import CoverPurchaseDialog from '../components/CoverPurchaseDialog.vue';
 import TransactionStatus from '../components/TransactionStatus.vue';
 import { COVER_PROJECTS } from '../constants/projects';
-import { getContractAddress } from '../constants/contracts';
+import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts';
 import { useWeb3Store } from '../stores/web3Store';
 import coverABI from '../assets/abis/coverpurchaser.json';
 import erc20ABI from '../assets/abis/erc20.json';
@@ -99,6 +100,7 @@ const currentTxHash = ref('');
 const transactionError = ref('');
 const currentPurchaseParams = ref(null);
 
+const web3Store = useWeb3Store();
 const filteredProjects = computed(() => {
   const projectsArray = Object.entries(COVER_PROJECTS).map(([name, data]) => ({
     name,
@@ -170,7 +172,6 @@ const handlePurchase = async (purchaseParams) => {
     const coverAmountWei = ethers.utils.parseEther(coverAmount.toFixed(18));
     const premiumWei = ethers.utils.parseEther(premium.toFixed(18));
 
-    const web3Store = useWeb3Store();
     const signer = web3Store.provider.getSigner();
 
     // Get contract instances
