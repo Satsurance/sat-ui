@@ -205,7 +205,7 @@ if (web3Store.isConnected) {
 }
 
 watch(
-    () => [web3Store.isConnected, web3Store.account],
+    () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async (values) => {
       if (values[0]) {
         await loadUserCovers();

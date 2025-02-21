@@ -413,7 +413,7 @@ const resetTransaction = () => {
 
 // Watchers
 watch(
-    () => [web3Store.isConnected, web3Store.account],
+    () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async ([isConnected]) => {
       if (isConnected) {
         await loadBalances();

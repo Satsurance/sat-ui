@@ -1182,7 +1182,7 @@ const prevPage = () => {
 
 // Watch for wallet connection changes
 watch(
-  () => [web3Store.isConnected, web3Store.account],
+  () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
   async (values) => {
     if (values[0]) {
       await loadClaimsState();

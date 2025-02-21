@@ -401,7 +401,7 @@ if (web3Store.isConnected) {
 
 // Watch for web3 connection changes
 watch(
-    () => [web3Store.isConnected, web3Store.account],
+    () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async ([isConnected]) => {
       if (isConnected) {
         initializeContracts();
