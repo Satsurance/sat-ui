@@ -69,7 +69,7 @@
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
-        :block-explorer="SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0]"
+        :block-explorer="web3Store.chainId ? SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0] : ''"
         @close="resetTransaction"
         @retry="retryTransaction"
     />
