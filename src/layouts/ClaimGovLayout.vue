@@ -1079,9 +1079,12 @@ const formatAddress = (address) => {
 };
 
 const formatAmount = (amount) => {
-  return Number(ethers.utils.formatEther(amount.toString())).toFixed(2);
+  if (!amount) return "0.00";
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(ethers.utils.formatEther(amount.toString()));
 };
-
 // Claim details dialog management
 const openClaimDetails = (claim) => {
   selectedClaim.value = claim;
