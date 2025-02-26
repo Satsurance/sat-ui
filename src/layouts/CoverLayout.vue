@@ -33,8 +33,8 @@
           </div>
         </div>
 
-        <!-- Two Column Layout -->
-        <div class="grid md:grid-cols-2 gap-8">
+        <!-- Two Column Layout - Responsive for mobile -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <!-- Left Column - Form -->
           <div class="text-start space-y-6">
             <div v-if="!isSubmitted && !hasError">

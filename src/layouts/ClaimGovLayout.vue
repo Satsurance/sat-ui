@@ -136,7 +136,7 @@
 
       <!-- Claims Table -->
       <div
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-scroll"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto"
       >
         <table class="w-full text-sm text-gray-600 divide-y divide-gray-200">
           <thead>
@@ -298,7 +298,7 @@
         ></div>
         <div class="flex min-h-full items-center justify-center p-4">
           <div
-            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-4 sm:p-6 md:p-8 shadow-xl transition-all"
             @click.stop
           >
             <!-- Dialog Header -->

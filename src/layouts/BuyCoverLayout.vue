@@ -42,8 +42,8 @@
         </div>
       </div>
 
-      <!-- Projects Grid -->
-      <div class="grid grid-cols-4 gap-6">
+      <!-- Projects Grid - Responsive grid with different columns based on screen size -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         <ProjectCard
             v-for="project in filteredProjects"
             :key="project.name"

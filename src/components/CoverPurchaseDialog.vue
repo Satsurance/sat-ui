@@ -8,13 +8,13 @@
       <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"></div>
       <div class="flex min-h-full items-center justify-center p-4">
         <div
-            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-4 sm:p-6 md:p-8 shadow-xl transition-all"
             @click.stop
         >
           <!-- Modal Header -->
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
             <div class="flex items-center space-x-4">
-              <h3 class="text-2xl font-semibold text-gray-900">
+              <h3 class="text-xl sm:text-2xl font-semibold text-gray-900">
                 {{ project.name }} cover
               </h3>
             </div>
@@ -152,11 +152,11 @@
                     :disabled="isSubmitting || !web3Store.isConnected"
                 />
                 <div class="relative h-4 text-xs text-gray-500">
-                  <span class="absolute left-0 -translate-x-1/2" style="left: 2%">30d</span>
-                  <span class="absolute -translate-x-1/2" style="left: 19.5%">90d</span>
-                  <span class="absolute -translate-x-1/2" style="left: 46%">180d</span>
-                  <span class="absolute -translate-x-1/2" style="left: 72.72%">270d</span>
-                  <span class="absolute -translate-x-1/2" style="left: 97%">360d</span>
+                  <span class="absolute left-0 -translate-x-1/2 text-[9px] sm:text-xs" style="left: 2%">30d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 19.5%">90d</span>
+                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 46%">180d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 72.72%">270d</span>
+                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 97%">360d</span>
                 </div>
               </div>
             </div>

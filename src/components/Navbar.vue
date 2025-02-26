@@ -88,12 +88,12 @@
           </div>
         </div>
 
-        <div class="hidden lg:flex ml-auto w-[500px] flex items-center justify-end space-x-4">
+        <div class="hidden lg:flex ml-auto items-center justify-end space-x-4">
           <ConnectWallet />
         </div>
 
         <div
-            class="flex lg:hidden ml-auto w-[500px] items-center justify-end space-x-4"
+            class="flex lg:hidden ml-auto items-center justify-end space-x-4"
             @click="toggleMobileNav"
         >
           <div class="p-2 cursor-pointer">
@@ -120,7 +120,7 @@
   <nav
       v-if="isMobileNavOpen"
       ref="mobileNav"
-      class="fixed right-0 top-0 w-3/4 h-screen bg-white lg:hidden z-[999]"
+      class="fixed right-0 top-0 w-[85%] sm:w-3/4 h-screen bg-white lg:hidden z-[999] shadow-lg"
   >
     <div class="flex flex-col w-full h-full justify-evenly items-center">
       <div class="flex justify-between items-center">
@@ -164,11 +164,18 @@
               Buy Cover
             </router-link>
             <router-link
+                to="/cover_my"
+                class="block w-full text-gray-600 hover:text-yellow-500 py-3"
+                active-class="text-blue-600"
+            >
+              My Covers
+            </router-link>
+            <router-link
                 to="/cover"
                 class="block w-full text-gray-600 hover:text-yellow-500 py-3"
                 active-class="text-blue-600"
             >
-              Get Cover
+              B2B Cover
             </router-link>
           </div>
         </div>

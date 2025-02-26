@@ -13,11 +13,11 @@
       </div>
 
       <!-- Logo -->
-      <div class="flex justify-center items-center py-6">
+      <div class="flex justify-center items-center py-4 sm:py-6">
         <img
             :src="projectInfo?.logo"
             :alt="`${projectInfo?.name || cover.protocol} logo`"
-            class="w-32 h-32 object-contain"
+            class="w-24 h-24 sm:w-28 md:w-32 sm:h-28 md:h-32 object-contain"
         />
       </div>
 
