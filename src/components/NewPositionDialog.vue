@@ -1,18 +1,25 @@
-# src/components/NewPositionDialog.vue
 <template>
   <Transition name="fade">
     <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
       <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"></div>
       <div class="flex min-h-full items-center justify-center p-4">
         <div
-            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+            class="relative w-full max-w-xl transform overflow-hidden rounded-xl bg-white p-8 shadow-lg transition-all border border-gray-100"
             @click.stop
         >
           <!-- Dialog Header -->
-          <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-semibold text-gray-900">Create New Position</h3>
-            <button @click="$emit('close')" class="rounded-full p-2 hover:bg-gray-100 transition-colors">
-              <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Create New Position
+            </h3>
+            <button
+                @click="$emit('close')"
+                class="rounded-full p-2 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
+            >
+              <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -20,8 +27,9 @@
 
           <!-- Position Form -->
           <form @submit.prevent="handleCreatePosition" class="space-y-6">
+            <!-- Amount Input -->
             <div>
-              <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">
+              <label for="amount" class="block mb-2 text-sm font-semibold text-gray-900 flex items-center gap-2">
                 BTC Amount to Stake
               </label>
               <div class="relative">
@@ -29,20 +37,24 @@
                     type="number"
                     id="amount"
                     v-model="toStakeAmount"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5 pr-16"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-3 pr-16 transition-colors duration-200"
                     placeholder="0.1"
                     step="0.00000001"
                     min="0"
                     required
                 />
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span class="text-gray-500">BTC</span>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                  <span class="text-gray-500 font-medium">BTC</span>
                 </div>
               </div>
+              <p class="mt-1 text-sm text-gray-500">Minimum stake amount: 0.01 BTC</p>
             </div>
 
+            <!-- Lock Period Selection -->
             <div>
-              <label class="block mb-2 text-sm font-medium text-gray-900">Lock Period</label>
+              <label class="block mb-3 text-sm font-semibold text-gray-900 flex items-center gap-2">
+                Lock Period
+              </label>
               <div class="grid grid-cols-2 gap-3">
                 <!-- Instant (0 days) -->
                 <div>
@@ -56,7 +68,7 @@
                   />
                   <label
                       for="lock0"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50"
+                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
                   >
                     <span class="text-lg font-medium">Instant</span>
                     <span class="text-sm text-gray-500">Test Mode</span>
@@ -75,7 +87,7 @@
                   />
                   <label
                       for="lock90"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50"
+                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
                   >
                     <span class="text-lg font-medium">90 Days</span>
                     <span class="text-sm text-gray-500">Basic</span>
@@ -94,7 +106,7 @@
                   />
                   <label
                       for="lock180"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50"
+                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
                   >
                     <span class="text-lg font-medium">180 Days</span>
                     <span class="text-sm text-gray-500">Enhanced</span>
@@ -113,7 +125,7 @@
                   />
                   <label
                       for="lock360"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50"
+                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
                   >
                     <span class="text-lg font-medium">360 Days</span>
                     <span class="text-sm text-gray-500">Maximum</span>
@@ -122,36 +134,61 @@
               </div>
             </div>
 
-            <!-- Staking Summary -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Position Summary</h4>
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Amount to Stake</span>
-                  <span class="font-medium">{{ toStakeAmount || '0' }} BTC</span>
+            <!-- Enhanced Staking Summary -->
+            <div class="bg-gradient-to-r from-gray-50 to-yellow-50 rounded-xl p-5 border border-yellow-100">
+              <h4 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Position Summary
+              </h4>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Amount to Stake
+                  </span>
+                  <span class="font-medium text-gray-900">{{ toStakeAmount || '0' }} BTC</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Lock Period</span>
-                  <span class="font-medium">{{ selectedLockPeriod || '0' }} Days</span>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Lock Period
+                  </span>
+                  <span class="font-medium text-gray-900">{{ selectedLockPeriod || '0' }} Days</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Unlock Date</span>
-                  <span class="font-medium">{{ selectedLockPeriod ? formatDate(new Date(Date.now() + selectedLockPeriod * 24 * 60 * 60 * 1000)) : 'Instant' }}</span>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Unlock Date
+                  </span>
+                  <span class="font-medium text-gray-900">{{ selectedLockPeriod ? formatDate(new Date(Date.now() + selectedLockPeriod * 24 * 60 * 60 * 1000)) : 'Instant' }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end pt-4">
+            <!-- Submit Button -->
+            <div class="pt-4">
               <button
                   type="submit"
                   :disabled="isSubmitting || !isValidAmount"
-                  class="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full py-4 px-4 rounded-lg font-medium shadow-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="[
                   isSubmitting || !isValidAmount
                     ? 'bg-gray-100 text-gray-400'
-                    : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                    : 'bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow'
                 ]"
               >
+                <svg v-if="isSubmitting" class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
                 {{ isSubmitting ? 'Creating Position...' : 'Create Position' }}
               </button>
             </div>
