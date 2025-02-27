@@ -2,7 +2,7 @@
   <div class="min-h-[85vh] bg-gray-50">
     <div class="max-w-6xl mx-auto px-4 py-8">
       <!-- Main Container -->
-      <div class="bg-white rounded-xl shadow p-6 mb-8 border border-gray-100 transition-all duration-300">
+      <div class="bg-white rounded-xl p-6 mb-8 border border-gray-100 transition-all duration-300">
         <!-- Header with Dashboard Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
           <!-- Left: Title and APR Display -->
@@ -17,7 +17,7 @@
               <p class="text-gray-500 text-lg">Stake your BTC to earn rewards while providing coverage</p>
             </div>
 
-            <!-- Enhanced APR Display -->
+            <!-- APR Display -->
             <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200 transform transition-all duration-300 hover:shadow-md">
               <div class="flex items-center gap-3 mb-3">
                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,8 +37,6 @@
             <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
               Pool Overview
             </h2>
-
-            <!-- Enhanced metric cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
               <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 hover:shadow-sm transition-all duration-300 flex flex-col">
                 <div class="text-sm text-gray-600 mb-1 flex items-center gap-2">
@@ -88,7 +86,7 @@
       </div>
 
       <!-- Positions Table Section -->
-      <div class="bg-white rounded-xl shadow p-0 border border-gray-100 transition-all duration-300">
+      <div class="bg-white rounded-xl p-0 border border-gray-100 transition-all duration-300">
         <div class="p-5 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
