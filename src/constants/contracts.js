@@ -2,11 +2,23 @@
 const NETWORKS = {
     BITLAYER_TESTNET: 200810,
     INK_TESTNET: 763373,
+    BOB_TESTNET: 808813,
     LOCALHOST: 31337
 }
 
 const SUPPORTED_NETWORKS =
     {
+        [NETWORKS.BOB_TESTNET]: {
+            chainId: NETWORKS.BOB_TESTNET,
+            name: 'BOB Sepolia',
+            rpcUrls: ['https://bob-sepolia.rpc.gobob.xyz'],
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18,
+            },
+            blockExplorerUrls: ['https://explorer.gobob.xyz/'],
+        },
         [NETWORKS.INK_TESTNET]: {
             chainId: NETWORKS.INK_TESTNET,
             name: 'Ink Sepolia',
@@ -46,6 +58,15 @@ const SUPPORTED_NETWORKS =
 
 
 const CONTRACTS = {
+    [NETWORKS.BOB_TESTNET]: {
+        INSURANCE_POOL: '0x9DC42e84c53518258e67275e93A8bCc58Fb41d41',
+        SURS_TOKEN: '0x9DC42e84c53518258e67275e93A8bCc58Fb41d41',
+        BTC_TOKEN: '0x1E4c8419bA7FA9A9A8c6d3E85158ff678e11d089',
+        TIMELOCK: '0x055e79994459236e65E17068E429D6a5578a8711',
+        GOVERNOR: '0x142D07E72c92def887eEC1c7D0E2F5765475827c',
+        CLAIMER: '0x70D232AC86d09a586Cee9e1524084F4313980745',
+        COVER_PURCHASER: '0xb3227beaC9e9E85003dC5c22591E3D50f0D48232',
+    },
     [NETWORKS.INK_TESTNET]: {
         INSURANCE_POOL: '0xDcf7abA5455190666AC39B87079051d138208A76',
         SURS_TOKEN: '0xA4578E67AF84Afdcd466315bAb60EB93BF052ef5',

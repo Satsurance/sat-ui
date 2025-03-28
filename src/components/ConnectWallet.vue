@@ -86,6 +86,8 @@ const networkName = computed(() => {
       return "Bitlayer Testnet";
     case 763373:
       return "Ink Sepolia";
+    case 808813:
+      return "BOB Sepolia";
     case 31337:
       return "Local Hardhat";
     default:
