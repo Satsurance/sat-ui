@@ -265,6 +265,12 @@ const faucetDetails = computed(() => {
       rpcPage: "https://docs.inkonchain.com/tools/rpc#1-gelato",
       gasPage: "https://inkonchain.com/faucet",
     }
+  } else if(web3Store.chainId === NETWORKS.BOB_TESTNET) {
+    return {
+      networkName: "BOB Sepolia",
+      rpcPage: "https://docs.gobob.xyz/learn/user-guides/networks#bob-sepolia-testnet",
+      gasPage: "https://console.optimism.io/faucet",
+    }
   } else {
     return {
       networkName: "Wallet not connected",
