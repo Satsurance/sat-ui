@@ -17,7 +17,7 @@ const SUPPORTED_NETWORKS =
                 symbol: 'ETH',
                 decimals: 18,
             },
-            blockExplorerUrls: ['https://explorer.gobob.xyz/'],
+            blockExplorerUrls: ['https://bob-sepolia.explorer.gobob.xyz'],
         },
         [NETWORKS.INK_TESTNET]: {
             chainId: NETWORKS.INK_TESTNET,
@@ -28,7 +28,7 @@ const SUPPORTED_NETWORKS =
                 symbol: 'ETH',
                 decimals: 18,
             },
-            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com/'],
+            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com'],
         },
         [NETWORKS.BITLAYER_TESTNET]: {
             chainId: NETWORKS.BITLAYER_TESTNET,
