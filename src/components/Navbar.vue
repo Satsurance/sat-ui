@@ -51,7 +51,7 @@
                       class="block px-4 py-2 text-gray-600 hover:text-yellow-500 hover:bg-gray-50"
                       active-class="text-blue-600"
                   >
-                    My Purchases
+                    Purchases
                   </router-link>
                   <router-link
                       to="/cover"
@@ -68,7 +68,7 @@
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
-              Underwrite Insurance
+              Underwrite
             </router-link>
             <router-link
                 to="/claims_gov"
@@ -168,7 +168,7 @@
                 class="block w-full text-gray-600 hover:text-yellow-500 py-3"
                 active-class="text-blue-600"
             >
-              My Purchases
+              Purchases
             </router-link>
             <router-link
                 to="/cover"
@@ -184,7 +184,7 @@
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >
-          Underwrite Insurance
+          Underwrite
         </router-link>
         <router-link
             to="/claims_gov"
