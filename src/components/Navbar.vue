@@ -25,7 +25,7 @@
             <!-- Dropdown menu for Covers -->
             <div class="relative group">
               <div class="flex items-center font-medium text-gray-600 hover:text-yellow-500 space-x-1 py-4" >
-                <span>Covers</span>
+                <span>Insurance</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-4 w-4 transition-transform"
@@ -44,21 +44,21 @@
                       class="block px-4 py-2 text-gray-600 hover:text-yellow-500 hover:bg-gray-50"
                       active-class="text-blue-600"
                   >
-                    Buy Cover
+                    Markets
                   </router-link>
                   <router-link
                       to="/cover_my"
                       class="block px-4 py-2 text-gray-600 hover:text-yellow-500 hover:bg-gray-50"
                       active-class="text-blue-600"
                   >
-                    My Covers
+                    My Purchases
                   </router-link>
                   <router-link
                       to="/cover"
                       class="block px-4 py-2 text-gray-600 hover:text-yellow-500 hover:bg-gray-50"
                       active-class="text-blue-600"
                   >
-                    B2B Cover
+                    Custom
                   </router-link>
                 </div>
               </div>
@@ -68,14 +68,14 @@
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
-              Stake
+              Underwrite Insurance
             </router-link>
             <router-link
                 to="/claims_gov"
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
-              Manage Claims
+              Governance
             </router-link>
             <a
                 href="https://satsurance.gitbook.io/satsurance"
@@ -83,7 +83,7 @@
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
-              Docs
+              Learn More
             </a>
           </div>
         </div>
@@ -140,7 +140,7 @@
               @click="toggleMobileCoversMenu"
               class="flex items-center justify-center w-full text-gray-600 hover:text-yellow-500 py-4 space-x-1"
           >
-            <span>Covers</span>
+            <span>Insurance</span>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4 transition-transform"
@@ -161,21 +161,21 @@
                 class="block w-full text-gray-600 hover:text-yellow-500 py-3"
                 active-class="text-blue-600"
             >
-              Buy Cover
+              Markets
             </router-link>
             <router-link
                 to="/cover_my"
                 class="block w-full text-gray-600 hover:text-yellow-500 py-3"
                 active-class="text-blue-600"
             >
-              My Covers
+              My Purchases
             </router-link>
             <router-link
                 to="/cover"
                 class="block w-full text-gray-600 hover:text-yellow-500 py-3"
                 active-class="text-blue-600"
             >
-              B2B Cover
+              Custom
             </router-link>
           </div>
         </div>
@@ -184,14 +184,14 @@
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >
-          Stake
+          Underwrite Insurance
         </router-link>
         <router-link
             to="/claims_gov"
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >
-          Manage Claims
+          Governance
         </router-link>
         <router-link
             to="/faucet"
@@ -206,7 +206,7 @@
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >
-          Docs
+          Learn More
         </a>
       </div>
       <ConnectWallet />

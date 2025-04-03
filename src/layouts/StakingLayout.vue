@@ -14,7 +14,7 @@
                 </svg>
                 Insurance Pool
               </h1>
-              <p class="text-gray-500 text-lg">Stake your BTC to earn rewards while providing coverage</p>
+              <p class="text-gray-500 text-lg">Stake your BTC to earn rewards while providing insurance</p>
             </div>
 
             <!-- APR Display -->
@@ -28,7 +28,7 @@
               <div class="text-5xl font-bold text-yellow-600 flex items-baseline">
                 {{ poolAPR }}<span class="text-2xl ml-1">%</span>
               </div>
-              <div class="mt-2 text-sm text-yellow-700">Earn rewards for providing coverage</div>
+              <div class="mt-2 text-sm text-yellow-700">Earn rewards for providing insurance</div>
             </div>
           </div>
 

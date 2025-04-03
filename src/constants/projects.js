@@ -10,7 +10,7 @@ import dotswapLogo from '/src/assets/logos/dotswap.png'
 export const COVER_PROJECTS = {
     'Babylon': {
         logo: babylonLogo,
-        category: 'Slashing',
+        category: 'Web3',
         description: 'Bitcoin staking protocol',
         minCover: 0.0001,
         maxCover: 100,
@@ -18,7 +18,7 @@ export const COVER_PROJECTS = {
     },
     'Bitflow': {
         logo: bitflowLogo,
-        category: 'Defi',
+        category: 'Web3',
         description: 'All-in-one DeFi on Stacks',
         minCover: 0.00001,
         maxCover: 50,
@@ -26,7 +26,7 @@ export const COVER_PROJECTS = {
     },
     'Bitlayer Bridge': {
         logo: bitlayerLogo,
-        category: 'Bridges',
+        category: 'Web3',
         description: 'L2 bitcoin Bridge',
         minCover: 0.00001,
         maxCover: 20,
@@ -34,7 +34,7 @@ export const COVER_PROJECTS = {
     },
     'Satlayer': {
         logo: satlayerLogo,
-        category: 'Slashing',
+        category: 'Web3',
         description: 'Bitcoin restaking protocol',
         minCover: 0.00001,
         maxCover: 30,
@@ -42,7 +42,7 @@ export const COVER_PROJECTS = {
     },
     'Liquidium': {
         logo: liquidiumLogo,
-        category: 'Defi',
+        category: 'Web3',
         description: 'Oridinals loan platform',
         minCover: 0.00001,
         maxCover: 40,
@@ -50,7 +50,7 @@ export const COVER_PROJECTS = {
     },
     'Allbridge': {
         logo: allbridgeLogo,
-        category: 'Bridges',
+        category: 'Web3',
         description: 'Cross-chain bridge',
         minCover: 0.00001,
         maxCover: 25,
@@ -58,7 +58,7 @@ export const COVER_PROJECTS = {
     },
     'Lorenzo': {
         logo: lorenzoLogo,
-        category: 'Slashing',
+        category: 'Web3',
         description: 'Bitcoin yield protocol',
         minCover: 0.00001,
         maxCover: 15,
@@ -66,7 +66,7 @@ export const COVER_PROJECTS = {
     },
     'DotSwap': {
         logo: dotswapLogo,
-        category: 'Defi',
+        category: 'Web3',
         description: 'Bitcoin native AMM',
         minCover: 0.00001,
         maxCover: 35,

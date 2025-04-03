@@ -10,7 +10,7 @@
         <span
             class="px-2.5 py-0.5 text-xs font-medium rounded-full"
             :class="{
-            'bg-green-100 text-green-800': project.category === 'Defi',
+            'bg-green-100 text-green-800': project.category === 'Web3',
             'bg-blue-100 text-blue-800': project.category === 'Slashing',
             'bg-purple-100 text-purple-800': project.category === 'Bridges'
           }"
