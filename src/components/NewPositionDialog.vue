@@ -50,88 +50,43 @@
               <p class="mt-1 text-sm text-gray-500">Minimum stake amount: 0.01 BTC</p>
             </div>
 
-            <!-- Lock Period Selection -->
+            <!-- Episode Selection -->
             <div>
               <label class="block mb-3 text-sm font-semibold text-gray-900 flex items-center gap-2">
-                Lock Period
+                Select Lock Duration
               </label>
-              <div class="grid grid-cols-2 gap-3">
-                <!-- Instant (0 days) -->
-                <div>
+              <div class="space-y-2 max-h-48 overflow-y-auto">
+                <div
+                    v-for="episode in availableEpisodes"
+                    :key="episode.number"
+                    class="flex items-center"
+                >
                   <input
                       type="radio"
-                      id="lock0"
-                      name="lockPeriod"
-                      :value="0"
-                      v-model="selectedLockPeriod"
+                      :id="`episode-${episode.number}`"
+                      name="episodeToStake"
+                      :value="episode.number"
+                      v-model="selectedEpisode"
                       class="peer hidden"
                   />
                   <label
-                      for="lock0"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
+                      :for="`episode-${episode.number}`"
+                      class="flex-1 flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
                   >
-                    <span class="text-lg font-medium">Instant</span>
-                    <span class="text-sm text-gray-500">Test Mode</span>
-                  </label>
-                </div>
-
-                <!-- 90 days -->
-                <div>
-                  <input
-                      type="radio"
-                      id="lock90"
-                      name="lockPeriod"
-                      :value="90"
-                      v-model="selectedLockPeriod"
-                      class="peer hidden"
-                  />
-                  <label
-                      for="lock90"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
-                  >
-                    <span class="text-lg font-medium">90 Days</span>
-                    <span class="text-sm text-gray-500">Basic</span>
-                  </label>
-                </div>
-
-                <!-- 180 days -->
-                <div>
-                  <input
-                      type="radio"
-                      id="lock180"
-                      name="lockPeriod"
-                      :value="180"
-                      v-model="selectedLockPeriod"
-                      class="peer hidden"
-                  />
-                  <label
-                      for="lock180"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
-                  >
-                    <span class="text-lg font-medium">180 Days</span>
-                    <span class="text-sm text-gray-500">Enhanced</span>
-                  </label>
-                </div>
-
-                <!-- 360 days -->
-                <div>
-                  <input
-                      type="radio"
-                      id="lock360"
-                      name="lockPeriod"
-                      :value="360"
-                      v-model="selectedLockPeriod"
-                      class="peer hidden"
-                  />
-                  <label
-                      for="lock360"
-                      class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
-                  >
-                    <span class="text-lg font-medium">360 Days</span>
-                    <span class="text-sm text-gray-500">Maximum</span>
+                    <div class="flex flex-col">
+                      <span class="text-lg font-medium">{{ episode.durationDays }} days</span>
+                      <span class="text-sm text-gray-500">Lock duration</span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-sm font-medium text-gray-700">{{ episode.unlockDate }}</span>
+                      <div class="text-xs text-gray-500">Unlock Date</div>
+                    </div>
                   </label>
                 </div>
               </div>
+              <p class="mt-2 text-sm text-gray-500">
+                Choose how long you want to lock your BTC for staking rewards
+              </p>
             </div>
 
             <!-- Enhanced Staking Summary -->
@@ -157,18 +112,18 @@
                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Lock Period
+                    Lock Duration
                   </span>
-                  <span class="font-medium text-gray-900">{{ selectedLockPeriod || '0' }} Days</span>
+                  <span class="font-medium text-gray-900">{{ selectedEpisodeDuration || 'Not Selected' }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 flex items-center gap-2">
                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z"/>
                     </svg>
                     Unlock Date
                   </span>
-                  <span class="font-medium text-gray-900">{{ selectedLockPeriod ? formatDate(new Date(Date.now() + selectedLockPeriod * 24 * 60 * 60 * 1000)) : 'Instant' }}</span>
+                  <span class="font-medium text-gray-900">{{ selectedEpisodeUnlockDate || 'Not Selected' }}</span>
                 </div>
               </div>
             </div>
@@ -177,10 +132,10 @@
             <div class="pt-4">
               <button
                   type="submit"
-                  :disabled="isSubmitting || !isValidAmount"
+                  :disabled="isSubmitting || !isValidAmount || !selectedEpisode"
                   class="w-full py-4 px-4 rounded-lg font-medium shadow-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="[
-                  isSubmitting || !isValidAmount
+                  isSubmitting || !isValidAmount || !selectedEpisode
                     ? 'bg-gray-100 text-gray-400'
                     : 'bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow'
                 ]"
@@ -211,7 +166,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
 import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts.js';
@@ -232,10 +187,16 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'positionCreated']);
 
+// Constants from the contract
+const EPISODE_DURATION = Math.floor((91 * 24 * 60 * 60) / 3); // 91 days / 3 in seconds
+const MAX_ACTIVE_EPISODES = 24;
+
 // State
 const web3Store = useWeb3Store();
 const toStakeAmount = ref(null);
-const selectedLockPeriod = ref(90);
+const selectedEpisode = ref(null);
+const currentEpisode = ref(0);
+const availableEpisodes = ref([]);
 
 // Transaction state
 const firstTxStatus = ref("");
@@ -250,6 +211,18 @@ const isValidAmount = computed(() => {
   return toStakeAmount.value && toStakeAmount.value >= 0.01;
 });
 
+const selectedEpisodeUnlockDate = computed(() => {
+  if (!selectedEpisode.value) return null;
+  const episode = availableEpisodes.value.find(ep => ep.number === selectedEpisode.value);
+  return episode ? episode.unlockDate : null;
+});
+
+const selectedEpisodeDuration = computed(() => {
+  if (!selectedEpisode.value) return null;
+  const episode = availableEpisodes.value.find(ep => ep.number === selectedEpisode.value);
+  return episode ? `${episode.durationDays} days` : null;
+});
+
 const transactionSteps = computed(() => {
   return [
     {
@@ -262,11 +235,54 @@ const transactionSteps = computed(() => {
     {
       id: 'stake',
       title: 'Create Position',
-      description: 'Stake your BTC tokens',
+      description: 'Stake your BTC tokens to selected episode',
       status: secondTxStatus.value,
       showNumber: true
     }
   ];
+});
+
+// Episode calculation functions
+const getCurrentEpisode = () => {
+  return Math.floor(Date.now() / 1000 / EPISODE_DURATION);
+};
+
+const getEpisodeFinishTime = (episodeId) => {
+  return (episodeId + 1) * EPISODE_DURATION;
+};
+
+const calculateAvailableEpisodes = () => {
+  const current = getCurrentEpisode();
+  const episodes = [];
+  console.log(current);
+  
+  for (let i = current; i < current + MAX_ACTIVE_EPISODES; i++) {
+    // Check if episode satisfies the modulo 3 == 2 rule
+    if (i % 3 === 2) {
+      const finishTime = getEpisodeFinishTime(i);
+      const unlockDate = new Date(finishTime * 1000);
+      const durationDays = Math.ceil((finishTime * 1000 - Date.now()) / (1000 * 60 * 60 * 24));
+      
+      episodes.push({
+        number: i,
+        unlockDate: formatDate(unlockDate),
+        durationDays: durationDays
+      });
+    }
+  }
+  
+  return episodes;
+};
+
+// Initialize episodes on component mount
+onMounted(() => {
+  currentEpisode.value = getCurrentEpisode();
+  availableEpisodes.value = calculateAvailableEpisodes();
+  
+  // Select the first available episode by default
+  if (availableEpisodes.value.length > 0) {
+    selectedEpisode.value = availableEpisodes.value[0].number;
+  }
 });
 
 // Methods
@@ -327,11 +343,11 @@ const handleStakeProcess = async (amountInWei) => {
       }
     }
 
-    // Handle staking
+    // Handle staking with episode
     secondTxStatus.value = "pending";
     const stakeTx = await props.poolContract.joinPool(
         amountInWei,
-        selectedLockPeriod.value * 60 * 60 * 24,
+        selectedEpisode.value,
         {
           from: web3Store.account,
         }
@@ -353,7 +369,7 @@ const handleStakeProcess = async (amountInWei) => {
 };
 
 const handleCreatePosition = async () => {
-  if (!isValidAmount.value) {
+  if (!isValidAmount.value || !selectedEpisode.value) {
     return;
   }
 

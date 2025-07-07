@@ -229,7 +229,6 @@ const currentTxHash = ref("");
 const transactionError = ref("");
 
 const web3Store = useWeb3Store();
-console.log("Dev mode: " + import.meta.env.DEV);
 
 // Computed Properties
 const transactionSteps = computed(() => {
@@ -319,8 +318,6 @@ const loadPositionState = async () => {
 
     let processedPositions = [];
     for (let i = 0; i < positionsIds.length; i++) {
-      console.log(userPositions[i].episode.toString());
-      console.log(EPISODE_DURATION);
       if(userPositions[i].active) {
         processedPositions.push({
           id: positionsIds[i],
