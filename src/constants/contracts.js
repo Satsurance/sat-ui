@@ -43,19 +43,19 @@ const SUPPORTED_NETWORKS =
         },
         blockExplorerUrls: ['https://testnet-scan.bitlayer.org'],
     },
-
-    ...(import.meta.env.DEV ? [{
-        chainId: NETWORKS.LOCALHOST,
-        // Use bitlayer testnet id for test purposes
-        name: 'Localhost',
-        rpcUrls: ['http://localhost:8545'],
-        nativeCurrency: {
-            name: 'ETH',
-            symbol: 'ETH',
-            decimals: 18,
-        },
-        blockExplorerUrls: ['http://localhost:8545'],
-    }] : [])
+    ...(import.meta.env.DEV ? {
+        [NETWORKS.LOCALHOST]: {
+            chainId: NETWORKS.LOCALHOST,
+            name: 'Localhost',
+            rpcUrls: ['http://localhost:8545'],
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18,
+            },
+            blockExplorerUrls: ['http://localhost:8545'],
+        }
+    } : {})
 };
 
 

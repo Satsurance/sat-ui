@@ -229,6 +229,7 @@ const currentTxHash = ref("");
 const transactionError = ref("");
 
 const web3Store = useWeb3Store();
+console.log("Dev mode: " + import.meta.env.DEV);
 
 // Computed Properties
 const transactionSteps = computed(() => {
