@@ -94,7 +94,7 @@
         </button>
 
         <button
-            v-if="isCompleted || hasFailedStep"
+            v-if="isCompleted || hasFailedStep || error"
             @click="close"
             class="btn-secondary w-full py-2 rounded-lg focus:outline-none"
         >

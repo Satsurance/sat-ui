@@ -188,7 +188,7 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!(firstTxStatus || secondTxStatus)"
+        :show="!!(firstTxStatus || secondTxStatus || transactionError)"
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"

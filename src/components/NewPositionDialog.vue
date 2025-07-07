@@ -155,7 +155,7 @@
 
   <!-- Transaction Status Modal -->
   <TransactionStatus
-      :show="!!(firstTxStatus || secondTxStatus)"
+      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
       :steps="transactionSteps"
       :tx-hash="currentTxHash"
       :error="transactionError"
@@ -173,6 +173,7 @@ import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts.js'
 import erc20ABI from '../assets/abis/erc20.json';
 import { formatDate } from '../utils.js';
 import TransactionStatus from '../components/TransactionStatus.vue';
+import { CodeSquare } from 'lucide-vue-next';
 
 const props = defineProps({
   isOpen: {
@@ -254,7 +255,6 @@ const getEpisodeFinishTime = (episodeId) => {
 const calculateAvailableEpisodes = () => {
   const current = getCurrentEpisode();
   const episodes = [];
-  console.log(current);
   
   for (let i = current; i < current + MAX_ACTIVE_EPISODES; i++) {
     // Check if episode satisfies the modulo 3 == 2 rule
@@ -369,6 +369,7 @@ const handleStakeProcess = async (amountInWei) => {
 };
 
 const handleCreatePosition = async () => {
+  console.log("Enter function");
   if (!isValidAmount.value || !selectedEpisode.value) {
     return;
   }
