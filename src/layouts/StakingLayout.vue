@@ -103,9 +103,8 @@
             <thead>
             <tr class="bg-gray-50 text-left">
               <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">ID</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Start Date</th>
               <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-900">Amount</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Lock Period</th>
+              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Unlock Date</th>
               <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Status</th>
               <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Actions</th>
             </tr>
@@ -139,11 +138,6 @@
                     </span>
                 </div>
               </td>
-              <td class="px-6 py-5">
-                <div class="flex justify-center items-center text-gray-600">
-                  {{ formatDate(position.startDate) }}
-                </div>
-              </td>
               <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
                 {{ position.stakedAmount }}
                 <span class="ml-1 text-gray-500 font-normal">BTC</span>
@@ -151,7 +145,7 @@
               <td class="px-6 py-5">
                 <div class="flex items-center justify-center gap-3">
                     <span class="text-sm whitespace-nowrap text-gray-600 min-w-[4.5rem] text-center">
-                      {{ position.dayStaked }}
+                      {{ position.unlockDate }}
                     </span>
                 </div>
               </td>
@@ -206,11 +200,12 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, markRaw } from "vue";
 import { ethers } from "ethers";
 import { useWeb3Store } from "../stores/web3Store";
-import {getContractAddress, SUPPORTED_NETWORKS} from "../constants/contracts.js";
+import {getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION} from "../constants/contracts.js";
 import insurancePoolABI from "../assets/abis/insurancePool.json";
+import erc721ABI from "../assets/abis/erc721enumerable.json";
 import TransactionStatus from "../components/TransactionStatus.vue";
 import NewPositionDialog from "../components/NewPositionDialog.vue";
 import { formatDate } from "../utils.js";
@@ -222,6 +217,8 @@ const userTotalStakedAmount = ref(0);
 const earnedRewards = ref(0);
 const poolAPR = ref(0);
 const insurancePool = ref(null);
+const positionNFT = ref(null);
+const coverNFT = ref(null);
 const isNewPositionDialogOpen = ref(false);
 
 // Transaction state
@@ -262,12 +259,23 @@ const transactionSteps = computed(() => {
 // Methods
 const initializeContracts = () => {
   const signer = web3Store.provider.getSigner();
-  insurancePool.value = new ethers.Contract(
+  insurancePool.value = markRaw(new ethers.Contract(
       getContractAddress("INSURANCE_POOL", web3Store.chainId),
       insurancePoolABI,
       signer
+  ));
+  positionNFT.value = new ethers.Contract(
+      getContractAddress("POSITION_NFT", web3Store.chainId),
+      erc721ABI,
+      signer
+  );
+  coverNFT.value = new ethers.Contract(
+      getContractAddress("COVER_NFT", web3Store.chainId),
+      erc721ABI,
+      signer
   );
 };
+
 
 const loadPositionState = async () => {
   try {
@@ -275,18 +283,27 @@ const loadPositionState = async () => {
       initializeContracts();
     }
 
-    const positionsNumber = (await insurancePool.value.positionCounter(web3Store.account)).toNumber();
 
-    const [totalAssetsStakedRaw, userTotalShares, totalSharesAmount, rewardRate, earned, ...userPositions] = await Promise.all([
-      insurancePool.value.totalAssetsStaked(),
-      insurancePool.value.userTotalShares(web3Store.account),
-      insurancePool.value.totalPoolShares(),
-      insurancePool.value.rewardRate(),
-      insurancePool.value.earned(web3Store.account),
-      ...Array(positionsNumber).fill().map((_, i) =>
-          insurancePool.value.getPoolPosition(web3Store.account, i)
+    const positionsCount = (await positionNFT.value.balanceOf(web3Store.account)).toNumber();
+    const positionsIds = await Promise.all(Array(positionsCount).fill().map((_, i) => 
+      positionNFT.value.tokenOfOwnerByIndex(web3Store.account, i)
+    ));
+
+    const [poolStats, currentEpisode, earned, ...userPositions] = await Promise.all([
+      insurancePool.value.callStatic.poolStatsLatest(),
+      insurancePool.value.getCurrentEpisode(),
+      insurancePool.value.callStatic.earnedPositions(positionsIds),
+      ...positionsIds.map(positionId =>
+          insurancePool.value.getPoolPosition(positionId)
       )
     ]);
+
+    // Destructure the poolStatsLatest response
+    const [totalAssetsStakedRaw, totalSharesAmount, totalRewardShares, rewardRate, maxSharesUserToStake, maxUnderwriterSharesToUnstake] = poolStats;
+
+    const userTotalShares = userPositions.reduce((total, position) => {
+      return total + BigInt(position.shares);
+    }, BigInt(0));
 
     // Update global stats
     totalStakedAmount.value = Number(
@@ -300,18 +317,17 @@ const loadPositionState = async () => {
     }
 
     let processedPositions = [];
-    for (let i = 0; i < positionsNumber; i++) {
-      const timeInfo = calculateStakingTime(userPositions[i].startDate, userPositions[i].minTimeStake);
+    for (let i = 0; i < positionsIds.length; i++) {
+      console.log(userPositions[i].episode.toString());
+      console.log(EPISODE_DURATION);
       if(userPositions[i].active) {
         processedPositions.push({
-          id: i,
-          startDate: userPositions[i].startDate * 1000,
+          id: positionsIds[i],
+          unlockDate: calculateStakingTime((userPositions[i].episode.toNumber() + 1) * EPISODE_DURATION),
           stakedAmount: Number(
               ethers.utils.formatEther(((BigInt(userPositions[i].shares) * BigInt(totalAssetsStakedRaw)) / BigInt(totalSharesAmount)).toString())
           ).toFixed(2),
-          lockPeriodDays: Math.floor(userPositions[i].minTimeStake / (24 * 3600)),
-          dayStaked: timeInfo.timeDisplay,
-          isUnlocked: timeInfo.isUnlocked
+          isUnlocked: (userPositions[i].episode + 1n) * EPISODE_DURATION < Math.floor(Date.now() / 1000)
         });
       }
     }
@@ -322,26 +338,37 @@ const loadPositionState = async () => {
   }
 };
 
-const calculateStakingTime = (startTime, minTimeStake) => {
+const calculateStakingTime = (unlockTime) => {
   const now = Math.floor(Date.now() / 1000);
-  const elapsedSeconds = Math.abs(now - Number(startTime));
-  const totalLockDays = Math.floor(Number(minTimeStake) / (24 * 60 * 60));
+  const unlockTimestamp = Number(unlockTime);
+  const isUnlocked = now >= unlockTimestamp;
 
-  // Calculate elapsed days and hours
-  const elapsedDays = Math.floor(elapsedSeconds / (24 * 60 * 60));
-  const elapsedHours = Math.floor((elapsedSeconds % (24 * 60 * 60)) / (60 * 60));
+  if (isUnlocked) {
+    return "Unlocked";
+  }
 
-  // Format the time string
-  const timeString = `${elapsedDays} ${elapsedDays === 1 ? 'day' : 'days'} ${elapsedHours} ${elapsedHours === 1 ? 'hour' : 'hours'} / ${totalLockDays} days`;
-
-  // Check if unlocked
-  const unlockTime = Number(startTime) + Number(minTimeStake);
-  const isReady = now >= unlockTime;
-
-  return {
-    timeDisplay: timeString,
-    isUnlocked: isReady
-  };
+  // Convert timestamp to date and format it
+  const unlockDate = new Date(unlockTimestamp * 1000);
+  const currentDate = new Date();
+  
+  // Check if unlock date is today
+  const isToday = unlockDate.toDateString() === currentDate.toDateString();
+  
+  if (isToday) {
+    // Calculate time difference in seconds
+    const timeLeft = unlockTimestamp - now;
+    const hoursLeft = Math.floor(timeLeft / 3600);
+    const minutesLeft = Math.floor((timeLeft % 3600) / 60);
+    
+    if (hoursLeft > 0) {
+      return `${hoursLeft}h ${minutesLeft}m left`;
+    } else {
+      return `${minutesLeft}m left`;
+    }
+  }
+  
+  const formattedDate = formatDate(unlockDate);
+  return formattedDate;
 };
 
 const openNewPositionDialog = () => {

@@ -6,55 +6,57 @@ const NETWORKS = {
     LOCALHOST: 31337
 }
 
-const SUPPORTED_NETWORKS =
-    {
-        [NETWORKS.BOB_TESTNET]: {
-            chainId: NETWORKS.BOB_TESTNET,
-            name: 'BOB Sepolia',
-            rpcUrls: ['https://bob-sepolia.rpc.gobob.xyz'],
-            nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18,
-            },
-            blockExplorerUrls: ['https://bob-sepolia.explorer.gobob.xyz'],
-        },
-        [NETWORKS.INK_TESTNET]: {
-            chainId: NETWORKS.INK_TESTNET,
-            name: 'Ink Sepolia',
-            rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
-            nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18,
-            },
-            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com'],
-        },
-        [NETWORKS.BITLAYER_TESTNET]: {
-            chainId: NETWORKS.BITLAYER_TESTNET,
-            name: 'Bitlayer Testnet',
-            rpcUrls: ['https://testnet-rpc.bitlayer.org'],
-            nativeCurrency: {
-                name: 'BTC',
-                symbol: 'BTC',
-                decimals: 18,
-            },
-            blockExplorerUrls: ['https://testnet-scan.bitlayer.org'],
-        },
+const EPISODE_DURATION = (91 * 24 * 60 * 60) / 3; // 91 days / 3 in seconds
 
-        ...(import.meta.env.DEV ? [{
-            chainId: NETWORKS.LOCALHOST,
-            // Use bitlayer testnet id for test purposes
-            name: 'Localhost',
-            rpcUrls: ['http://localhost:8545'],
-            nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18,
-            },
-            blockExplorerUrls: ['http://localhost:8545'],
-        }]: [])
-    };
+const SUPPORTED_NETWORKS =
+{
+    [NETWORKS.BOB_TESTNET]: {
+        chainId: NETWORKS.BOB_TESTNET,
+        name: 'BOB Sepolia',
+        rpcUrls: ['https://bob-sepolia.rpc.gobob.xyz'],
+        nativeCurrency: {
+            name: 'ETH',
+            symbol: 'ETH',
+            decimals: 18,
+        },
+        blockExplorerUrls: ['https://bob-sepolia.explorer.gobob.xyz'],
+    },
+    [NETWORKS.INK_TESTNET]: {
+        chainId: NETWORKS.INK_TESTNET,
+        name: 'Ink Sepolia',
+        rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+        nativeCurrency: {
+            name: 'ETH',
+            symbol: 'ETH',
+            decimals: 18,
+        },
+        blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com'],
+    },
+    [NETWORKS.BITLAYER_TESTNET]: {
+        chainId: NETWORKS.BITLAYER_TESTNET,
+        name: 'Bitlayer Testnet',
+        rpcUrls: ['https://testnet-rpc.bitlayer.org'],
+        nativeCurrency: {
+            name: 'BTC',
+            symbol: 'BTC',
+            decimals: 18,
+        },
+        blockExplorerUrls: ['https://testnet-scan.bitlayer.org'],
+    },
+
+    ...(import.meta.env.DEV ? [{
+        chainId: NETWORKS.LOCALHOST,
+        // Use bitlayer testnet id for test purposes
+        name: 'Localhost',
+        rpcUrls: ['http://localhost:8545'],
+        nativeCurrency: {
+            name: 'ETH',
+            symbol: 'ETH',
+            decimals: 18,
+        },
+        blockExplorerUrls: ['http://localhost:8545'],
+    }] : [])
+};
 
 
 const CONTRACTS = {
@@ -86,12 +88,15 @@ const CONTRACTS = {
         COVER_PURCHASER: '0x1397930814E12d98bbFFf4dD21a1F702356C56ac',
     },
     [NETWORKS.LOCALHOST]: {
-        INSURANCE_POOL: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-        SURS_TOKEN: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+        INSURANCE_POOL: "0x1B22E08fD7efDb630137531058481c9257651956",
+        SURS_TOKEN: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
         BTC_TOKEN: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-        TIMELOCK: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-        GOVERNOR: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-        CLAIMER: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+        TIMELOCK: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+        GOVERNOR: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+        CLAIMER: "0x9A676e781A523b5d0C0e43731313A708CB607508",
+        POOL_FACTORY: "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+        POSITION_NFT: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+        COVER_NFT: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
         COVER_PURCHASER: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
     }
 }
@@ -109,4 +114,4 @@ export const getContractAddress = (contractName, networkId) => {
     return address
 }
 
-export { NETWORKS, SUPPORTED_NETWORKS }
+export { NETWORKS, SUPPORTED_NETWORKS, EPISODE_DURATION }
