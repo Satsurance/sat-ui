@@ -88,9 +88,9 @@
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <UserCoverCard
               v-for="cover in filteredCovers"
-              :key="`${cover.protocol}-${cover.startDate}`"
+              :key="`${cover.tokenId}-${cover.startDate}`"
               :cover="cover"
-              :project-info="projectsInfo[cover.protocol]"
+              :product-info="getProductInfo(cover)"
               @click="openCoverDetails(cover)"
               class="cursor-pointer"
           />
@@ -102,7 +102,7 @@
     <UserCoverDetails
         v-if="selectedCover"
         :cover="selectedCover"
-        :project-info="projectsInfo[selectedCover.protocol]"
+        :product-info="getProductInfo(selectedCover)"
         :is-open="!!selectedCover"
         @close="closeCoverDetails"
     />
@@ -114,10 +114,10 @@ import { ref, computed, watch } from 'vue';
 import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress } from '../constants/contracts.js';
-import coverABI from '../assets/abis/coverpurchaser.json';
+import coverNFTABI from '../assets/abis/coverNFT.json';
 import UserCoverCard from '../components/UserCoverCard.vue';
 import UserCoverDetails from '../components/UserCoverDetails.vue';
-import { COVER_PROJECTS } from '../constants/projects';
+import { COVER_PROJECTS, COVER_PRODUCTS } from '../constants/projects';
 
 // Store and State
 const web3Store = useWeb3Store();
@@ -127,7 +127,6 @@ const userCovers = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const selectedCover = ref(null);
-const projectsInfo = COVER_PROJECTS;
 
 // Computed Properties
 const emptyStateMessage = computed(() => {
@@ -140,32 +139,43 @@ const emptyStateMessage = computed(() => {
   return '';
 });
 
-// Load user covers from smart contract
+// Load user covers from smart contract using ERC721 enumerable
 const loadUserCovers = async () => {
   try {
     loading.value = true;
     error.value = null;
 
     const coverContract = new ethers.Contract(
-        getContractAddress('COVER_PURCHASER', web3Store.chainId),
-        coverABI,
+        getContractAddress('COVER_NFT', web3Store.chainId),
+        coverNFTABI,
         web3Store.provider
     );
 
+    // Get the number of NFTs owned by the user using ERC721 enumerable
+    const balance = await coverContract.balanceOf(web3Store.account);
+    const tokenCount = balance.toNumber();
 
-    const userCoversCount = (await coverContract.getUserCoversCount(web3Store.account)).toNumber();
-    let coversPromise = [];
-    for(let i = 0; i < userCoversCount; i++) {
-      coversPromise.push(coverContract.covers(web3Store.account, i))
+    // Get all token IDs owned by the user
+    const tokenIdPromises = [];
+    for (let i = 0; i < tokenCount; i++) {
+      tokenIdPromises.push(coverContract.tokenOfOwnerByIndex(web3Store.account, i));
     }
-    const covers = await Promise.all(coversPromise);
+    const tokenIds = await Promise.all(tokenIdPromises);
 
-    userCovers.value = covers.map(cover => ({
-      user: cover.user,
-      protocol: cover.protocol,
-      startDate: parseInt(cover.startDate) * 1000,
-      endDate: parseInt(cover.endDate) * 1000,
-      coverAmount: ethers.utils.formatEther(cover.coverAmount)
+    // Fetch coverage data for each token ID
+    const coverDataPromises = tokenIds.map(tokenId => 
+      coverContract.covers(tokenId.toNumber())
+    );
+    const coverDataArray = await Promise.all(coverDataPromises);
+
+    // Map the coverage data to the expected format
+    userCovers.value = coverDataArray.map((coverData, index) => ({
+      tokenId: tokenIds[index].toNumber(),
+      coverageAmount: ethers.utils.formatEther(coverData.coveredAmount),
+      productId: coverData.productId.toNumber(),
+      startDate: parseInt(coverData.startDate) * 1000,
+      endDate: parseInt(coverData.endDate) * 1000,
+      poolId: coverData.poolId.toNumber()
     }));
   } catch (e) {
     console.error('Error loading covers:', e);
@@ -196,6 +206,15 @@ const openCoverDetails = (cover) => {
 
 const closeCoverDetails = () => {
   selectedCover.value = null;
+};
+
+// Get project info based on poolId and productId
+const getProductInfo = (cover) => {
+  const product = COVER_PRODUCTS[cover.poolId]?.[cover.productId];
+  if (!product) {
+    return { name: 'Unknown', logo: '', category: 'Web3' };
+  }
+  return product;
 };
 
 // Initial load and watchers

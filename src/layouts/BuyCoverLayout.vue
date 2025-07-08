@@ -143,8 +143,6 @@ const loadPoolProducts = async () => {
       }));
     })
   );
-  console.log("poolStats", poolStats);
-  console.log("poolProductsList", poolProductsList);
 
   productsArray.value = poolProductsList.map(product => {
       const productInfo = COVER_PRODUCTS[poolId]?.[product.productId.toNumber()];
@@ -155,12 +153,12 @@ const loadPoolProducts = async () => {
         const maxCover = Math.floor(parseFloat(ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation))) * 100000000) / 100000000;
         
         return {
+          // Merge with the product data from the pool first
+          ...product,
           name: productInfo.name,
           logo: productInfo.logo,
           category: productInfo.category,
           maxCover,
-          // Merge with the product data from the pool
-          ...product
         };
       }
       return null;

@@ -18,7 +18,7 @@
           <div class="flex items-center justify-between mb-2.5 md:mb-10">
             <div class="flex items-center gap-3">
               <h3 class="text-2xl font-semibold text-gray-900">
-                {{ projectInfo?.name || cover.protocol }} Coverage
+                {{ productInfo?.name || 'Unknown' }} Coverage
               </h3>
               <div
                   class="px-4 py-1.5 text-sm rounded-full font-medium"
@@ -50,11 +50,11 @@
           <!-- Project Info -->
           <div class="flex flex-col items-center mb-8">
             <img
-                :src="projectInfo?.logo"
-                :alt="`${projectInfo?.name || cover.protocol} logo`"
+                :src="productInfo?.logo"
+                :alt="`${productInfo?.name || 'Unknown'} logo`"
                 class="w-24 h-24 object-contain mb-4"
             />
-            <p class="text-gray-600 text-center">{{ projectInfo?.description }}</p>
+            <p class="text-gray-600 text-center">{{ productInfo?.description }}</p>
           </div>
 
           <!-- Cover Details -->
@@ -64,7 +64,7 @@
               <label class="block text-base text-gray-500 mb-2">Cover Amount</label>
               <div class="p-3 bg-gray-50 rounded-lg">
                 <span class="text-2xl font-semibold text-gray-900">
-                  {{ formatAmount(cover.coverAmount) }} BTC
+                  {{ formatAmount(cover.coverageAmount) }} BTC
                 </span>
               </div>
             </div>
@@ -114,15 +114,16 @@ const props = defineProps({
     required: true,
     validator: (value) => {
       return [
-        'user',
-        'protocol',
+        'tokenId',
+        'coverageAmount',
+        'productId',
         'startDate',
         'endDate',
-        'coverAmount'
+        'poolId'
       ].every(key => key in value);
     }
   },
-  projectInfo: {
+  productInfo: {
     type: Object,
     default: () => ({})
   },
