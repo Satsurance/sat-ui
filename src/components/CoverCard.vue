@@ -34,8 +34,8 @@
 
         <div class="space-y-2">
           <div class="flex justify-between text-sm">
-            <span class="text-gray-500">Cover Range:</span>
-            <span class="font-medium">{{ product.minCover }} - {{ product.maxCover }} BTC</span>
+            <span class="text-gray-500">Max Coverage:</span>
+            <span class="font-medium">{{ product.maxCover }} BTC</span>
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-500">Premium Rate:</span>

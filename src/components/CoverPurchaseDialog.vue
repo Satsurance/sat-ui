@@ -83,7 +83,7 @@
                   </Transition>
                 </div>
                 <p class="text-sm text-gray-500">
-                  Available range: {{ product.minCover }} - {{ product.maxCover }} BTC
+                  Available Coverage: {{ product.maxCover }} BTC
                 </p>
               </div>
             </div>
@@ -293,10 +293,6 @@ const validateCoverAmount = (value) => {
   const numValue = Number(value);
   if (isNaN(numValue)) {
     coverAmountError.value = 'Please enter a valid number';
-    return false;
-  }
-  if (numValue < props.product.minCover) {
-    coverAmountError.value = `Cover amount must be at least ${props.product.minCover} BTC`;
     return false;
   }
   if (numValue > props.product.maxCover) {

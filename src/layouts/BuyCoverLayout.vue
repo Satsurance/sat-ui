@@ -150,16 +150,14 @@ const loadPoolProducts = async () => {
       const productInfo = COVER_PRODUCTS[poolId]?.[product.productId.toNumber()];
   
       if (productInfo) {
-        // Calculate minCover and maxCover
-        const minCover = 0;
+        // Calculate  and maxCover
         const basisPoints = 10000n; // Standard basis points
-        const maxCover = ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation));
+        const maxCover = Math.floor(parseFloat(ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation))) * 100000000) / 100000000;
         
         return {
           name: productInfo.name,
           logo: productInfo.logo,
           category: productInfo.category,
-          minCover,
           maxCover,
           // Merge with the product data from the pool
           ...product
