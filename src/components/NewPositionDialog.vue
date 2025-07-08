@@ -84,9 +84,6 @@
                   </label>
                 </div>
               </div>
-              <p class="mt-2 text-sm text-gray-500">
-                Choose how long you want to lock your BTC for staking rewards
-              </p>
             </div>
 
             <!-- Enhanced Staking Summary -->

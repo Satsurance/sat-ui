@@ -15,7 +15,7 @@
           <div class="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
             <div class="flex items-center space-x-4">
               <h3 class="text-xl sm:text-2xl font-semibold text-gray-900">
-                {{ project.name }} cover
+                {{ product.name }} cover
               </h3>
             </div>
             <button
@@ -83,7 +83,7 @@
                   </Transition>
                 </div>
                 <p class="text-sm text-gray-500">
-                  Available range: {{ project.minCover }} - {{ project.maxCover }} BTC
+                  Available range: {{ product.minCover }} - {{ product.maxCover }} BTC
                 </p>
               </div>
             </div>
@@ -145,18 +145,18 @@
                     id="cover-duration-slider"
                     v-model="duration"
                     @input="durationError = ''"
-                    :min="30"
-                    :max="360"
+                    :min="31"
+                    :max="product.maxCoverageDuration / 86400"
                     step="1"
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
                     :disabled="isSubmitting || !web3Store.isConnected"
                 />
                 <div class="relative h-4 text-xs text-gray-500">
-                  <span class="absolute left-0 -translate-x-1/2 text-[9px] sm:text-xs" style="left: 2%">30d</span>
-                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 19.5%">90d</span>
-                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 46%">180d</span>
-                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 72.72%">270d</span>
-                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 97%">360d</span>
+                  <span class="absolute left-0 -translate-x-1/2 text-[9px] sm:text-xs" style="left: 2%">31d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 19.5%">{{(Math.floor(product.maxCoverageDuration / 86400/4))}}d</span>
+                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 46%">{{(Math.floor(product.maxCoverageDuration * 2 / 86400/4))}}d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 72.72%">{{(Math.floor(product.maxCoverageDuration * 3 / 86400/4))}}d</span>
+                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 97%">{{(Math.floor(product.maxCoverageDuration / 86400))}}d</span>
                 </div>
               </div>
             </div>
@@ -165,7 +165,7 @@
             <div class="bg-gray-50 rounded-lg p-4 space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Premium Rate:</span>
-                <span class="font-medium">{{ project.rate }}% per year</span>
+                <span class="font-medium">{{ product.annualPercent / 10000 }}% per year</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Cover Duration:</span>
@@ -212,7 +212,7 @@ import { ref, computed } from 'vue';
 import { useWeb3Store } from '../stores/web3Store';
 
 const props = defineProps({
-  project: {
+  product: {
     type: Object,
     required: true
   },
@@ -230,7 +230,7 @@ const emit = defineEmits(['close', 'purchase']);
 const web3Store = useWeb3Store();
 
 const coverAmount = ref('');
-const duration = ref(30);
+const duration = ref(31);
 const coverAmountError = ref('');
 const durationError = ref('');
 
@@ -243,7 +243,7 @@ const calculatePremium = computed(() => {
 
   // Convert all numbers to strings and use high precision arithmetic
   const amount = Number(coverAmount.value);
-  const rate = Number(props.project.rate);
+  const rate = Number(props.product.annualPercent / 10000);
   const days = Number(duration.value);
 
   // Calculate with maximum precision: (amount * rate * days) / (100 * 365)
@@ -295,12 +295,12 @@ const validateCoverAmount = (value) => {
     coverAmountError.value = 'Please enter a valid number';
     return false;
   }
-  if (numValue < props.project.minCover) {
-    coverAmountError.value = `Cover amount must be at least ${props.project.minCover} BTC`;
+  if (numValue < props.product.minCover) {
+    coverAmountError.value = `Cover amount must be at least ${props.product.minCover} BTC`;
     return false;
   }
-  if (numValue > props.project.maxCover) {
-    coverAmountError.value = `Cover amount cannot exceed ${props.project.maxCover} BTC`;
+  if (numValue > props.product.maxCover) {
+    coverAmountError.value = `Cover amount cannot exceed ${props.product.maxCover} BTC`;
     return false;
   }
   coverAmountError.value = '';
@@ -309,11 +309,11 @@ const validateCoverAmount = (value) => {
 
 const validateDuration = (value) => {
   const numValue = Number(value);
-  if (numValue < 30) {
-    durationError.value = 'Duration must be at least 30 days';
+  if (numValue < 31) {
+    durationError.value = 'Duration must be at least 31 days';
     return false;
-  } else if (numValue > 360) {
-    durationError.value = 'Duration cannot exceed 360 days';
+  } else if (numValue > 365) {
+    durationError.value = 'Duration cannot exceed 365 days';
     return false;
   } else if (!Number.isInteger(numValue)) {
     durationError.value = 'Duration must be a whole number';

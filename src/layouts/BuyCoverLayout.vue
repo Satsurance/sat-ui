@@ -42,13 +42,13 @@
         </div>
       </div>
 
-      <!-- Projects Grid - Responsive grid with different columns based on screen size -->
-      <div v-if="filteredProjects.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        <ProjectCard
-            v-for="project in filteredProjects"
-            :key="project.name"
-            :project="project"
-            @click="openPurchaseModal(project.name)"
+      <!-- Product Grid - Responsive grid with different columns based on screen size -->
+      <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <ProductCard
+            v-for="product in filteredProducts"
+            :key="product.productId"
+            :product="product"
+            @click="openPurchaseModal(product.productId)"
         />
       </div>
 
@@ -70,9 +70,9 @@
 
     <!-- Purchase Modal -->
     <CoverPurchaseDialog
-        v-if="selectedProject"
-        :project="selectedProject"
-        :show="!!selectedProject"
+        v-if="selectedProduct"
+        :product="selectedProduct"
+        :show="!!selectedProduct"
         :is-submitting="firstTxStatus !== ''"
         @close="handleClose"
         @purchase="handlePurchase"
@@ -92,20 +92,20 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { ethers } from 'ethers';
-import ProjectCard from '../components/CoverCard.vue';
+import ProductCard from '../components/CoverCard.vue';
 import CoverPurchaseDialog from '../components/CoverPurchaseDialog.vue';
 import TransactionStatus from '../components/TransactionStatus.vue';
-import { COVER_PROJECTS } from '../constants/projects';
+import { COVER_PRODUCTS } from '../constants/projects';
 import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts';
 import { useWeb3Store } from '../stores/web3Store';
-import coverABI from '../assets/abis/coverpurchaser.json';
 import erc20ABI from '../assets/abis/erc20.json';
+import insurancePoolABI from '../assets/abis/insurancePool.json';
 
 const categories = ['All', 'Web3', 'Cannabis', 'AI'];
 const selectedCategory = ref('All');
-const selectedProject = ref(null);
+const selectedProduct = ref(null);
 
 // Transaction state
 const firstTxStatus = ref('');
@@ -116,17 +116,60 @@ const transactionError = ref('');
 const currentPurchaseParams = ref(null);
 
 const web3Store = useWeb3Store();
-const filteredProjects = computed(() => {
-  const projectsArray = Object.entries(COVER_PROJECTS).map(([name, data]) => ({
-    name,
-    ...data
-  }));
-
+const productsArray = ref([]);
+const filteredProducts = computed(() => {
+  console.log("filteredProducts", productsArray.value);
   if (selectedCategory.value === 'All') {
-    return projectsArray;
+    return productsArray.value;
   }
-  return projectsArray.filter(project => project.category === selectedCategory.value);
+  return productsArray.value.filter(product => product.category === selectedCategory.value);
 });
+
+const loadPoolProducts = async () => {
+  const poolId = 1;
+  const poolContract = new ethers.Contract(
+      getContractAddress("INSURANCE_POOL", web3Store.chainId),
+      insurancePoolABI,
+      web3Store.provider
+  );
+  const poolProductsCount = (await poolContract.productCounter()).toNumber();
+  const poolStats = await poolContract.callStatic.poolStatsLatest();
+  const poolProductsList = await Promise.all(
+    Array(poolProductsCount).fill().map((_, i) => {
+      const productId = i;
+      return poolContract.callStatic.getProduct(productId).then(productData => ({
+        productId,
+        ...productData
+      }));
+    })
+  );
+  console.log("poolStats", poolStats);
+  console.log("poolProductsList", poolProductsList);
+
+  productsArray.value = poolProductsList.map(product => {
+      const productInfo = COVER_PRODUCTS[poolId]?.[product.productId.toNumber()];
+  
+      if (productInfo) {
+        // Calculate minCover and maxCover
+        const minCover = 0;
+        const basisPoints = 10000n; // Standard basis points
+        const maxCover = ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation));
+        
+        return {
+          name: productInfo.name,
+          logo: productInfo.logo,
+          category: productInfo.category,
+          minCover,
+          maxCover,
+          // Merge with the product data from the pool
+          ...product
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+  console.log("productsArray", productsArray.value);
+};
 
 const transactionSteps = computed(() => {
   if (transactionType.value === 'cover_purchase') {
@@ -150,11 +193,8 @@ const transactionSteps = computed(() => {
   return [];
 });
 
-const openPurchaseModal = (projectName) => {
-  selectedProject.value = {
-    name: projectName,
-    ...COVER_PROJECTS[projectName]
-  };
+const openPurchaseModal = (productId) => {
+  selectedProduct.value = productsArray.value.find(product => product.productId === productId);
 };
 
 const resetTransaction = () => {
@@ -167,32 +207,29 @@ const resetTransaction = () => {
 };
 
 const handleClose = () => {
-  selectedProject.value = null;
+  selectedProduct.value = null;
   resetTransaction();
 };
 
 const handlePurchase = async (purchaseParams) => {
   try {
     const { coverAmount, duration, premium } = purchaseParams;
-    console.log('params: ', coverAmount, duration, premium);
 
     // Store params for retry functionality
     currentPurchaseParams.value = purchaseParams;
 
-    // Calculate dates
-    const startDate = Math.floor(Date.now() / 1000);
-    const endDate = startDate + (duration * 24 * 60 * 60);
+    console.log('params: ', coverAmount, duration, premium);
 
-    // Convert amounts to wei
+    const durationInSeconds = duration * 86400;
     const coverAmountWei = ethers.utils.parseEther(coverAmount.toFixed(18));
     const premiumWei = ethers.utils.parseEther(premium.toFixed(18));
 
     const signer = web3Store.provider.getSigner();
 
     // Get contract instances
-    const coverContract = new ethers.Contract(
-        getContractAddress('COVER_PURCHASER', web3Store.chainId),
-        coverABI,
+    const poolContract = new ethers.Contract(
+        getContractAddress('INSURANCE_POOL', web3Store.chainId),
+        insurancePoolABI,
         signer
     );
 
@@ -205,7 +242,7 @@ const handlePurchase = async (purchaseParams) => {
     // Check and handle allowance
     const currentAllowance = await paymentToken.allowance(
         web3Store.account,
-        coverContract.address
+        poolContract.address
     );
 
     transactionType.value = 'cover_purchase';
@@ -216,7 +253,7 @@ const handlePurchase = async (purchaseParams) => {
         firstTxStatus.value = 'pending';
 
         const approveTx = await paymentToken.approve(
-            coverContract.address,
+            poolContract.address,
             premiumWei
         );
         currentTxHash.value = approveTx.hash;
@@ -237,12 +274,11 @@ const handlePurchase = async (purchaseParams) => {
     try {
       secondTxStatus.value = 'pending';
 
-      const purchaseTx = await coverContract.purchaseCover(
-          selectedProject.value.name,
-          startDate,
-          endDate,
-          coverAmountWei,
-          premiumWei
+      const purchaseTx = await poolContract.purchaseCover(
+          selectedProduct.value.productId,
+          web3Store.account,
+          durationInSeconds,
+          coverAmountWei
       );
 
       currentTxHash.value = purchaseTx.hash;
@@ -272,4 +308,19 @@ const retryTransaction = async () => {
     await handlePurchase(currentPurchaseParams.value);
   }
 };
+
+// Initialize contracts and load data when web3 is connected
+if (web3Store.isConnected) {
+  loadPoolProducts();
+}
+
+// Watch for web3 connection changes
+watch(
+    () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
+    async ([isConnected]) => {
+      if (isConnected) {
+        loadPoolProducts();
+      }
+    }
+);
 </script>

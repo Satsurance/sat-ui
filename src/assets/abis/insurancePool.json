@@ -815,12 +815,54 @@
         "type": "uint256"
       }
     ],
-    "name": "getProductAllocation",
+    "name": "getProduct",
     "outputs": [
       {
-        "internalType": "uint256",
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "uint64",
+            "name": "productId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "annualPercent",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "maxCoverageDuration",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "maxPoolAllocationPercent",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "allocation",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastAllocationUpdate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct Product",
         "name": "",
-        "type": "uint256"
+        "type": "tuple"
       }
     ],
     "stateMutability": "nonpayable",
