@@ -153,9 +153,9 @@
                 />
                 <div class="relative h-4 text-xs text-gray-500">
                   <span class="absolute left-0 -translate-x-1/2 text-[9px] sm:text-xs" style="left: 2%">31d</span>
-                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 19.5%">{{(Math.floor(product.maxCoverageDuration / 86400/4))}}d</span>
-                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 46%">{{(Math.floor(product.maxCoverageDuration * 2 / 86400/4))}}d</span>
-                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 72.72%">{{(Math.floor(product.maxCoverageDuration * 3 / 86400/4))}}d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 19.5%">{{(Math.floor(31 + ((product.maxCoverageDuration / 86400) - 31)*38/200))}}d</span>
+                  <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 48%">{{(Math.floor((31 + product.maxCoverageDuration / 86400) /2))}}d</span>
+                  <span class="absolute -translate-x-1/2 hidden sm:inline text-xs" style="left: 72.72%">{{(Math.floor(31 + (((product.maxCoverageDuration / 86400) - 31)*8)/11))}}d</span>
                   <span class="absolute -translate-x-1/2 text-[9px] sm:text-xs" style="left: 97%">{{(Math.floor(product.maxCoverageDuration / 86400))}}d</span>
                 </div>
               </div>

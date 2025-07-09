@@ -497,7 +497,6 @@ import erc20ABI from "../assets/abis/erc20.json";
 import coverABI from '../assets/abis/coverpurchaser.json';
 import ClaimDetailsDialog from "../components/ClaimDetailsDialog.vue";
 import TransactionStatus from "../components/TransactionStatus.vue";
-import { COVER_PROJECTS } from '../constants/projects';
 
 // Store and contract setup
 const web3Store = useWeb3Store();

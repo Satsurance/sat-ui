@@ -82,6 +82,7 @@
         <!-- Action Button -->
         <div class="flex justify-center mt-2">
           <button
+              v-if="!isUnderwriter"
               @click="openNewPositionDialog"
               class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
           >
@@ -89,6 +90,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
             New Staking Position
+          </button>
+          <button
+              v-else
+              @click="navigateToUnderwriterConfig"
+              class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Configure Pool
           </button>
         </div>
       </div>
@@ -126,10 +138,18 @@
                   </svg>
                   <p>No active positions</p>
                   <button
+                      v-if="!isUnderwriter"
                       @click="openNewPositionDialog"
                       class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
                   >
                     Create your first position
+                  </button>
+                  <button
+                      v-else
+                      @click="navigateToUnderwriterConfig"
+                      class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
+                  >
+                    Configure Pool
                   </button>
                 </div>
               </td>
@@ -210,6 +230,7 @@
 <script setup>
 import { ref, watch, computed, markRaw } from "vue";
 import { ethers } from "ethers";
+import { useRouter } from "vue-router";
 import { useWeb3Store } from "../stores/web3Store";
 import {getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION} from "../constants/contracts.js";
 import { getPoolName } from "../constants/pools.js";
@@ -240,6 +261,7 @@ const poolAddress = ref(null);
 const positionNFT = ref(null);
 const coverNFT = ref(null);
 const isNewPositionDialogOpen = ref(false);
+const isUnderwriter = ref(false);
 
 // Transaction state
 const firstTxStatus = ref("");
@@ -249,6 +271,7 @@ const currentTxHash = ref("");
 const transactionError = ref("");
 
 const web3Store = useWeb3Store();
+const router = useRouter();
 
 // Computed Properties
 const transactionSteps = computed(() => {
@@ -329,20 +352,23 @@ const loadPositionState = async () => {
       return;
     }
 
-
     const positionsCount = (await positionNFT.value.balanceOf(web3Store.account)).toNumber();
     const positionsIds = await Promise.all(Array(positionsCount).fill().map((_, i) => 
       positionNFT.value.tokenOfOwnerByIndex(web3Store.account, i)
     ));
 
-    const [poolStats, currentEpisode, earned, ...userPositions] = await Promise.all([
+    const [poolStats, currentEpisode, earned, poolUnderwriter, ...userPositions] = await Promise.all([
       insurancePool.value.callStatic.poolStatsLatest(),
       insurancePool.value.getCurrentEpisode(),
       insurancePool.value.callStatic.earnedPositions(positionsIds),
+      insurancePool.value.poolUnderwriter(),
       ...positionsIds.map(positionId =>
           insurancePool.value.getPoolPosition(positionId)
       )
     ]);
+
+    // Check underwriter status
+    isUnderwriter.value = poolUnderwriter.toLowerCase() === web3Store.account.toLowerCase();
 
     // Destructure the poolStatsLatest response
     const [totalAssetsStakedRaw, totalSharesAmount, totalRewardShares, rewardRate, maxSharesUserToStake, maxUnderwriterSharesToUnstake] = poolStats;
@@ -427,6 +453,10 @@ const handlePositionCreated = async () => {
   await loadPositionState();
 };
 
+const navigateToUnderwriterConfig = () => {
+  router.push(`/underwriter/${props.poolId}`);
+};
+
 // Unstake position
 const unstakePosition = async (positionId) => {
   try {
@@ -498,8 +528,8 @@ const retryTransaction = async () => {
 
 // Initialize contracts and load data when web3 is connected
 if (web3Store.isConnected) {
-  initializeContracts().then(() => {
-    loadPositionState();
+  initializeContracts().then(async () => {
+    await loadPositionState();
   });
 }
 

@@ -41,6 +41,15 @@ const routes = [
     path: "/faucet",
     component: () => import("../layouts/FaucetLayout.vue"),
   },
+  {
+    path: "/underwriter",
+    component: () => import("../layouts/UnderwriterConfigLayout.vue"),
+  },
+  {
+    path: "/underwriter/:poolId",
+    component: () => import("../layouts/UnderwriterConfigLayout.vue"),
+    props: true,
+  },
 
   {
     path: "/docs",
