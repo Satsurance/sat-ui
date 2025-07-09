@@ -117,7 +117,7 @@ import { getContractAddress } from '../constants/contracts.js';
 import coverNFTABI from '../assets/abis/coverNFT.json';
 import UserCoverCard from '../components/UserCoverCard.vue';
 import UserCoverDetails from '../components/UserCoverDetails.vue';
-import { COVER_PROJECTS, COVER_PRODUCTS } from '../constants/projects';
+import { COVER_PRODUCTS } from '../constants/projects';
 
 // Store and State
 const web3Store = useWeb3Store();

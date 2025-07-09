@@ -9,8 +9,17 @@ const routes = [
     },
   },
   {
+    path: "/pools",
+    component: () => import("../layouts/PoolsListLayout.vue"),
+  },
+  {
     path: "/stake",
     component: () => import("../layouts/StakingLayout.vue"),
+  },
+  {
+    path: "/pools/:poolId",
+    component: () => import("../layouts/StakingLayout.vue"),
+    props: true,
   },
   {
     path: "/cover",

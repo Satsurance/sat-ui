@@ -37,7 +37,7 @@
                 </svg>
               </div>
               <!-- Added invisible bridge and adjusted positioning -->
-              <div class="absolute hidden group-hover:block top-[calc(100%-16px)] pt-4 w-36">
+              <div class="absolute hidden group-hover:block top-[calc(100%-16px)] pt-4 w-36 z-50">
                 <div class="bg-white shadow-lg rounded-lg py-2">
                   <router-link
                       to="/cover_buy"
@@ -63,8 +63,9 @@
                 </div>
               </div>
             </div>
+            <!-- Direct link for Underwriting -->
             <router-link
-                to="/stake"
+                to="/pools"
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
@@ -179,8 +180,9 @@
             </router-link>
           </div>
         </div>
+        <!-- Mobile Underwriting direct link -->
         <router-link
-            to="/stake"
+            to="/pools"
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >

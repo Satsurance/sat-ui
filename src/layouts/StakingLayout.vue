@@ -3,16 +3,24 @@
     <div class="max-w-6xl mx-auto px-4 py-8">
       <!-- Main Container -->
       <div class="bg-white rounded-xl p-6 mb-8 border border-gray-100 transition-all duration-300">
+
+        
         <!-- Header with Dashboard Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
           <!-- Left: Title and APR Display -->
           <div class="flex flex-col space-y-6">
             <div>
               <h1 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-                <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Insurance Pool
+                <button
+                  @click="$router.push('/pools')"
+                  class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200 hover:border-gray-300"
+                  title="Back to Pools"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+                {{ getPoolName(web3Store.chainId, parseInt(props.poolId)) }}
               </h1>
               <p class="text-gray-500 text-lg">Stake your BTC to earn rewards while providing insurance</p>
             </div>
@@ -204,11 +212,21 @@ import { ref, watch, computed, markRaw } from "vue";
 import { ethers } from "ethers";
 import { useWeb3Store } from "../stores/web3Store";
 import {getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION} from "../constants/contracts.js";
+import { getPoolName } from "../constants/pools.js";
 import insurancePoolABI from "../assets/abis/insurancePool.json";
+import poolFactoryABI from "../assets/abis/poolFactory.json";
 import erc721ABI from "../assets/abis/erc721enumerable.json";
 import TransactionStatus from "../components/TransactionStatus.vue";
 import NewPositionDialog from "../components/NewPositionDialog.vue";
 import { formatDate } from "../utils.js";
+
+// Props
+const props = defineProps({
+  poolId: {
+    type: String,
+    default: "1"
+  }
+});
 
 // State
 const positions = ref([]);
@@ -217,6 +235,8 @@ const userTotalStakedAmount = ref(0);
 const earnedRewards = ref(0);
 const poolAPR = ref(0);
 const insurancePool = ref(null);
+const poolFactory = ref(null);
+const poolAddress = ref(null);
 const positionNFT = ref(null);
 const coverNFT = ref(null);
 const isNewPositionDialogOpen = ref(false);
@@ -257,30 +277,56 @@ const transactionSteps = computed(() => {
 });
 
 // Methods
-const initializeContracts = () => {
-  const signer = web3Store.provider.getSigner();
-  insurancePool.value = markRaw(new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
+const initializeContracts = async () => {
+  try {
+    const signer = web3Store.provider.getSigner();
+    
+    // Initialize pool factory
+    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    if (!factoryAddress) {
+      console.error("Pool factory not available for this network");
+      return;
+    }
+    
+    poolFactory.value = markRaw(new ethers.Contract(
+      factoryAddress,
+      poolFactoryABI,
+      signer
+    ));
+    
+    // Get specific pool address from factory
+    const poolIndex = parseInt(props.poolId);
+    poolAddress.value = await poolFactory.value.pools(poolIndex);
+    
+    // Initialize insurance pool contract with specific pool address
+    insurancePool.value = markRaw(new ethers.Contract(
+      poolAddress.value,
       insurancePoolABI,
       signer
-  ));
-  positionNFT.value = new ethers.Contract(
+    ));
+    
+    // Initialize NFT contracts
+    positionNFT.value = new ethers.Contract(
       getContractAddress("POSITION_NFT", web3Store.chainId),
       erc721ABI,
       signer
-  );
-  coverNFT.value = new ethers.Contract(
+    );
+    coverNFT.value = new ethers.Contract(
       getContractAddress("COVER_NFT", web3Store.chainId),
       erc721ABI,
       signer
-  );
+    );
+  } catch (error) {
+    console.error("Error initializing contracts:", error);
+  }
 };
 
 
 const loadPositionState = async () => {
   try {
-    if (!insurancePool.value) {
-      initializeContracts();
+    if (!insurancePool.value || !positionNFT.value) {
+      console.warn("Contracts not initialized yet");
+      return;
     }
 
 
@@ -452,8 +498,9 @@ const retryTransaction = async () => {
 
 // Initialize contracts and load data when web3 is connected
 if (web3Store.isConnected) {
-  initializeContracts();
-  loadPositionState();
+  initializeContracts().then(() => {
+    loadPositionState();
+  });
 }
 
 // Watch for web3 connection changes
@@ -461,7 +508,18 @@ watch(
     () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async ([isConnected]) => {
       if (isConnected) {
-        initializeContracts();
+        await initializeContracts();
+        await loadPositionState();
+      }
+    }
+);
+
+// Watch for pool ID changes
+watch(
+    () => props.poolId,
+    async (newPoolId) => {
+      if (web3Store.isConnected && newPoolId) {
+        await initializeContracts();
         await loadPositionState();
       }
     }

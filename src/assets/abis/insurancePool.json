@@ -1102,6 +1102,11 @@
         "internalType": "uint256",
         "name": "maxUnderwriterSharesToUnstake_",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalCoverAllocation_",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
