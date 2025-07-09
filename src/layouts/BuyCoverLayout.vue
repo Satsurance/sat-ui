@@ -147,7 +147,7 @@ const loadPoolProducts = async () => {
   productsArray.value = poolProductsList.map(product => {
       const productInfo = COVER_PRODUCTS[poolId]?.[product.productId.toNumber()];
   
-      if (productInfo) {
+      if (productInfo && product.active) {
         // Calculate  and maxCover
         const basisPoints = 10000n; // Standard basis points
         const maxCover = Math.floor(parseFloat(ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation))) * 100000000) / 100000000;
