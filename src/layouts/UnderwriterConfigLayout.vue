@@ -6,6 +6,15 @@
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
             <h1 class="text-2xl md:text-4xl font-semibold text-gray-900 flex items-center gap-3">
+              <button
+                @click="$router.push(`/pools/${poolId}`)"
+                class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200 hover:border-gray-300"
+                title="Back to Pool Staking"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
               <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -17,12 +26,8 @@
           
           <div class="flex items-center space-x-4 mt-4 md:mt-0">
             <div class="text-right">
-              <div class="text-sm text-gray-500">Pool ID</div>
-              <div class="text-lg font-semibold text-gray-900">{{ poolId }}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm text-gray-500">Your Fee</div>
-              <div class="text-lg font-semibold text-yellow-600">{{ (underwriterFee / 100).toFixed(2) }}%</div>
+              <div class="text-sm text-gray-500">Pool</div>
+              <div class="text-lg font-semibold text-gray-900">{{ poolDisplayName }}</div>
             </div>
           </div>
         </div>
@@ -62,8 +67,8 @@
               <div class="text-2xl font-bold text-green-600">{{ totalPoolShares.toLocaleString() }}</div>
             </div>
             <div class="bg-purple-50 p-6 rounded-lg border border-purple-200">
-              <div class="text-sm text-purple-700 mb-1">Pool Reward Rate</div>
-              <div class="text-2xl font-bold text-purple-600">{{ poolRewardRate.toLocaleString() }}</div>
+              <div class="text-sm text-purple-700 mb-1">Pool APR</div>
+              <div class="text-2xl font-bold text-purple-600">{{ poolAPR }}%</div>
             </div>
             <div class="bg-orange-50 p-6 rounded-lg border border-orange-200">
               <div class="text-sm text-orange-700 mb-1">Cover Allocation</div>
@@ -438,6 +443,7 @@ import { ref, computed, watch, reactive, onMounted, markRaw } from 'vue';
 import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress, SUPPORTED_NETWORKS } from '../constants/contracts';
+import { getPoolName } from '../constants/pools';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
 import TransactionStatus from '../components/TransactionStatus.vue';
 
@@ -462,7 +468,7 @@ const underwriterPosition = ref({});
 const totalAssetsStaked = ref(0);
 const totalPoolShares = ref(0);
 const totalRewardShares = ref(0);
-const poolRewardRate = ref(0);
+const poolAPR = ref(0);
 const totalCoverAllocation = ref(0);
 const maxSharesUserToStake = ref(0);
 const maxUnderwriterSharesToUnstake = ref(0);
@@ -509,6 +515,10 @@ const editProductForm = reactive({
 });
 
 // Computed
+const poolDisplayName = computed(() => {
+  return getPoolName(web3Store.chainId, parseInt(props.poolId));
+});
+
 const transactionSteps = computed(() => {
   switch (transactionType.value) {
     case 'toggle_deposits':
@@ -609,10 +619,16 @@ const loadPoolData = async () => {
     totalAssetsStaked.value = poolStats.totalAssetsStaked_;
     totalPoolShares.value = parseFloat(ethers.utils.formatEther(poolStats.totalPoolShares_));
     totalRewardShares.value = parseFloat(ethers.utils.formatEther(poolStats.totalRewardShares_));
-    poolRewardRate.value = parseFloat(ethers.utils.formatEther(poolStats.poolRewardRate_));
     totalCoverAllocation.value = poolStats.totalCoverAllocation_;
     maxSharesUserToStake.value = parseFloat(ethers.utils.formatEther(poolStats.maxSharesUserToStake_));
     maxUnderwriterSharesToUnstake.value = parseFloat(ethers.utils.formatEther(poolStats.maxUnderwriterSharesToUnstake_));
+    
+    // Calculate APR similar to StakingLayout
+    if (poolStats.totalAssetsStaked_ != 0) {
+      poolAPR.value = ((Number((BigInt(poolStats.totalAssetsStaked_) + BigInt(poolStats.poolRewardRate_) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(poolStats.totalAssetsStaked_)) / 10000 - 1) * 100).toFixed(2);
+    } else {
+      poolAPR.value = "0.00";
+    }
     
     // Load pool settings
     isNewDepositAccepted.value = await insurancePool.value.isNewDepositAccepted();
@@ -624,7 +640,7 @@ const loadPoolData = async () => {
     underwriterPosition.value = await insurancePool.value.getPoolPosition(underwriterPositionId.value);
     
     // Load available rewards
-    availableRewards.value = await insurancePool.value.callStatic.earnedPosition(0);
+    availableRewards.value = await insurancePool.value.callStatic.earnedPositions([0, underwriterPositionId.value]);
     
     // Load products
     await loadProducts();
@@ -844,7 +860,7 @@ const collectRewards = async () => {
     transactionType.value = 'collect_rewards';
     firstTxStatus.value = 'pending';
     
-    const tx = await insurancePool.value.collectRewards([0]); // Position 0 is underwriter position
+    const tx = await insurancePool.value.collectRewards([0, underwriterPositionId.value]); // Position 0 is underwriter position
     currentTxHash.value = tx.hash;
     
     await tx.wait();

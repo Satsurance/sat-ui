@@ -15,17 +15,17 @@
 
         <!-- Stats Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
-            <div class="text-sm text-blue-700 mb-1">Total Pools</div>
-            <div class="text-3xl font-bold text-blue-600">{{ poolCount }}</div>
+          <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
+            <div class="text-sm text-yellow-700 mb-1">Avg APR</div>
+            <div class="text-3xl font-bold text-yellow-600">{{ averageAPR }}<span class="text-lg">%</span></div>
           </div>
           <div class="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
             <div class="text-sm text-green-700 mb-1">Total TVL</div>
             <div class="text-3xl font-bold text-green-600">{{ totalTVL }} <span class="text-lg">BTC</span></div>
           </div>
-          <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
-            <div class="text-sm text-yellow-700 mb-1">Avg APR</div>
-            <div class="text-3xl font-bold text-yellow-600">{{ averageAPR }}<span class="text-lg">%</span></div>
+          <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+            <div class="text-sm text-blue-700 mb-1">Total Pools</div>
+            <div class="text-3xl font-bold text-blue-600">{{ poolCount }}</div>
           </div>
         </div>
       </div>
