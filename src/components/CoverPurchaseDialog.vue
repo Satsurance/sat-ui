@@ -209,6 +209,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { ethers } from 'ethers';
 import { useWeb3Store } from '../stores/web3Store';
 
 const props = defineProps({
@@ -239,30 +240,52 @@ const hasErrors = computed(() => {
 });
 
 const calculatePremium = computed(() => {
-  if (!coverAmount.value || isNaN(coverAmount.value)) return 0;
+  if (!coverAmount.value || isNaN(coverAmount.value)) return BigInt(0);
 
-  // Convert all numbers to strings and use high precision arithmetic
-  const amount = Number(coverAmount.value);
-  const rate = Number(props.product.annualPercent / 10000);
-  const days = Number(duration.value);
-
-  // Calculate with maximum precision: (amount * rate * days) / (100 * 365)
-  const yearlyPremium = (amount * rate) / 100;
-  const durationInYears = days / 365;
-  const premium = yearlyPremium * durationInYears;
-
-  return premium;
+  try {
+    // Convert cover amount to wei (BigInt) for precise calculations
+    const coverAmountWei = ethers.utils.parseEther(coverAmount.value.toString());
+    
+    // Get annual rate as BigInt (already in basis points from contract)
+    const annualRateBasisPoints = BigInt(props.product.annualPercent);
+    
+    // Get duration as BigInt
+    const durationDays = BigInt(duration.value);
+    
+    // Calculate premium using BigInt arithmetic
+    // Formula: (coverAmount * annualRate * durationDays) / (10000 * 365)
+    // Where 10000 is for basis points conversion and 365 is days per year
+    const numerator = coverAmountWei * annualRateBasisPoints * durationDays;
+    const denominator = BigInt(10000) * BigInt(365);
+    
+    return numerator / denominator;
+  } catch (error) {
+    console.error('Error calculating premium:', error);
+    return BigInt(0);
+  }
 });
 
 const formatPremium = computed(() => {
-  const premium = calculatePremium.value;
+  const premiumWei = calculatePremium.value;
 
-  // Handle different ranges of numbers with appropriate precision
-  if (premium === 0) return '0 BTC';
-  if (premium < 0.00000001) return premium.toExponential(8) + ' BTC';
-  if (premium < 0.0001) return premium.toFixed(8) + ' BTC';
-  if (premium < 0.01) return premium.toFixed(6) + ' BTC';
-  return premium.toFixed(4) + ' BTC';
+  // Handle BigInt value
+  if (premiumWei === BigInt(0)) return '0 BTC';
+  
+  try {
+    // Convert wei to ether string using ethers.utils.formatEther
+    const premiumEther = ethers.utils.formatEther(premiumWei);
+    const premium = parseFloat(premiumEther);
+    
+    // Handle different ranges of numbers with appropriate precision
+    if (premium === 0) return '0 BTC';
+    if (premium < 0.00000001) return premium.toExponential(8) + ' BTC';
+    if (premium < 0.0001) return premium.toFixed(8) + ' BTC';
+    if (premium < 0.01) return premium.toFixed(6) + ' BTC';
+    return premium.toFixed(4) + ' BTC';
+  } catch (error) {
+    console.error('Error formatting premium:', error);
+    return '0 BTC';
+  }
 });
 
 const handleCoverAmountInput = (event) => {
@@ -275,7 +298,7 @@ const handleCoverAmountInput = (event) => {
     return;
   }
 
-  // Parse the input value
+  // Validate the input format and convert to string
   const numValue = Number(value);
 
   // Validate the input
@@ -284,21 +307,49 @@ const handleCoverAmountInput = (event) => {
     return;
   }
 
-  // Round to 8 decimal places for BTC
-  coverAmount.value = parseFloat(numValue.toFixed(8));
-  coverAmountError.value = '';
+  // Validate precision to prevent wei conversion issues
+  try {
+    // Test if the value can be converted to wei without error
+    ethers.utils.parseEther(value);
+    
+    // Store the raw string value to preserve precision
+    coverAmount.value = value;
+    coverAmountError.value = '';
+  } catch (error) {
+    coverAmountError.value = 'Invalid number format - too many decimal places';
+  }
 };
 
 const validateCoverAmount = (value) => {
+  if (!value || value === '') {
+    coverAmountError.value = 'Please enter a cover amount';
+    return false;
+  }
+  
   const numValue = Number(value);
   if (isNaN(numValue)) {
     coverAmountError.value = 'Please enter a valid number';
     return false;
   }
+  
+  if (numValue <= 0) {
+    coverAmountError.value = 'Cover amount must be greater than 0';
+    return false;
+  }
+  
   if (numValue > props.product.maxCover) {
     coverAmountError.value = `Cover amount cannot exceed ${props.product.maxCover} BTC`;
     return false;
   }
+  
+  // Validate that the value can be converted to wei
+  try {
+    ethers.utils.parseEther(value.toString());
+  } catch (error) {
+    coverAmountError.value = 'Invalid number format - too many decimal places';
+    return false;
+  }
+  
   coverAmountError.value = '';
   return true;
 };
@@ -330,10 +381,13 @@ const handlePurchase = async () => {
 
   // Only emit if all validations pass
   if (isValidAmount && isValidDuration) {
+    const premiumWei = calculatePremium.value;
+    const premiumEther = ethers.utils.formatEther(premiumWei);
+    
     emit('purchase', {
       coverAmount: coverAmount.value,
       duration: duration.value,
-      premium: calculatePremium.value
+      premium: parseFloat(premiumEther)
     });
   }
 };

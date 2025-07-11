@@ -529,7 +529,7 @@ const retryTransaction = async () => {
 // Initialize contracts and load data when web3 is connected
 if (web3Store.isConnected) {
   initializeContracts().then(async () => {
-    await loadPositionState();
+   loadPositionState();
   });
 }
 
@@ -538,20 +538,11 @@ watch(
     () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async ([isConnected]) => {
       if (isConnected) {
-        await initializeContracts();
-        await loadPositionState();
+        initializeContracts().then(async () => {
+        loadPositionState();
+      });
       }
     }
 );
 
-// Watch for pool ID changes
-watch(
-    () => props.poolId,
-    async (newPoolId) => {
-      if (web3Store.isConnected && newPoolId) {
-        await initializeContracts();
-        await loadPositionState();
-      }
-    }
-);
 </script>

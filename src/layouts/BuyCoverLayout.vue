@@ -102,6 +102,7 @@ import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts';
 import { useWeb3Store } from '../stores/web3Store';
 import erc20ABI from '../assets/abis/erc20.json';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
+import poolFactoryABI from '../assets/abis/poolFactory.json';
 
 const categories = ['All', 'Web3', 'Cannabis', 'AI'];
 const selectedCategory = ref('All');
@@ -126,31 +127,76 @@ const filteredProducts = computed(() => {
 });
 
 const loadPoolProducts = async () => {
-  const poolId = 1;
-  const poolContract = new ethers.Contract(
-      getContractAddress("INSURANCE_POOL", web3Store.chainId),
-      insurancePoolABI,
-      web3Store.provider
-  );
-  const poolProductsCount = (await poolContract.productCounter()).toNumber();
-  const poolStats = await poolContract.callStatic.poolStatsLatest();
-  const poolProductsList = await Promise.all(
-    Array(poolProductsCount).fill().map((_, i) => {
-      const productId = i;
-      return poolContract.callStatic.getProduct(productId).then(productData => ({
-        productId,
-        ...productData
-      }));
-    })
-  );
+  try {
+    // Get pool factory contract
+    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    if (!factoryAddress) {
+      console.error("Pool factory not available for this network");
+      productsArray.value = [];
+      return;
+    }
 
-  productsArray.value = poolProductsList.map(product => {
-      const productInfo = COVER_PRODUCTS[poolId]?.[product.productId.toNumber()];
+    const poolFactory = new ethers.Contract(
+      factoryAddress,
+      poolFactoryABI,
+      web3Store.provider
+    );
+
+    // Get pool count from factory
+    const poolCount = await poolFactory.poolCount();
+    const poolCountNumber = poolCount.toNumber();
+
+    if (poolCountNumber === 0) {
+      productsArray.value = [];
+      return;
+    }
+
+    // Step 1: Fetch all pool addresses in parallel
+    const poolIndices = Array.from({ length: poolCountNumber }, (_, i) => i + 1);
+    const poolAddresses = await Promise.all(
+      poolIndices.map(poolIndex => poolFactory.pools(poolIndex))
+    );
+
+    // Create pool contract instances
+    const poolContracts = poolAddresses.map(address => 
+      new ethers.Contract(address, insurancePoolABI, web3Store.provider)
+    );
+
+    // Step 2: Fetch product counts and pool stats for all pools in parallel
+    const [productCounts, poolStats] = await Promise.all([
+      Promise.all(poolContracts.map(contract => contract.productCounter())),
+      Promise.all(poolContracts.map(contract => contract.callStatic.poolStatsLatest()))
+    ]);
+
+    // Step 3: Fetch all product details in parallel
+    const allProductPromises = [];
+    poolContracts.forEach((contract, poolIndex) => {
+      const count = productCounts[poolIndex].toNumber();
+      const realPoolIndex = poolIndex + 1; // Pool indices start from 1
+      
+      for (let productId = 0; productId < count; productId++) {
+        allProductPromises.push(
+          contract.callStatic.getProduct(productId).then(productData => ({
+            productId,
+            poolId: realPoolIndex,
+            poolAddress: poolAddresses[poolIndex],
+            poolStats: poolStats[poolIndex],
+            ...productData
+          }))
+        );
+      }
+    });
+
+    const allProducts = await Promise.all(allProductPromises);
+
+    // Process and filter products
+    productsArray.value = allProducts.map(product => {
+      const productInfo = COVER_PRODUCTS[product.poolId]?.[product.productId];
   
       if (productInfo && product.active) {
-        // Calculate  and maxCover
+        // Calculate maxCover
         const basisPoints = 10000n; // Standard basis points
-        const maxCover = Math.floor(parseFloat(ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation))) * 100000000) / 100000000;
+        const maxCover = Math.floor(parseFloat(ethers.utils.formatEther((BigInt(product.maxPoolAllocationPercent) * BigInt(product.poolStats.totalAssetsStaked_) / basisPoints) - BigInt(product.allocation))) * 100000000) / 100000000;
         
         return {
           // Merge with the product data from the pool first
@@ -164,7 +210,12 @@ const loadPoolProducts = async () => {
       return null;
     }).filter(Boolean);
 
-  console.log("productsArray", productsArray.value);
+    console.log("productsArray", productsArray.value);
+    
+  } catch (error) {
+    console.error("Error loading pool products:", error);
+    productsArray.value = [];
+  }
 };
 
 const transactionSteps = computed(() => {
@@ -217,8 +268,8 @@ const handlePurchase = async (purchaseParams) => {
     console.log('params: ', coverAmount, duration, premium);
 
     const durationInSeconds = duration * 86400;
-    const coverAmountWei = ethers.utils.parseEther(coverAmount.toFixed(18));
-    const premiumWei = ethers.utils.parseEther(premium.toFixed(18));
+    const coverAmountWei = ethers.utils.parseEther(coverAmount.toString());
+    const premiumWei = ethers.utils.parseEther(premium.toString());
 
     const signer = web3Store.provider.getSigner();
 
