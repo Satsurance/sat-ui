@@ -240,36 +240,36 @@ const hasErrors = computed(() => {
 });
 
 const calculatePremium = computed(() => {
-  if (!coverAmount.value || isNaN(coverAmount.value)) return BigInt(0);
+  if (!coverAmount.value || isNaN(coverAmount.value)) return ethers.BigNumber.from(0);
 
   try {
-    // Convert cover amount to wei (BigInt) for precise calculations
+    // Convert cover amount to wei (BigNumber) for precise calculations
     const coverAmountWei = ethers.utils.parseEther(coverAmount.value.toString());
     
-    // Get annual rate as BigInt (already in basis points from contract)
-    const annualRateBasisPoints = BigInt(props.product.annualPercent);
+    // Get annual rate as BigNumber (already in basis points from contract)
+    const annualRateBasisPoints = ethers.BigNumber.from(props.product.annualPercent);
     
-    // Get duration as BigInt
-    const durationDays = BigInt(duration.value);
+    // Get duration as BigNumber
+    const durationDays = ethers.BigNumber.from(duration.value);
     
-    // Calculate premium using BigInt arithmetic
+    // Calculate premium using BigNumber arithmetic
     // Formula: (coverAmount * annualRate * durationDays) / (10000 * 365)
     // Where 10000 is for basis points conversion and 365 is days per year
-    const numerator = coverAmountWei * annualRateBasisPoints * durationDays;
-    const denominator = BigInt(10000) * BigInt(365);
+    const numerator = coverAmountWei.mul(annualRateBasisPoints).mul(durationDays);
+    const denominator = ethers.BigNumber.from(10000).mul(ethers.BigNumber.from(365));
     
-    return numerator / denominator;
+    return numerator.div(denominator);
   } catch (error) {
     console.error('Error calculating premium:', error);
-    return BigInt(0);
+    return ethers.BigNumber.from(0);
   }
 });
 
 const formatPremium = computed(() => {
   const premiumWei = calculatePremium.value;
 
-  // Handle BigInt value
-  if (premiumWei === BigInt(0)) return '0 BTC';
+  // Handle BigNumber value
+  if (premiumWei.isZero()) return '0 BTC';
   
   try {
     // Convert wei to ether string using ethers.utils.formatEther
