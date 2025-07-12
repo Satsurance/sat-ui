@@ -80,7 +80,7 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!firstTxStatus"
+        :show="!!(firstTxStatus || secondTxStatus || transactionError)"
         :steps="transactionSteps"
         :tx-hash="currentTxHash"
         :error="transactionError"
@@ -315,6 +315,9 @@ const handlePurchase = async (purchaseParams) => {
             : 'Failed to approve tokens';
         throw error;
       }
+    } else {
+      // Token already approved, mark approval as complete
+      firstTxStatus.value = 'success';
     }
 
     // Second step: Purchase cover
