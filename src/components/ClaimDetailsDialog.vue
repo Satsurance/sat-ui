@@ -34,9 +34,15 @@
             <div class="w-full flex flex-row justify-between mb-2.5 md:mb-10">
               <div>
                 <label class="block text-base text-gray-500 mb-2">Claim Amount</label>
-                <span class="text-2xl font-semibold text-gray-900">
-                  {{ formatAmount(claim?.amount) }} BTC
-                </span>
+                <div class="space-y-1">
+                  <div class="text-2xl font-semibold text-gray-900">
+                    {{ formatAmount(claim?.amount) }} BTC
+                  </div>
+                  <div v-if="claimReduction > 0" class="text-sm text-gray-600">
+                    Actual payout: {{ formatAmount(getActualPayoutAmount) }} BTC
+                    <span class="text-red-600">(-{{ getReductionPercentage }}%)</span>
+                  </div>
+                </div>
               </div>
               <div>
                 <label class="block text-base text-gray-500 mb-2">Creation Date</label>
@@ -71,7 +77,22 @@
                   </span>
                   <button @click="copyToClipboard(claim?.receiver)" class="text-gray-400 hover:text-gray-600 transition-colors" title="Copy address">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pool Address -->
+              <div>
+                <label class="block text-base text-gray-500 mb-2">Pool Address</label>
+                <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <span class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block">
+                    {{ claim?.poolAddress || "0x0" }}
+                  </span>
+                  <button @click="copyToClipboard(claim?.poolAddress)" class="text-gray-400 hover:text-gray-600 transition-colors" title="Copy address">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </button>
                 </div>
@@ -111,33 +132,42 @@
               </div>
             </div>
 
-            <!-- Voting Progress -->
+            <!-- Approval Status -->
             <div class="space-y-4">
-              <label class="block text-base text-gray-500 mb-2 mt-4">Current Voting Status</label>
-              <div class="space-y-4">
-                <!-- For votes -->
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-900 font-medium">For</span>
-                    <span class="text-gray-900 font-medium">{{ formatAmount(claim?.forVotes) }}</span>
-                  </div>
-                  <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-yellow-500 transition-all"
-                         :style="{ width: `${calculateVotePercentage(claim?.forVotes, claim?.againstVotes)}%` }">
-                    </div>
-                  </div>
+              <label class="block text-base text-gray-500 mb-2 mt-4">Approval Status</label>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600">Status</span>
+                  <span class="text-sm font-medium" :class="getStatusTextClasses">
+                    {{ getStatusText }}
+                  </span>
                 </div>
-                <!-- Against votes -->
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-900 font-medium">Against</span>
-                    <span class="text-gray-900 font-medium">{{ formatAmount(claim?.againstVotes) }}</span>
-                  </div>
-                  <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-rose-400 transition-all"
-                         :style="{ width: `${calculateVotePercentage(claim?.againstVotes, claim?.forVotes)}%` }">
-                    </div>
-                  </div>
+                
+                <!-- Timing Information -->
+                <div v-if="claim?.approved && !claim?.executed" class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600">Execution</span>
+                  <span class="text-sm font-medium" :class="isReadyForExecution ? 'text-blue-600' : 'text-yellow-600'">
+                    {{ getExecutionTimeRemaining }}
+                  </span>
+                </div>
+                <div v-else-if="!claim?.approved && !claim?.spam && !claim?.executed" class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600">Approval Deadline</span>
+                  <span class="text-sm font-medium text-gray-900">
+                    {{ getApprovalTimeRemaining }}
+                  </span>
+                </div>
+                
+                <div v-if="claim?.approvalTime > 0" class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600">Approved On</span>
+                  <span class="text-sm font-medium text-gray-900">
+                    {{ formatDate(claim.approvalTime) }}
+                  </span>
+                </div>
+                <div v-if="claimReduction > 0" class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600">Claim Reduction</span>
+                  <span class="text-sm font-medium text-red-600">
+                    {{ getReductionPercentage }}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -150,26 +180,34 @@
             </div>
 
             <!-- Actions -->
-            <div v-if="!claim?.executed" class="flex justify-end gap-4 pt-6">
-              <!-- Show voting buttons during voting period -->
-              <template v-if="isVotingPeriodActive">
-                <button @click="$emit('vote', { claimId: claim?.id, support: false })"
-                        class="px-6 py-2.5 bg-rose-400 border border-rose-400 text-white text-lg rounded-xl hover:bg-white hover:text-rose-400 hover:border-rose-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="!sufficientStake">
-                  Vote Against
+            <div v-if="!claim?.executed && !claim?.spam" class="flex justify-end gap-4 pt-6">
+              <!-- Show operator actions for pending claims - only for controllers -->
+              <template v-if="!claim?.approved && isApprovalPeriodActive && props.isController">
+                <button @click="$emit('mark-spam', claim?.id)"
+                        class="px-6 py-2.5 bg-red-500 border border-red-500 text-white text-lg rounded-xl hover:bg-white hover:text-red-500 hover:border-red-500 transition-colors duration-300">
+                  Mark as Spam
                 </button>
-                <button @click="$emit('vote', { claimId: claim?.id, support: true })"
-                        class="btn-primary px-6 py-2.5 text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="!sufficientStake">
-                  Vote For
+                <button @click="$emit('approve', claim?.id)"
+                        class="btn-primary px-6 py-2.5 text-lg rounded-xl">
+                  Approve Claim
                 </button>
               </template>
-              <!-- Show execute button after voting period if enough support -->
-              <button v-else-if="canExecute"
+              <!-- Show execute button for approved claims - available for everyone -->
+              <button v-else-if="claim?.approved && !claim?.executed"
                       @click="$emit('execute', claim?.id)"
-                      class="px-6 py-2.5 bg-green-500 border border-green-500 text-white text-lg rounded-xl hover:bg-white hover:text-green-500 hover:border-green-500 transition-colors duration-300">
-                Execute Claim
+                      :disabled="!isReadyForExecution"
+                      :class="[
+                        'px-6 py-2.5 text-lg rounded-xl transition-colors duration-300',
+                        isReadyForExecution
+                          ? 'bg-green-500 border border-green-500 text-white hover:bg-white hover:text-green-500 hover:border-green-500'
+                          : 'bg-gray-300 border border-gray-300 text-gray-500 cursor-not-allowed'
+                      ]">
+                {{ isReadyForExecution ? 'Execute Claim' : `Wait ${getExecutionTimeRemaining}` }}
               </button>
+              <!-- Show message if approval period has expired -->
+              <div v-else-if="!claim?.approved && !isApprovalPeriodActive" class="text-sm text-gray-500">
+                Approval period has expired
+              </div>
             </div>
           </div>
         </div>
@@ -188,64 +226,116 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  sufficientStake: {
-    type: Boolean,
-    default: false,
-  },
   errorMessage: {
     type: String,
     default: "",
   },
-  votingPeriod: {
+  approvalPeriod: {
     type: Number,
     required: true,
   },
+  executionTimeout: {
+    type: Number,
+    required: true,
+  },
+  claimReduction: {
+    type: Number,
+    required: true,
+  },
+  isController: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["close", "vote", "execute"]);
-import { computed } from "vue";
+const emit = defineEmits(["close", "approve", "mark-spam", "execute"]);
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { ethers } from "ethers";
 
-const isVotingPeriodActive = computed(() => {
+const isApprovalPeriodActive = computed(() => {
   if (!props.claim?.startTime) return false;
   const currentTime = Math.floor(Date.now() / 1000);
-  return currentTime < Number(props.claim.startTime) + props.votingPeriod;
+  return currentTime < Number(props.claim.startTime) + props.approvalPeriod;
+});
+
+const isReadyForExecution = computed(() => {
+  // Access forceUpdate to ensure reactivity
+  forceUpdate.value;
+  
+  if (!props.claim?.approved || props.claim?.executed || props.claim?.spam) return false;
+  if (!props.claim?.approvalTime || !props.executionTimeout) return false;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const executionReadyTime = Number(props.claim.approvalTime) + props.executionTimeout;
+  
+  return currentTime >= executionReadyTime;
+});
+
+const getExecutionTimeRemaining = computed(() => {
+  // Access forceUpdate to ensure reactivity
+  forceUpdate.value;
+  
+  if (!props.claim?.approved || !props.claim?.approvalTime || !props.executionTimeout) return null;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const executionReadyTime = Number(props.claim.approvalTime) + props.executionTimeout;
+  const timeRemaining = executionReadyTime - currentTime;
+  
+  if (timeRemaining <= 0) return "Ready for execution";
+  
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m until execution`;
+  }
+  return `${minutes}m until execution`;
+});
+
+const getApprovalTimeRemaining = computed(() => {
+  // Access forceUpdate to ensure reactivity
+  forceUpdate.value;
+  
+  if (!props.claim?.startTime || !props.approvalPeriod) return null;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const approvalDeadline = Number(props.claim.startTime) + props.approvalPeriod;
+  const timeRemaining = approvalDeadline - currentTime;
+  
+  if (timeRemaining <= 0) return "Approval period expired";
+  
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m left for approval`;
+  }
+  return `${minutes}m left for approval`;
 });
 
 const getStatusText = computed(() => {
+  if (props.claim?.spam) return "Spam";
   if (props.claim?.executed) return "Executed";
-  if (!isVotingPeriodActive.value) {
-    if (canExecute.value) return "Ready to Execute";
-    return "Voting Ended";
-  }
-  return "Voting Active";
+  if (props.claim?.approved && isReadyForExecution.value) return "Ready for Execution";
+  if (props.claim?.approved) return "Approved";
+  return "Pending";
 });
 
 const getStatusClasses = computed(() => {
+  if (props.claim?.spam) return "bg-red-100 text-red-800";
   if (props.claim?.executed) return "bg-green-100 text-green-800";
-  if (!isVotingPeriodActive.value) {
-    if (canExecute.value) return "bg-yellow-100 text-yellow-800";
-    return "bg-gray-100 text-gray-800";
-  }
-  return "bg-blue-100 text-blue-800";
+  if (props.claim?.approved && isReadyForExecution.value) return "bg-blue-100 text-blue-800";
+  if (props.claim?.approved) return "bg-yellow-100 text-yellow-800";
+  return "bg-gray-100 text-gray-800";
 });
 
-const canExecute = computed(() => {
-  if (!props.claim || props.claim.executed || isVotingPeriodActive.value)
-    return false;
-
-  const totalVotes = Number(props.claim.forVotes) + Number(props.claim.againstVotes);
-  if (totalVotes === 0) return false;
-
-  const supportPercentage = (Number(props.claim.forVotes) / totalVotes) * 100;
-  return supportPercentage > 50;
+const getStatusTextClasses = computed(() => {
+  if (props.claim?.spam) return "text-red-800";
+  if (props.claim?.executed) return "text-green-800";
+  if (props.claim?.approved && isReadyForExecution.value) return "text-blue-800";
+  if (props.claim?.approved) return "text-yellow-800";
+  return "text-gray-800";
 });
-
-const calculateVotePercentage = (votes = 0, totalVotes = 0) => {
-  const total = Number(votes) + Number(totalVotes);
-  if (total === 0) return 0;
-  return Math.round((Number(votes) / total) * 100);
-};
 
 const formatDate = (timestamp) => {
   if (!timestamp) return "Not available";
@@ -271,6 +361,22 @@ const formatAmount = (amount) => {
   }).format(ethers.utils.formatEther(amount.toString()));
 };
 
+// Calculate the actual payout amount after claim reduction
+const getActualPayoutAmount = computed(() => {
+  if (!props.claim?.amount || !props.claimReduction) return null;
+  
+  const BASIS_POINTS = 10000;
+  const reductionFactor = (BASIS_POINTS - props.claimReduction) / BASIS_POINTS;
+  const reducedAmount = props.claim.amount.mul(Math.floor(reductionFactor * BASIS_POINTS)).div(BASIS_POINTS);
+  
+  return reducedAmount;
+});
+
+const getReductionPercentage = computed(() => {
+  if (!props.claimReduction) return "0";
+  return (props.claimReduction / 100).toFixed(2);
+});
+
 const copyToClipboard = async (text) => {
   if (!text) return;
   try {
@@ -287,4 +393,22 @@ const onClose = () => {
 const onBackdropClick = () => {
   onClose();
 };
+
+// Timer for updating timing information
+let updateTimer = null;
+const forceUpdate = ref(0);
+
+// Setup timer to update timing information every minute
+onMounted(() => {
+  updateTimer = setInterval(() => {
+    // Force reactive updates
+    forceUpdate.value++;
+  }, 60000); // Update every minute
+});
+
+onUnmounted(() => {
+  if (updateTimer) {
+    clearInterval(updateTimer);
+  }
+});
 </script>

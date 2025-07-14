@@ -49,89 +49,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-lg p-6 mb-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-              <div
-                class="flex justify-between items-center py-3 md:px-4 rounded w-full text-start"
-              >
-                <span class="text-gray-600">Amount of SURS token staked:</span>
-                <span class="font-medium">{{ stakedAmount }}</span>
-              </div>
-              <div
-                class="flex justify-between items-center py-3 md:px-4 rounded"
-              >
-                <span class="text-gray-600">Available SURS token:</span>
-                <span class="font-medium">{{ availableTokens }}</span>
-              </div>
-              <div
-                class="flex justify-between items-center py-3 md:px-4 rounded"
-              >
-                <span class="text-gray-600">Voting Power:</span>
-                <span class="font-medium text-yellow-500">{{
-                  votingPower
-                }}</span>
-              </div>
-            </div>
 
-            <!-- Staking Actions -->
-            <div class="space-y-4">
-              <div class="flex flex-col">
-                <label
-                  for="stake-amount"
-                  class="block mb-2 text-sm text-left font-medium text-gray-900"
-                >
-                  SURS Amount to Stake
-                </label>
-                <div class="flex items-center space-x-4">
-                  <input
-                    id="stake-amount"
-                    v-model="toStakeAmount"
-                    type="number"
-                    placeholder="0.99"
-                    :disabled="firstTxStatus !== ''"
-                    class="flex-1 form-input"
-                  />
-                  <button
-                    @click="stakeSursTokens"
-                    :disabled="firstTxStatus !== ''"
-                    class="btn-primary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Stake
-                  </button>
-                </div>
-              </div>
-              <div class="flex flex-col">
-                <label
-                  for="unstake-amount"
-                  class="block mb-2 text-sm text-left font-medium text-gray-900"
-                >
-                  SURS Amount to Unstake
-                </label>
-                <div class="flex items-center space-x-4">
-                  <input
-                    id="unstake-amount"
-                    v-model="toUnstakeAmount"
-                    type="number"
-                    placeholder="0.99"
-                    :disabled="firstTxStatus !== ''"
-                    class="flex-1 form-input"
-                  />
-                  <button
-                    @click="unstakeSursTokens"
-                    :disabled="firstTxStatus !== ''"
-                    class="btn-secondary w-28 px-6 py-2.5 rounded-lg disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Unstake
-                  </button>
-                </div>
-              </div>
-              <div v-if="transactionError" class="text-red-600 text-sm mt-2">
-                {{ transactionError }}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Claims Table -->
@@ -158,7 +76,7 @@
               <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-800">Amount</th>
               <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">Description</th>
               <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Receiver</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Votes</th>
+              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Status</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -208,30 +126,32 @@
               </td>
               <td class="px-6 py-5">
                 <div class="flex flex-col items-center gap-2">
-                  <div class="flex items-center gap-2 w-full max-w-[200px]">
-                    <div class="h-2.5 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                          class="h-full transition-all duration-300"
-                          :class="{
-                            'bg-yellow-500': claim.forPercentage > 50,
-                            'bg-gray-400': claim.forPercentage <= 50,
-                          }"
-                          :style="{ width: `${claim.forPercentage}%` }"
-                      ></div>
-                    </div>
-                    <span class="text-xs whitespace-nowrap text-gray-600 font-medium min-w-[5rem] text-center">
-                        {{ formatAmount(claim.forVotes) }} : {{ formatAmount(claim.againstVotes) }}
-                      </span>
-                  </div>
                   <span
-                      class="text-xs font-medium"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                       :class="{
-                        'text-yellow-600': claim.forPercentage > 50,
-                        'text-gray-500': claim.forPercentage <= 50,
+                        'bg-red-100 text-red-800': claim.spam,
+                        'bg-green-100 text-green-800': claim.executed,
+                        'bg-blue-100 text-blue-800': claim.approved && !claim.executed && isReadyForExecution(claim),
+                        'bg-yellow-100 text-yellow-800': claim.approved && !claim.executed && !isReadyForExecution(claim),
+                        'bg-gray-100 text-gray-800': !claim.approved && !claim.spam && !claim.executed,
                       }"
                   >
-                      {{ claim.forPercentage }}% Support
-                    </span>
+                    {{ claim.spam ? 'Spam' : 
+                        claim.executed ? 'Executed' : 
+                        claim.approved && isReadyForExecution(claim) ? 'Ready' :
+                        claim.approved ? 'Approved' : 'Pending' }}
+                  </span>
+                  
+                  <!-- Timing information -->
+                  <span v-if="claim.approved && !claim.executed" class="text-xs text-gray-500 text-center">
+                    {{ getExecutionTimeRemaining(claim) }}
+                  </span>
+                  <span v-else-if="!claim.approved && !claim.spam && !claim.executed" class="text-xs text-gray-500 text-center">
+                    {{ getApprovalTimeRemaining(claim) }}
+                  </span>
+                  <span v-else-if="claim.approvalTime > 0" class="text-xs text-gray-500">
+                    Approved: {{ formatDate(new Date(claim.approvalTime * 1000)) }}
+                  </span>
                 </div>
               </td>
             </tr>
@@ -357,11 +277,11 @@
                   <option value="">Select a cover</option>
                   <option
                       v-for="cover in userCovers"
-                      :key="`${cover.protocol}-${cover.startDate}`"
+                      :key="`${cover.tokenId}`"
                       :value="cover"
                       :class="isCoverExpired(cover) ? 'text-gray-500' : 'text-gray-900'"
                   >
-                    {{ cover.protocol }} - {{ cover.coverAmount }} BTC
+                    NFT #{{ cover.tokenId }} - {{ cover.protocol }} - {{ cover.coverAmount }} BTC
                     (Valid: {{ formatDate(cover.startDate) }} - {{ formatDate(cover.endDate) }})
                     {{ isCoverExpired(cover) ? '(EXPIRED)' : '' }}
                   </option>
@@ -466,11 +386,14 @@
     <ClaimDetailsDialog
       :claim="selectedClaim"
       :is-open="isDialogOpen"
-      :sufficient-stake="sufficientStake"
-      :votingPeriod="votingPeriod"
+      :approvalPeriod="approvalPeriod"
+      :executionTimeout="executionTimeout"
+      :claimReduction="claimReduction"
       :error-message="currentClaimError"
+      :is-controller="isController"
       @close="closeClaimDetails"
-      @vote="handleVote"
+      @approve="handleApproveClaim"
+      @mark-spam="handleMarkAsSpam"
       @execute="handleExecute"
     />
 
@@ -488,26 +411,28 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from "vue";
+import { ref, computed, watch, reactive, onMounted, onUnmounted } from "vue";
 import { ethers } from "ethers";
 import {getContractAddress, SUPPORTED_NETWORKS} from "../constants/contracts.js";
+import { COVER_PRODUCTS } from "../constants/projects.js";
 import { useWeb3Store } from "../stores/web3Store";
 import claimerABI from "../assets/abis/claimer.json";
-import erc20ABI from "../assets/abis/erc20.json";
-import coverABI from '../assets/abis/coverpurchaser.json';
+import coverNftABI from '../assets/abis/coverNFT.json';
+import poolFactoryABI from '../assets/abis/poolFactory.json';
+import controlBoardABI from '../assets/abis/controlBoard.json';
 import ClaimDetailsDialog from "../components/ClaimDetailsDialog.vue";
 import TransactionStatus from "../components/TransactionStatus.vue";
 
 // Store and contract setup
 const web3Store = useWeb3Store();
 
-// Staking state
-const stakedAmount = ref("0");
-const availableTokens = ref("0");
-const votingPower = computed(() => `${stakedAmount.value} VP`);
-const sufficientStake = computed(() => Number(stakedAmount.value) >= 1);
-const votingPeriod = ref(0);
-const stakingMode = ref("stake");
+// Approval state
+const approvalPeriod = ref(0);
+const executionTimeout = ref(0);
+const claimReduction = ref(0);
+
+// Controller state
+const isController = ref(false);
 
 // Transaction state
 const firstTxStatus = ref("");
@@ -515,8 +440,6 @@ const secondTxStatus = ref("");
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
-const toStakeAmount = ref(null);
-const toUnstakeAmount = ref(null);
 
 // Claims state
 const claims = ref([]);
@@ -548,33 +471,6 @@ const submitFormData = reactive({
 
 const transactionSteps = computed(() => {
   switch (transactionType.value) {
-    case 'stake':
-      return [
-        {
-          id: 'approve',
-          title: 'Approve SURS',
-          description: 'Allow smart contract to use your SURS tokens',
-          status: firstTxStatus.value,
-          showNumber: true
-        },
-        {
-          id: 'stake',
-          title: 'Stake SURS',
-          description: 'Stake your SURS tokens',
-          status: secondTxStatus.value,
-          showNumber: true
-        }
-      ];
-    case 'unstake':
-      return [
-        {
-          id: 'unstake',
-          title: 'Unstake SURS',
-          description: 'Withdraw your SURS tokens',
-          status: firstTxStatus.value,
-          showNumber: false
-        }
-      ];
     case 'submit_claim':
       return [
         {
@@ -585,12 +481,22 @@ const transactionSteps = computed(() => {
           showNumber: false
         }
       ];
-    case 'vote':
+    case 'approve':
       return [
         {
-          id: 'vote',
-          title: 'Submit Vote',
-          description: 'Cast your vote on the claim',
+          id: 'approve',
+          title: 'Approve Claim',
+          description: 'Approve the claim for execution',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'mark_spam':
+      return [
+        {
+          id: 'mark_spam',
+          title: 'Mark as Spam',
+          description: 'Mark the claim as spam',
           status: firstTxStatus.value,
           showNumber: false
         }
@@ -638,20 +544,21 @@ const validateAddress = () => {
       return;
     }
 
-    // Check if it's a valid Ethereum address format
-    if (!submitFormData.receiver.match(/^0x[0-9a-fA-F]{40}$/)) {
+    // Trim whitespace
+    const address = submitFormData.receiver.trim();
+
+    // Use isAddress to validate without ENS resolution
+    if (!ethers.utils.isAddress(address)) {
       isValidAddress.value = false;
-      addressError.value = "Invalid Ethereum address format";
+      addressError.value = "Invalid Ethereum address";
       return;
     }
 
-    // Validate checksum
-    const checksumAddress = ethers.utils.getAddress(submitFormData.receiver);
     isValidAddress.value = true;
     addressError.value = "";
 
-    // Update with checksum address
-    submitFormData.receiver = checksumAddress;
+    // Update the form with the validated address (keep original case to avoid ENS issues)
+    submitFormData.receiver = address;
   } catch (error) {
     isValidAddress.value = false;
     addressError.value = "Invalid Ethereum address";
@@ -671,25 +578,46 @@ const isValidAmount = computed(() => {
 const loadUserCovers = async () => {
   try {
     const coverContract = new ethers.Contract(
-        getContractAddress('COVER_PURCHASER', web3Store.chainId),
-        coverABI,
+        getContractAddress('COVER_NFT', web3Store.chainId),
+        coverNftABI,
         web3Store.provider
     );
 
-    const userCoversCount = (await coverContract.getUserCoversCount(web3Store.account)).toNumber();
+    // Get the number of NFTs owned by the user
+    const balance = await coverContract.balanceOf(web3Store.account);
+    const userCoversCount = balance.toNumber();
+    
     let coversPromise = [];
     for(let i = 0; i < userCoversCount; i++) {
-      coversPromise.push(coverContract.covers(web3Store.account, i))
+      // Get token ID at index i for this owner
+      const tokenIdPromise = coverContract.tokenOfOwnerByIndex(web3Store.account, i);
+      coversPromise.push(tokenIdPromise);
     }
-    const covers = await Promise.all(coversPromise);
+    const tokenIds = await Promise.all(coversPromise);
 
-    userCovers.value = covers.map(cover => ({
-      user: cover.user,
-      protocol: cover.protocol,
-      startDate: parseInt(cover.startDate) * 1000,
-      endDate: parseInt(cover.endDate) * 1000,
-      coverAmount: ethers.utils.formatEther(cover.coverAmount)
-    }));
+    // Now get cover details for each token ID
+    let coverDetailsPromise = [];
+    for(let tokenId of tokenIds) {
+      coverDetailsPromise.push(coverContract.covers(tokenId));
+    }
+    const covers = await Promise.all(coverDetailsPromise);
+
+    userCovers.value = covers.map((cover, index) => {
+      // Get protocol name from productId and poolId
+      const poolId = cover.poolId.toNumber();
+      const productId = cover.productId.toNumber();
+      const protocolName = COVER_PRODUCTS[poolId]?.[productId]?.name || `Protocol ${productId}`;
+
+      return {
+        tokenId: tokenIds[index].toNumber(),
+        protocol: protocolName,
+        startDate: parseInt(cover.startDate) * 1000,
+        endDate: parseInt(cover.endDate) * 1000,
+        coverAmount: ethers.utils.formatEther(cover.coveredAmount),
+        productId: productId,
+        poolId: poolId
+      };
+    });
   } catch (e) {
     console.error('Error loading covers:', e);
   }
@@ -709,7 +637,10 @@ const handleSubmitClaim = async () => {
     const claimData = {
       version: 1,
       cover: {
+        tokenId: submitFormData.selectedCover.tokenId,
         protocol: submitFormData.selectedCover.protocol,
+        productId: submitFormData.selectedCover.productId,
+        poolId: submitFormData.selectedCover.poolId,
         startDate: submitFormData.selectedCover.startDate,
         endDate: submitFormData.selectedCover.endDate,
         amount: submitFormData.selectedCover.coverAmount
@@ -718,6 +649,15 @@ const handleSubmitClaim = async () => {
     };
 
     const signer = web3Store.provider.getSigner();
+    
+    // Get pool address from pool factory
+    const poolFactory = new ethers.Contract(
+        getContractAddress("POOL_FACTORY", web3Store.chainId),
+        poolFactoryABI,
+        web3Store.provider
+    );
+    const poolAddress = await poolFactory.pools(submitFormData.selectedCover.poolId);
+    
     const claimer = new ethers.Contract(
         getContractAddress("CLAIMER", web3Store.chainId),
         claimerABI,
@@ -726,8 +666,9 @@ const handleSubmitClaim = async () => {
 
     const tx = await claimer.createClaim(
         submitFormData.receiver,
+        poolAddress, // Add pool address parameter
         JSON.stringify(claimData), // Store the JSON string
-        ethers.utils.parseEther(submitFormData.amount.toString())
+        ethers.utils.parseEther(submitFormData.amount.toString()),  
     );
     currentTxHash.value = tx.hash;
 
@@ -761,180 +702,18 @@ const resetTransaction = () => {
 
 // Retry transaction
 const retryTransaction = () => {
-  if (transactionType.value === "stake") {
-    stakeSursTokens();
-  } else if (transactionType.value === "unstake") {
-    unstakeSursTokens();
-  } else if (transactionType.value === "execute" && selectedClaim.value) {
+  if (transactionType.value === "execute" && selectedClaim.value) {
     handleExecute(selectedClaim.value.id);
   } else if (transactionType.value === "submit_claim") {
     handleSubmitClaim();
+  } else if (transactionType.value === "approve" && selectedClaim.value) {
+    handleApproveClaim(selectedClaim.value.id);
+  } else if (transactionType.value === "mark_spam" && selectedClaim.value) {
+    handleMarkAsSpam(selectedClaim.value.id);
   }
 };
 
-// Staking functionality
-const handleStakeProcess = async (amountInWei) => {
-  try {
-    resetTransaction()
-    const signer = web3Store.provider.getSigner();
-    const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      signer
-    );
-    const sursToken = new ethers.Contract(
-      getContractAddress("SURS_TOKEN", web3Store.chainId),
-      erc20ABI,
-      signer
-    );
 
-    // Check allowance
-    const currentAllowance = await sursToken.allowance(
-      web3Store.account,
-      claimer.address
-    );
-
-    // Handle approval if needed
-    if (currentAllowance.lt(amountInWei)) {
-      transactionType.value = "stake";
-      firstTxStatus.value = "pending";
-
-      try {
-        const approveTx = await sursToken.approve(
-          claimer.address,
-          amountInWei,
-          {
-            from: web3Store.account,
-          }
-        );
-        currentTxHash.value = approveTx.hash;
-
-        await approveTx.wait();
-        firstTxStatus.value = "success";
-      } catch (error) {
-        firstTxStatus.value = "failed";
-        transactionError.value =
-          error.code === 4001
-            ? "Transaction rejected by user"
-            : "Failed to approve tokens";
-        throw error;
-      }
-    }
-
-    // Handle staking
-    secondTxStatus.value = "pending";
-    const stakeTx = await claimer.stake(amountInWei, {
-      from: web3Store.account,
-    });
-    currentTxHash.value = stakeTx.hash;
-
-    await stakeTx.wait();
-    secondTxStatus.value = "success";
-
-    await loadClaimsState();
-    toStakeAmount.value = null;
-
-    // Auto-close on success after delay
-    setTimeout(resetTransaction, 3000);
-  } catch (error) {
-    console.error("Stake process error:", error);
-    throw error;
-  }
-};
-
-const stakeSursTokens = async () => {
-  try {
-    if (!toStakeAmount.value || toStakeAmount.value <= 0) {
-      transactionError.value = "Please enter a valid amount to stake";
-      return;
-    }
-
-    const amountInWei = ethers.utils.parseEther(toStakeAmount.value.toString());
-
-    // Check SURS balance
-    const signer = web3Store.provider.getSigner();
-    const sursToken = new ethers.Contract(
-      getContractAddress("SURS_TOKEN", web3Store.chainId),
-      erc20ABI,
-      signer
-    );
-    const balance = await sursToken.balanceOf(web3Store.account);
-
-    if (balance.lt(amountInWei)) {
-      transactionError.value = `Insufficient SURS balance. You have ${ethers.utils.formatEther(
-        balance
-      )} SURS but trying to stake ${toStakeAmount.value} SURS`;
-      return;
-    }
-
-    await handleStakeProcess(amountInWei);
-  } catch (error) {
-    console.error("Staking error:", error);
-
-    if (firstTxStatus.value !== "failed") {
-      secondTxStatus.value = "failed";
-      transactionError.value =
-        error.code === 4001
-          ? "Transaction rejected by user"
-          : error.code === -32603
-          ? "Insufficient balance or internal error"
-          : "Transaction failed. Please try again";
-    }
-  }
-};
-
-const unstakeSursTokens = async () => {
-  try {
-    if (!toUnstakeAmount.value || toUnstakeAmount.value <= 0) {
-      transactionError.value = "Please enter a valid amount to unstake";
-      return;
-    }
-
-    const amountInWei = ethers.utils.parseEther(
-      toUnstakeAmount.value.toString()
-    );
-
-    // Check staked balance
-    const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      web3Store.provider
-    );
-    const stakedBalance = await claimer.stakes(web3Store.account);
-
-    if (stakedBalance.currentAmount.lt(amountInWei)) {
-      transactionError.value = `Insufficient staked balance. You have ${ethers.utils.formatEther(
-        stakedBalance.currentAmount
-      )} SURS but trying to unstake ${toUnstakeAmount.value} SURS`;
-      return;
-    }
-
-    transactionType.value = "unstake";
-    firstTxStatus.value = "pending";
-
-    const signer = web3Store.provider.getSigner();
-    const claimerWithSigner = claimer.connect(signer);
-
-    const unstakeTx = await claimerWithSigner.unstake(amountInWei, {
-      from: web3Store.account,
-    });
-    currentTxHash.value = unstakeTx.hash;
-
-    await unstakeTx.wait();
-    firstTxStatus.value = "success";
-
-    await loadClaimsState();
-    toUnstakeAmount.value = null;
-
-    // Auto-close on success after delay
-    setTimeout(resetTransaction, 3000);
-  } catch (error) {
-    console.error("Unstaking error:", error);
-    firstTxStatus.value = "failed";
-    transactionError.value =
-      error.code === 4001 ? "Transaction rejected by user" : "Unstaking failed";
-  }
-};
 
 const parseClaimDescription = (rawDescription) => {
   try {
@@ -988,13 +767,14 @@ const loadClaimsTable = async () => {
       ...(parsedDescription.cover && { cover: parsedDescription.cover }), // Only include cover if it exists
       receiver: claim.receiver,
       proposer: claim.proposer,
-      forVotes: claim.forVotes,
-      againstVotes: claim.againstVotes,
+      poolAddress: claim.poolAddress,
+      depositAmount: claim.depositAmount,
       startTime: Number(claim.startTime),
+      approvalTime: Number(claim.approvalTime),
+      approved: claim.approved,
       executed: claim.executed,
       exists: claim.exists,
-      forPercentage: calculateVotePercentage(Number(claim.forVotes), Number(claim.againstVotes)),
-      votesNeeded: calculateVotesNeeded(Number(claim.forVotes), Number(claim.againstVotes))
+      spam: claim.spam
     };
     claims.value.push(newClaim);
     orderCounter++;
@@ -1010,35 +790,23 @@ const loadClaimsState = async () => {
         claimerABI,
         web3Store.provider
     );
-    const sursToken = new ethers.Contract(
-        getContractAddress("SURS_TOKEN", web3Store.chainId),
-        erc20ABI,
-        web3Store.provider
-    );
 
     const retValues = await Promise.all([
-        claimer.stakes(web3Store.account),
-        sursToken.balanceOf(web3Store.account),
-        claimer.votingPeriod(),
+        claimer.approvalPeriod(),
+        claimer.executionTimeout(),
+        claimer.claimReduction(),
         claimer.claimCounter()
     ]);
-    const accountStake = retValues[0];
-    const sursBalance = retValues[1];
-    const vPeriod = retValues[2];
+
     const claimCounter = retValues[3];
 
-
-    stakedAmount.value = Number(
-        ethers.utils.formatEther(accountStake.currentAmount)
-    ).toFixed(2);
-    availableTokens.value = Number(
-        ethers.utils.formatEther(sursBalance)
-    ).toFixed(2);
-
-    votingPeriod.value = (vPeriod).toNumber();
+    approvalPeriod.value = retValues[0].toNumber();
+    executionTimeout.value = retValues[1].toNumber();
+    claimReduction.value = retValues[2].toNumber();
     totalClaims.value = (claimCounter).toNumber();
 
     await loadClaimsTable();
+    await checkControllerStatus();
   } catch (error) {
     console.error("Error loading claims:", error);
   } finally {
@@ -1047,18 +815,6 @@ const loadClaimsState = async () => {
 };
 
 // Utility functions
-const calculateVotePercentage = (forVotes, againstVotes) => {
-  const total = forVotes + againstVotes;
-  if (total === 0) return 0;
-  return Math.round((forVotes / total) * 100);
-};
-
-const calculateVotesNeeded = (forVotes, againstVotes) => {
-  const requiredMajority = 0.5; // 50% majority required
-  const total = forVotes + againstVotes;
-  const neededVotes = Math.ceil(total * requiredMajority - forVotes);
-  return Math.max(0, neededVotes);
-};
 
 const formatDate = (date) => {
   return new Intl.DateTimeFormat("en-US", {
@@ -1080,6 +836,55 @@ const formatAmount = (amount) => {
     maximumFractionDigits: 4,
   }).format(ethers.utils.formatEther(amount.toString()));
 };
+
+// Helper function to check if a claim is ready for execution
+const isReadyForExecution = (claim) => {
+  if (!claim?.approved || claim?.executed || claim?.spam) return false;
+  if (!claim?.approvalTime || !executionTimeout.value) return false;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const executionReadyTime = Number(claim.approvalTime) + executionTimeout.value;
+  
+  return currentTime >= executionReadyTime;
+};
+
+// Helper function to get time remaining for execution
+const getExecutionTimeRemaining = (claim) => {
+  if (!claim?.approved || !claim?.approvalTime || !executionTimeout.value) return null;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const executionReadyTime = Number(claim.approvalTime) + executionTimeout.value;
+  const timeRemaining = executionReadyTime - currentTime;
+  
+  if (timeRemaining <= 0) return "Ready for execution";
+  
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m until execution`;
+  }
+  return `${minutes}m until execution`;
+};
+
+// Helper function to get approval time remaining
+const getApprovalTimeRemaining = (claim) => {
+  if (!claim?.startTime || !approvalPeriod.value) return null;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  const approvalDeadline = Number(claim.startTime) + approvalPeriod.value;
+  const timeRemaining = approvalDeadline - currentTime;
+  
+  if (timeRemaining <= 0) return "Approval period expired";
+  
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m left for approval`;
+  }
+  return `${minutes}m left for approval`;
+};
 // Claim details dialog management
 const openClaimDetails = (claim) => {
   selectedClaim.value = claim;
@@ -1092,9 +897,24 @@ const closeClaimDetails = () => {
   currentClaimError.value = '';
 };
 
-const handleVote = async ({ claimId, support }) => {
+
+
+const handleApproveClaim = async (claimId) => {
   try {
-    transactionType.value = "vote";
+    // Additional client-side validation for approval period
+    const claim = selectedClaim.value;
+    if (claim) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      const approvalDeadline = Number(claim.startTime) + approvalPeriod.value;
+      
+      if (currentTime > approvalDeadline) {
+        transactionError.value = "Approval period has expired for this claim.";
+        currentClaimError.value = transactionError.value;
+        return;
+      }
+    }
+
+    transactionType.value = "approve";
     firstTxStatus.value = "pending";
 
     const claimer = new ethers.Contract(
@@ -1103,25 +923,78 @@ const handleVote = async ({ claimId, support }) => {
         web3Store.provider.getSigner()
     );
 
-    const tx = await claimer.vote(claimId, support);
+    const tx = await claimer.approveClaim(claimId);
     currentTxHash.value = tx.hash;
 
     await tx.wait();
     firstTxStatus.value = "success";
 
-    // Reload the claims state after voting
+    // Reload the claims state after approving
     await loadClaimsState();
     closeClaimDetails();
   } catch (error) {
-    console.error("Error voting on claim:", error);
+    console.error("Error approving claim:", error);
     firstTxStatus.value = "failed";
 
     if (error.code === 4001) {
       transactionError.value = "Transaction rejected by user";
+    } else if (error.reason && error.reason.includes("Approval period")) {
+      transactionError.value = "Approval period has expired for this claim.";
     } else if (error.reason) {
       transactionError.value = error.reason;
     } else {
-      transactionError.value = "Voting failed. Please try again.";
+      transactionError.value = "Approval failed. Please try again.";
+    }
+
+    currentClaimError.value = transactionError.value;
+  }
+};
+
+const handleMarkAsSpam = async (claimId) => {
+  try {
+    // Additional client-side validation for approval period
+    const claim = selectedClaim.value;
+    if (claim) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      const approvalDeadline = Number(claim.startTime) + approvalPeriod.value;
+      
+      if (currentTime > approvalDeadline) {
+        transactionError.value = "Approval period has expired for this claim.";
+        currentClaimError.value = transactionError.value;
+        return;
+      }
+    }
+
+    transactionType.value = "mark_spam";
+    firstTxStatus.value = "pending";
+
+    const claimer = new ethers.Contract(
+        getContractAddress("CLAIMER", web3Store.chainId),
+        claimerABI,
+        web3Store.provider.getSigner()
+    );
+
+    const tx = await claimer.markAsSpam(claimId);
+    currentTxHash.value = tx.hash;
+
+    await tx.wait();
+    firstTxStatus.value = "success";
+
+    // Reload the claims state after marking as spam
+    await loadClaimsState();
+    closeClaimDetails();
+  } catch (error) {
+    console.error("Error marking claim as spam:", error);
+    firstTxStatus.value = "failed";
+
+    if (error.code === 4001) {
+      transactionError.value = "Transaction rejected by user";
+    } else if (error.reason && error.reason.includes("Approval period")) {
+      transactionError.value = "Approval period has expired for this claim.";
+    } else if (error.reason) {
+      transactionError.value = error.reason;
+    } else {
+      transactionError.value = "Mark as spam failed. Please try again.";
     }
 
     currentClaimError.value = transactionError.value;
@@ -1130,6 +1003,13 @@ const handleVote = async ({ claimId, support }) => {
 
 const handleExecute = async (claimId) => {
   try {
+    // Additional client-side validation for execution timeout
+    const claim = selectedClaim.value;
+    if (claim && !isReadyForExecution(claim)) {
+      transactionError.value = "Execution timeout has not passed yet. Please wait.";
+      return;
+    }
+
     transactionType.value = "execute";
     firstTxStatus.value = "pending";
 
@@ -1154,10 +1034,14 @@ const handleExecute = async (claimId) => {
   } catch (error) {
     console.error("Execution error:", error);
     firstTxStatus.value = "failed";
-    transactionError.value =
-      error.code === 4001
-        ? "Transaction rejected by user"
-        : "Execution failed. Please try again.";
+    
+    if (error.code === 4001) {
+      transactionError.value = "Transaction rejected by user";
+    } else if (error.reason && error.reason.includes("Execution timeout")) {
+      transactionError.value = "Execution timeout has not expired yet. Please wait.";
+    } else {
+      transactionError.value = "Execution failed. Please try again.";
+    }
   }
 };
 
@@ -1184,13 +1068,61 @@ watch(
   async (values) => {
     if (values[0]) {
       await loadClaimsState();
-      await loadUserCovers();
+    } else {
+      // Reset controller status when wallet disconnects
+      isController.value = false;
     }
   }
 );
+
+// Timer for updating timing information
+let updateTimer = null;
+
+// Setup timer to update timing information every minute
+onMounted(() => {
+  updateTimer = setInterval(() => {
+    // Force reactive updates by toggling a dummy value
+    const dummy = ref(0);
+    dummy.value++;
+  }, 60000); // Update every minute
+});
+
+onUnmounted(() => {
+  if (updateTimer) {
+    clearInterval(updateTimer);
+  }
+});
 
 // Initial load if wallet is connected
 if (web3Store.isConnected) {
   loadClaimsState();
 }
+
+// Function to check if current user is a controller
+const checkControllerStatus = async () => {
+  try {
+    if (!web3Store.isConnected || !web3Store.account) {
+      isController.value = false;
+      return;
+    }
+
+    const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
+    if (!controlBoardAddress || controlBoardAddress === '0x0000000000000000000000000000000000000000') {
+      isController.value = false;
+      return;
+    }
+
+    const controlBoard = new ethers.Contract(
+      controlBoardAddress,
+      controlBoardABI,
+      web3Store.provider
+    );
+
+    isController.value = await controlBoard.isController(web3Store.account);
+  } catch (error) {
+    console.error('Error checking controller status:', error);
+    isController.value = false;
+  }
+};
+
 </script>

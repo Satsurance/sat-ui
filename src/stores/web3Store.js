@@ -23,7 +23,7 @@ export const useWeb3Store = defineStore('web3', {
                 let provider = new ethers.providers.Web3Provider(window.ethereum, "any");
                 this.chainId = (await provider.getNetwork()).chainId;
                 // Do not use multicall for local network
-                if(this.chainId != 31337) {
+                if (this.chainId != 31337) {
                     provider = MulticallWrapper.wrap(new ethers.providers.Web3Provider(window.ethereum, "any"));
                 }
 
