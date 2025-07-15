@@ -189,15 +189,29 @@
                 </div>
               </td>
               <td class="px-6 py-5 text-center">
-                <button
-                    @click="unstakePosition(position.id)"
-                    :disabled="!position.isUnlocked || firstTxStatus !== ''"
-                    class="btn-secondary px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm"
-                >
-                    <span class="flex items-center">
-                      Unstake
-                    </span>
-                </button>
+                <div class="flex gap-2 justify-center">
+                  <button
+                      @click="openExtendPositionDialog(position)"
+                      :disabled="firstTxStatus !== ''"
+                      class="btn-primary px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm text-sm"
+                  >
+                      <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Extend
+                      </span>
+                  </button>
+                  <button
+                      @click="unstakePosition(position.id)"
+                      :disabled="!position.isUnlocked || firstTxStatus !== ''"
+                      class="btn-secondary px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm text-sm"
+                  >
+                      <span class="flex items-center">
+                        Unstake
+                      </span>
+                  </button>
+                </div>
               </td>
             </tr>
             </tbody>
@@ -212,6 +226,15 @@
         :pool-contract="insurancePool"
         @close="closeNewPositionDialog"
         @position-created="handlePositionCreated"
+    />
+
+    <!-- Extend Position Dialog -->
+    <ExtendPositionDialog
+        :is-open="isExtendPositionDialogOpen"
+        :pool-contract="insurancePool"
+        :position="positionToExtend"
+        @close="closeExtendPositionDialog"
+        @position-extended="handlePositionExtended"
     />
 
     <!-- Transaction Status Modal -->
@@ -239,6 +262,7 @@ import poolFactoryABI from "../assets/abis/poolFactory.json";
 import erc721ABI from "../assets/abis/erc721enumerable.json";
 import TransactionStatus from "../components/TransactionStatus.vue";
 import NewPositionDialog from "../components/NewPositionDialog.vue";
+import ExtendPositionDialog from "../components/ExtendPositionDialog.vue";
 import { formatDate } from "../utils.js";
 
 // Props
@@ -261,6 +285,8 @@ const poolAddress = ref(null);
 const positionNFT = ref(null);
 const coverNFT = ref(null);
 const isNewPositionDialogOpen = ref(false);
+const isExtendPositionDialogOpen = ref(false);
+const positionToExtend = ref(null);
 const isUnderwriter = ref(false);
 
 // Transaction state
@@ -393,6 +419,7 @@ const loadPositionState = async () => {
       if(userPositions[i].active) {
         processedPositions.push({
           id: positionsIds[i],
+          episode: userPositions[i].episode.toNumber(),
           unlockDate: calculateStakingTime((userPositions[i].episode.toNumber() + 1) * EPISODE_DURATION),
           stakedAmount: Number(
               ethers.utils.formatEther(((BigInt(userPositions[i].shares) * BigInt(totalAssetsStakedRaw)) / BigInt(totalSharesAmount)).toString())
@@ -450,6 +477,20 @@ const closeNewPositionDialog = () => {
 };
 
 const handlePositionCreated = async () => {
+  await loadPositionState();
+};
+
+const openExtendPositionDialog = (position) => {
+  positionToExtend.value = position;
+  isExtendPositionDialogOpen.value = true;
+};
+
+const closeExtendPositionDialog = () => {
+  isExtendPositionDialogOpen.value = false;
+  positionToExtend.value = null;
+};
+
+const handlePositionExtended = async () => {
   await loadPositionState();
 };
 
