@@ -391,10 +391,15 @@
       :claimReduction="claimReduction"
       :error-message="currentClaimError"
       :is-controller="isController"
+      :threshold="controlBoardThreshold"
+      :controllers-count="controlBoardControllersCount"
+      :claim-approvals="claimApprovals"
       @close="closeClaimDetails"
       @approve="handleApproveClaim"
       @mark-spam="handleMarkAsSpam"
       @execute="handleExecute"
+      @execute-approval="handleExecuteApprovalTransaction"
+      @execute-spam="handleExecuteSpamTransaction"
     />
 
     <!-- Transaction Status Modal -->
@@ -433,6 +438,8 @@ const claimReduction = ref(0);
 
 // Controller state
 const isController = ref(false);
+const controlBoardThreshold = ref(0);
+const controlBoardControllersCount = ref(0);
 
 // Transaction state
 const firstTxStatus = ref("");
@@ -451,6 +458,9 @@ const totalClaims = ref(0);
 const isLoadingClaims = ref(false);
 const currentClaimError = ref('');
 const userCovers = ref([]);
+
+// Approval tracking state
+const claimApprovals = ref(new Map()); // Map<claimId, { approveCount: number, spamCount: number }>
 
 // Add computed for total pages
 const totalPages = computed(() =>
@@ -486,7 +496,7 @@ const transactionSteps = computed(() => {
         {
           id: 'approve',
           title: 'Approve Claim',
-          description: 'Approve the claim for execution',
+          description: 'Cast your approval vote',
           status: firstTxStatus.value,
           showNumber: false
         }
@@ -496,7 +506,27 @@ const transactionSteps = computed(() => {
         {
           id: 'mark_spam',
           title: 'Mark as Spam',
-          description: 'Mark the claim as spam',
+          description: 'Cast your spam vote',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'execute_approval':
+      return [
+        {
+          id: 'execute_approval',
+          title: 'Execute Approval',
+          description: 'Execute the claim approval',
+          status: firstTxStatus.value,
+          showNumber: false
+        }
+      ];
+    case 'execute_spam':
+      return [
+        {
+          id: 'execute_spam',
+          title: 'Execute Spam Marking',
+          description: 'Execute the spam marking',
           status: firstTxStatus.value,
           showNumber: false
         }
@@ -710,6 +740,10 @@ const retryTransaction = () => {
     handleApproveClaim(selectedClaim.value.id);
   } else if (transactionType.value === "mark_spam" && selectedClaim.value) {
     handleMarkAsSpam(selectedClaim.value.id);
+  } else if (transactionType.value === "execute_approval" && selectedClaim.value) {
+    handleExecuteApprovalTransaction(selectedClaim.value.id);
+  } else if (transactionType.value === "execute_spam" && selectedClaim.value) {
+    handleExecuteSpamTransaction(selectedClaim.value.id);
   }
 };
 
@@ -776,8 +810,49 @@ const loadClaimsTable = async () => {
       exists: claim.exists,
       spam: claim.spam
     };
+    console.log("New claim:", newClaim);
     claims.value.push(newClaim);
     orderCounter++;
+  }
+
+  // Load approval counts for all claims
+  await loadApprovalCounts();
+}
+
+const loadApprovalCounts = async () => {
+  console.log("Loading approval counts");
+  if (claims.value.length === 0) return;
+  console.log("Claims length:", claims.value.length);
+
+  const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+  const approvalPromises = [];
+  
+  for (const claim of claims.value) {
+    // Create transaction hashes for approve and spam actions
+    const approveData = encodeApproveClaimCall(claim.id);
+    const spamData = encodeMarkAsSpamCall(claim.id);
+    
+    const approveTxHash = createTransactionHash(claimerAddress, 0, approveData);
+    const spamTxHash = createTransactionHash(claimerAddress, 0, spamData);
+    
+    approvalPromises.push(
+      getApprovalCount(approveTxHash),
+      getApprovalCount(spamTxHash)
+    );
+  }
+  
+  const results = await Promise.all(approvalPromises);
+  console.log("Results:", results);
+  // Update approval counts
+  for (let i = 0; i < claims.value.length; i++) {
+    const claim = claims.value[i];
+    const approveCount = results[i * 2];
+    const spamCount = results[i * 2 + 1];
+    console.log("Claim:", claim.id, "Approve count:", approveCount, "Spam count:", spamCount);
+    claimApprovals.value.set(claim.id, {
+      approveCount,
+      spamCount
+    });
   }
 }
 
@@ -791,11 +866,19 @@ const loadClaimsState = async () => {
         web3Store.provider
     );
 
+    const controlBoard = new ethers.Contract(
+        getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        controlBoardABI,
+        web3Store.provider
+    );
+
     const retValues = await Promise.all([
         claimer.approvalPeriod(),
         claimer.executionTimeout(),
         claimer.claimReduction(),
-        claimer.claimCounter()
+        claimer.claimCounter(),
+        controlBoard.threshold(),
+        controlBoard.controllersCount()
     ]);
 
     const claimCounter = retValues[3];
@@ -804,6 +887,8 @@ const loadClaimsState = async () => {
     executionTimeout.value = retValues[1].toNumber();
     claimReduction.value = retValues[2].toNumber();
     totalClaims.value = (claimCounter).toNumber();
+    controlBoardThreshold.value = retValues[4].toNumber();
+    controlBoardControllersCount.value = retValues[5].toNumber();
 
     await loadClaimsTable();
     await checkControllerStatus();
@@ -885,6 +970,58 @@ const getApprovalTimeRemaining = (claim) => {
   }
   return `${minutes}m left for approval`;
 };
+
+// Helper functions for control board integration
+const createTransactionHash = (target, value, data) => {
+  const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
+  return ethers.utils.keccak256(
+    ethers.utils.solidityPack(
+      ['address', 'address', 'uint256', 'bytes'],
+      [controlBoardAddress, target, value, data]
+    )
+  );
+};
+
+const encodeApproveClaimCall = (claimId) => {
+  const iface = new ethers.utils.Interface(claimerABI);
+  return iface.encodeFunctionData('approveClaim', [claimId]);
+};
+
+const encodeMarkAsSpamCall = (claimId) => {
+  const iface = new ethers.utils.Interface(claimerABI);
+  return iface.encodeFunctionData('markAsSpam', [claimId]);
+};
+
+const getApprovalCount = async (txHash) => {
+  try {
+    const controlBoard = new ethers.Contract(
+      getContractAddress('CONTROL_BOARD', web3Store.chainId),
+      controlBoardABI,
+      web3Store.provider
+    );
+    
+    const count = await controlBoard.approvalCount(txHash);
+    return count.toNumber();
+  } catch (error) {
+    console.error('Error getting approval count:', error);
+    return 0;
+  }
+};
+
+const hasUserApproved = async (txHash, userAddress) => {
+  try {
+    const controlBoard = new ethers.Contract(
+      getContractAddress('CONTROL_BOARD', web3Store.chainId),
+      controlBoardABI,
+      web3Store.provider
+    );
+    
+    return await controlBoard.transactionApprovals(txHash, userAddress);
+  } catch (error) {
+    console.error('Error checking user approval:', error);
+    return false;
+  }
+};
 // Claim details dialog management
 const openClaimDetails = (claim) => {
   selectedClaim.value = claim;
@@ -914,16 +1051,28 @@ const handleApproveClaim = async (claimId) => {
       }
     }
 
+    // Check if user has already approved this transaction
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const approveData = encodeApproveClaimCall(claimId);
+    const approveTxHash = createTransactionHash(claimerAddress, 0, approveData);
+    
+    const alreadyApproved = await hasUserApproved(approveTxHash, web3Store.account);
+    if (alreadyApproved) {
+      transactionError.value = "You have already approved this claim.";
+      currentClaimError.value = transactionError.value;
+      return;
+    }
+
     transactionType.value = "approve";
     firstTxStatus.value = "pending";
 
-    const claimer = new ethers.Contract(
-        getContractAddress("CLAIMER", web3Store.chainId),
-        claimerABI,
+    const controlBoard = new ethers.Contract(
+        getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        controlBoardABI,
         web3Store.provider.getSigner()
     );
 
-    const tx = await claimer.approveClaim(claimId);
+    const tx = await controlBoard.approveTransaction(claimerAddress, 0, approveData);
     currentTxHash.value = tx.hash;
 
     await tx.wait();
@@ -940,6 +1089,8 @@ const handleApproveClaim = async (claimId) => {
       transactionError.value = "Transaction rejected by user";
     } else if (error.reason && error.reason.includes("Approval period")) {
       transactionError.value = "Approval period has expired for this claim.";
+    } else if (error.reason && error.reason.includes("TransactionAlreadyApproved")) {
+      transactionError.value = "You have already approved this claim.";
     } else if (error.reason) {
       transactionError.value = error.reason;
     } else {
@@ -965,16 +1116,28 @@ const handleMarkAsSpam = async (claimId) => {
       }
     }
 
+    // Check if user has already approved this transaction
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const spamData = encodeMarkAsSpamCall(claimId);
+    const spamTxHash = createTransactionHash(claimerAddress, 0, spamData);
+    
+    const alreadyApproved = await hasUserApproved(spamTxHash, web3Store.account);
+    if (alreadyApproved) {
+      transactionError.value = "You have already marked this claim as spam.";
+      currentClaimError.value = transactionError.value;
+      return;
+    }
+
     transactionType.value = "mark_spam";
     firstTxStatus.value = "pending";
 
-    const claimer = new ethers.Contract(
-        getContractAddress("CLAIMER", web3Store.chainId),
-        claimerABI,
+    const controlBoard = new ethers.Contract(
+        getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        controlBoardABI,
         web3Store.provider.getSigner()
     );
 
-    const tx = await claimer.markAsSpam(claimId);
+    const tx = await controlBoard.approveTransaction(claimerAddress, 0, spamData);
     currentTxHash.value = tx.hash;
 
     await tx.wait();
@@ -991,10 +1154,96 @@ const handleMarkAsSpam = async (claimId) => {
       transactionError.value = "Transaction rejected by user";
     } else if (error.reason && error.reason.includes("Approval period")) {
       transactionError.value = "Approval period has expired for this claim.";
+    } else if (error.reason && error.reason.includes("TransactionAlreadyApproved")) {
+      transactionError.value = "You have already marked this claim as spam.";
     } else if (error.reason) {
       transactionError.value = error.reason;
     } else {
       transactionError.value = "Mark as spam failed. Please try again.";
+    }
+
+    currentClaimError.value = transactionError.value;
+  }
+};
+
+const handleExecuteApprovalTransaction = async (claimId) => {
+  try {
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const approveData = encodeApproveClaimCall(claimId);
+    
+    transactionType.value = "execute_approval";
+    firstTxStatus.value = "pending";
+
+    const controlBoard = new ethers.Contract(
+        getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        controlBoardABI,
+        web3Store.provider.getSigner()
+    );
+
+    const tx = await controlBoard.executeTransaction(claimerAddress, 0, approveData, []);
+    currentTxHash.value = tx.hash;
+
+    await tx.wait();
+    firstTxStatus.value = "success";
+
+    // Reload the claims state after execution
+    await loadClaimsState();
+    closeClaimDetails();
+    setTimeout(resetTransaction, 3000);
+  } catch (error) {
+    console.error("Error executing approval transaction:", error);
+    firstTxStatus.value = "failed";
+    
+    if (error.code === 4001) {
+      transactionError.value = "Transaction rejected by user";
+    } else if (error.reason && error.reason.includes("InsufficientSignatures")) {
+      transactionError.value = "Not enough approvals yet to execute this transaction.";
+    } else if (error.reason) {
+      transactionError.value = error.reason;
+    } else {
+      transactionError.value = "Execution failed. Please try again.";
+    }
+
+    currentClaimError.value = transactionError.value;
+  }
+};
+
+const handleExecuteSpamTransaction = async (claimId) => {
+  try {
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const spamData = encodeMarkAsSpamCall(claimId);
+    
+    transactionType.value = "execute_spam";
+    firstTxStatus.value = "pending";
+
+    const controlBoard = new ethers.Contract(
+        getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        controlBoardABI,
+        web3Store.provider.getSigner()
+    );
+
+    const tx = await controlBoard.executeTransaction(claimerAddress, 0, spamData, []);
+    currentTxHash.value = tx.hash;
+
+    await tx.wait();
+    firstTxStatus.value = "success";
+
+    // Reload the claims state after execution
+    await loadClaimsState();
+    closeClaimDetails();
+    setTimeout(resetTransaction, 3000);
+  } catch (error) {
+    console.error("Error executing spam transaction:", error);
+    firstTxStatus.value = "failed";
+    
+    if (error.code === 4001) {
+      transactionError.value = "Transaction rejected by user";
+    } else if (error.reason && error.reason.includes("InsufficientSignatures")) {
+      transactionError.value = "Not enough approvals yet to execute this transaction.";
+    } else if (error.reason) {
+      transactionError.value = error.reason;
+    } else {
+      transactionError.value = "Execution failed. Please try again.";
     }
 
     currentClaimError.value = transactionError.value;

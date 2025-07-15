@@ -143,6 +143,51 @@
                   </span>
                 </div>
                 
+                <!-- Control Board Approval Progress -->
+                <div v-if="!claim?.approved && !claim?.spam && !claim?.executed" class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Approval Votes</span>
+                    <span class="text-sm font-medium" :class="canExecuteApproval ? 'text-green-600' : 'text-gray-900'">
+                      {{ currentApprovalCounts.approveCount }} / {{ threshold }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Spam Votes</span>
+                    <span class="text-sm font-medium" :class="canExecuteSpam ? 'text-red-600' : 'text-gray-900'">
+                      {{ currentApprovalCounts.spamCount }} / {{ threshold }}
+                    </span>
+                  </div>
+                  
+                  <!-- Progress bars -->
+                  <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs text-gray-500">Approval Progress</span>
+                      <span class="text-xs text-gray-500">
+                        {{ Math.round((currentApprovalCounts.approveCount / threshold) * 100) }}%
+                      </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        :style="{ width: `${Math.min((currentApprovalCounts.approveCount / threshold) * 100, 100)}%` }"
+                      ></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs text-gray-500">Spam Progress</span>
+                      <span class="text-xs text-gray-500">
+                        {{ Math.round((currentApprovalCounts.spamCount / threshold) * 100) }}%
+                      </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="bg-red-500 h-2 rounded-full transition-all duration-300"
+                        :style="{ width: `${Math.min((currentApprovalCounts.spamCount / threshold) * 100, 100)}%` }"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                
                 <!-- Timing Information -->
                 <div v-if="claim?.approved && !claim?.executed" class="flex justify-between items-center">
                   <span class="text-sm text-gray-600">Execution</span>
@@ -181,15 +226,28 @@
 
             <!-- Actions -->
             <div v-if="!claim?.executed && !claim?.spam" class="flex justify-end gap-4 pt-6">
+              <!-- Show execute buttons when thresholds are met -->
+              <template v-if="!claim?.approved && (canExecuteApproval || canExecuteSpam)">
+                <button v-if="canExecuteSpam"
+                        @click="$emit('execute-spam', claim?.id)"
+                        class="px-6 py-2.5 bg-red-500 border border-red-500 text-white text-lg rounded-xl hover:bg-white hover:text-red-500 hover:border-red-500 transition-colors duration-300">
+                  Execute Spam Marking
+                </button>
+                <button v-if="canExecuteApproval"
+                        @click="$emit('execute-approval', claim?.id)"
+                        class="px-6 py-2.5 bg-green-500 border border-green-500 text-white text-lg rounded-xl hover:bg-white hover:text-green-500 hover:border-green-500 transition-colors duration-300">
+                  Execute Approval
+                </button>
+              </template>
               <!-- Show operator actions for pending claims - only for controllers -->
-              <template v-if="!claim?.approved && isApprovalPeriodActive && props.isController">
+              <template v-else-if="!claim?.approved && isApprovalPeriodActive && props.isController">
                 <button @click="$emit('mark-spam', claim?.id)"
                         class="px-6 py-2.5 bg-red-500 border border-red-500 text-white text-lg rounded-xl hover:bg-white hover:text-red-500 hover:border-red-500 transition-colors duration-300">
-                  Mark as Spam
+                  Vote Spam
                 </button>
                 <button @click="$emit('approve', claim?.id)"
                         class="btn-primary px-6 py-2.5 text-lg rounded-xl">
-                  Approve Claim
+                  Vote Approve
                 </button>
               </template>
               <!-- Show execute button for approved claims - available for everyone -->
@@ -246,9 +304,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  threshold: {
+    type: Number,
+    required: true,
+  },
+  controllersCount: {
+    type: Number,
+    required: true,
+  },
+  claimApprovals: {
+    type: Map,
+    required: true,
+  },
 });
 
-const emit = defineEmits(["close", "approve", "mark-spam", "execute"]);
+const emit = defineEmits(["close", "approve", "mark-spam", "execute", "execute-approval", "execute-spam"]);
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { ethers } from "ethers";
 
@@ -256,6 +326,25 @@ const isApprovalPeriodActive = computed(() => {
   if (!props.claim?.startTime) return false;
   const currentTime = Math.floor(Date.now() / 1000);
   return currentTime < Number(props.claim.startTime) + props.approvalPeriod;
+});
+
+const currentApprovalCounts = computed(() => {
+  if (props.claim?.id == null) return { approveCount: 0, spamCount: 0 };
+  return props.claimApprovals.get(props.claim.id) || { approveCount: 0, spamCount: 0 };
+});
+
+const canExecuteApproval = computed(() => {
+  return currentApprovalCounts.value.approveCount >= props.threshold && 
+         !props.claim?.approved && 
+         !props.claim?.spam && 
+         !props.claim?.executed;
+});
+
+const canExecuteSpam = computed(() => {
+  return currentApprovalCounts.value.spamCount >= props.threshold && 
+         !props.claim?.approved && 
+         !props.claim?.spam && 
+         !props.claim?.executed;
 });
 
 const isReadyForExecution = computed(() => {
