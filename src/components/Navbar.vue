@@ -76,7 +76,7 @@
                 class="text-gray-600 hover:text-yellow-500"
                 active-class="text-blue-600"
             >
-              Governance
+              Claims
             </router-link>
             <a
                 href="https://satsurance.gitbook.io/satsurance"
@@ -193,7 +193,7 @@
             class="text-gray-600 hover:text-yellow-500 py-4"
             active-class="text-blue-600"
         >
-          Governance
+          Claims
         </router-link>
         <router-link
             to="/faucet"

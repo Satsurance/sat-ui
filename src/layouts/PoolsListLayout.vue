@@ -10,7 +10,7 @@
             </svg>
             Available Insurance Pools
           </h1>
-          <p class="text-gray-500 text-lg">Choose from multiple insurance pools to stake your BTC and earn rewards</p>
+          <p class="text-gray-500 text-lg">Choose insurance pools to stake your BTC and earn rewards</p>
         </div>
 
         <!-- Stats Overview -->
