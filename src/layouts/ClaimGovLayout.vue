@@ -149,9 +149,6 @@
                   <span v-else-if="!claim.approved && !claim.spam && !claim.executed" class="text-xs text-gray-500 text-center">
                     {{ getApprovalTimeRemaining(claim) }}
                   </span>
-                  <span v-else-if="claim.approvalTime > 0" class="text-xs text-gray-500">
-                    Approved: {{ formatDate(new Date(claim.approvalTime * 1000)) }}
-                  </span>
                 </div>
               </td>
             </tr>
@@ -1082,13 +1079,14 @@ const isReadyForExecution = (claim) => {
 
 // Helper function to get time remaining for execution
 const getExecutionTimeRemaining = (claim) => {
+  console.log("execution timeout", executionTimeout.value);
   if (!claim?.approved || !claim?.approvalTime || !executionTimeout.value) return null;
   
   const currentTime = Math.floor(Date.now() / 1000);
   const executionReadyTime = Number(claim.approvalTime) + executionTimeout.value;
   const timeRemaining = executionReadyTime - currentTime;
   
-  if (timeRemaining <= 0) return "Ready for execution";
+  if (timeRemaining <= 0) return null;
   
   const hours = Math.floor(timeRemaining / 3600);
   const minutes = Math.floor((timeRemaining % 3600) / 60);

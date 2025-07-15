@@ -189,7 +189,7 @@
                 </div>
                 
                 <!-- Timing Information -->
-                <div v-if="claim?.approved && !claim?.executed" class="flex justify-between items-center">
+                <div v-if="claim?.approved && !claim?.executed && !isReadyForExecution" class="flex justify-between items-center">
                   <span class="text-sm text-gray-600">Execution</span>
                   <span class="text-sm font-medium" :class="isReadyForExecution ? 'text-blue-600' : 'text-yellow-600'">
                     {{ getExecutionTimeRemaining }}
