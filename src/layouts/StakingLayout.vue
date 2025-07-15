@@ -203,8 +203,9 @@
                       </span>
                   </button>
                   <button
+                      v-if="position.isUnlocked"
                       @click="unstakePosition(position.id)"
-                      :disabled="!position.isUnlocked || firstTxStatus !== ''"
+                      :disabled="firstTxStatus !== ''"
                       class="btn-secondary px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm text-sm"
                   >
                       <span class="flex items-center">
