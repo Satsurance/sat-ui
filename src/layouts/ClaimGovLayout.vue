@@ -354,6 +354,20 @@
                 </p>
               </div>
 
+              <!-- Deposit Requirement Information -->
+              <div v-if="depositRequirement.required" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-start">
+
+                  <div>
+                    <h4 class="text-sm font-medium text-yellow-800">Deposit Required</h4>
+                    <p class="mt-1 text-sm text-yellow-700">
+                      A deposit of <span class="font-medium">{{ depositRequirement.formattedAmount }} ETH</span> is required to submit this claim.
+                      You may need to approve the token transfer first.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div class="flex justify-end pt-4">
                 <button
                     type="submit"
@@ -425,6 +439,7 @@ import claimerABI from "../assets/abis/claimer.json";
 import coverNftABI from '../assets/abis/coverNFT.json';
 import poolFactoryABI from '../assets/abis/poolFactory.json';
 import controlBoardABI from '../assets/abis/controlBoard.json';
+import erc20ABI from '../assets/abis/erc20.json';
 import ClaimDetailsDialog from "../components/ClaimDetailsDialog.vue";
 import TransactionStatus from "../components/TransactionStatus.vue";
 
@@ -435,6 +450,11 @@ const web3Store = useWeb3Store();
 const approvalPeriod = ref(0);
 const executionTimeout = ref(0);
 const claimReduction = ref(0);
+
+// Deposit state
+const claimDeposit = ref(0);
+const depositToken = ref(null);
+const isCheckingAllowance = ref(false);
 
 // Controller state
 const isController = ref(false);
@@ -489,6 +509,23 @@ const transactionSteps = computed(() => {
           description: 'Submit your new claim',
           status: firstTxStatus.value,
           showNumber: false
+        }
+      ];
+    case 'submit_claim_with_approval':
+      return [
+        {
+          id: 'approve',
+          title: 'Approve Deposit Token',
+          description: 'Allow contract to use your deposit tokens',
+          status: firstTxStatus.value,
+          showNumber: true
+        },
+        {
+          id: 'submit',
+          title: 'Submit Claim',
+          description: 'Submit your new claim',
+          status: secondTxStatus.value,
+          showNumber: true
         }
       ];
     case 'approve':
@@ -605,6 +642,72 @@ const isValidAmount = computed(() => {
   return parseFloat(submitFormData.amount) <= parseFloat(submitFormData.selectedCover.coverAmount);
 });
 
+// Computed property for deposit requirement information
+const depositRequirement = computed(() => {
+  if (!claimDeposit.value || claimDeposit.value.eq(0)) {
+    return {
+      required: false,
+      amount: "0",
+      formattedAmount: "0"
+    };
+  }
+
+  return {
+    required: true,
+    amount: claimDeposit.value,
+    formattedAmount: ethers.utils.formatEther(claimDeposit.value)
+  };
+});
+
+// Check if deposit is required and if user has approved sufficient allowance
+const checkDepositAllowance = async () => {
+  if (!claimDeposit.value || claimDeposit.value.eq(0)) {
+    return { needsApproval: false, currentAllowance: ethers.BigNumber.from(0) };
+  }
+
+  try {
+    const depositTokenContract = new ethers.Contract(
+      depositToken.value,
+      erc20ABI,
+      web3Store.provider
+    );
+
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const currentAllowance = await depositTokenContract.allowance(
+      web3Store.account,
+      claimerAddress
+    );
+
+    return {
+      needsApproval: currentAllowance.lt(claimDeposit.value),
+      currentAllowance
+    };
+  } catch (error) {
+    console.error("Error checking deposit allowance:", error);
+    return { needsApproval: true, currentAllowance: ethers.BigNumber.from(0) };
+  }
+};
+
+// Approve deposit token for claim submission
+const approveDepositToken = async () => {
+  try {
+    const depositTokenContract = new ethers.Contract(
+      depositToken.value,
+      erc20ABI,
+      web3Store.provider.getSigner()
+    );
+
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    
+    // Approve the exact deposit amount
+    const tx = await depositTokenContract.approve(claimerAddress, claimDeposit.value);
+    return tx;
+  } catch (error) {
+    console.error("Error approving deposit token:", error);
+    throw error;
+  }
+};
+
 const loadUserCovers = async () => {
   try {
     const coverContract = new ethers.Contract(
@@ -660,8 +763,28 @@ const handleSubmitClaim = async () => {
     }
 
     isSubmitting.value = true;
-    transactionType.value = "submit_claim";
-    firstTxStatus.value = "pending";
+    
+    // Check if deposit approval is needed
+    const { needsApproval } = await checkDepositAllowance();
+    
+    if (needsApproval) {
+      // Step 1: Approve deposit token
+      transactionType.value = "submit_claim_with_approval";
+      firstTxStatus.value = "pending";
+      
+      const approveTx = await approveDepositToken();
+      currentTxHash.value = approveTx.hash;
+      
+      await approveTx.wait();
+      firstTxStatus.value = "success";
+      
+      // Step 2: Submit claim
+      secondTxStatus.value = "pending";
+    } else {
+      // No approval needed, proceed directly to claim submission
+      transactionType.value = "submit_claim";
+      firstTxStatus.value = "pending";
+    }
 
     // Create the new format JSON
     const claimData = {
@@ -700,10 +823,16 @@ const handleSubmitClaim = async () => {
         JSON.stringify(claimData), // Store the JSON string
         ethers.utils.parseEther(submitFormData.amount.toString()),  
     );
-    currentTxHash.value = tx.hash;
-
-    await tx.wait();
-    firstTxStatus.value = "success";
+    
+    if (needsApproval) {
+      currentTxHash.value = tx.hash;
+      await tx.wait();
+      secondTxStatus.value = "success";
+    } else {
+      currentTxHash.value = tx.hash;
+      await tx.wait();
+      firstTxStatus.value = "success";
+    }
 
     await loadClaimsState();
     closeSubmitDialog();
@@ -711,10 +840,24 @@ const handleSubmitClaim = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error submitting claim:", error);
-    firstTxStatus.value = "failed";
+    
+    const isApprovalStep = transactionType.value === "submit_claim_with_approval" && secondTxStatus.value !== "pending";
+    
+    if (isApprovalStep) {
+      firstTxStatus.value = "failed";
+    } else {
+      if (transactionType.value === "submit_claim_with_approval") {
+        secondTxStatus.value = "failed";
+      } else {
+        firstTxStatus.value = "failed";
+      }
+    }
+    
     transactionError.value =
         error.code === 4001
             ? "Transaction rejected by user"
+            : isApprovalStep
+            ? "Failed to approve deposit token"
             : "Failed to submit claim";
   } finally {
     isSubmitting.value = false;
@@ -734,7 +877,7 @@ const resetTransaction = () => {
 const retryTransaction = () => {
   if (transactionType.value === "execute" && selectedClaim.value) {
     handleExecute(selectedClaim.value.id);
-  } else if (transactionType.value === "submit_claim") {
+  } else if (transactionType.value === "submit_claim" || transactionType.value === "submit_claim_with_approval") {
     handleSubmitClaim();
   } else if (transactionType.value === "approve" && selectedClaim.value) {
     handleApproveClaim(selectedClaim.value.id);
@@ -877,6 +1020,8 @@ const loadClaimsState = async () => {
         claimer.executionTimeout(),
         claimer.claimReduction(),
         claimer.claimCounter(),
+        claimer.claimDeposit(),
+        claimer.depositToken(),
         controlBoard.threshold(),
         controlBoard.controllersCount()
     ]);
@@ -887,8 +1032,10 @@ const loadClaimsState = async () => {
     executionTimeout.value = retValues[1].toNumber();
     claimReduction.value = retValues[2].toNumber();
     totalClaims.value = (claimCounter).toNumber();
-    controlBoardThreshold.value = retValues[4].toNumber();
-    controlBoardControllersCount.value = retValues[5].toNumber();
+    claimDeposit.value = retValues[4];
+    depositToken.value = retValues[5];
+    controlBoardThreshold.value = retValues[6].toNumber();
+    controlBoardControllersCount.value = retValues[7].toNumber();
 
     await loadClaimsTable();
     await checkControllerStatus();
