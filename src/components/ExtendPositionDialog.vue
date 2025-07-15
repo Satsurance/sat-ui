@@ -52,7 +52,7 @@
               <label class="block mb-3 text-sm font-semibold text-gray-900">
                 Select Action
               </label>
-              <div :class="['grid gap-3', isPositionExpired ? 'grid-cols-3' : 'grid-cols-2']">
+              <div :class="['grid gap-2 sm:gap-3', isPositionExpired ? 'grid-cols-3' : 'grid-cols-2']">
                 <div>
                   <input
                       type="radio"
@@ -64,13 +64,13 @@
                   />
                   <label
                       for="extend"
-                      class="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200"
+                      :class="['flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-200 hover:shadow-sm peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all duration-200', isPositionExpired ? 'p-3' : 'p-4']"
                   >
                     <div class="text-center">
-                      <svg class="w-6 h-6 mx-auto mb-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg :class="['mx-auto mb-2 text-yellow-600', isPositionExpired ? 'w-5 h-5' : 'w-6 h-6']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                       </svg>
-                      <span class="font-medium">Extend Only</span>
+                      <span :class="['font-medium', isPositionExpired ? 'text-sm' : '']">Extend Only</span>
                       <div class="text-xs text-gray-500 mt-1">Change lock duration</div>
                     </div>
                   </label>
@@ -86,13 +86,13 @@
                   />
                   <label
                       for="deposit"
-                      class="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-200 hover:shadow-sm peer-checked:border-green-500 peer-checked:bg-green-50 transition-all duration-200"
+                      :class="['flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-200 hover:shadow-sm peer-checked:border-green-500 peer-checked:bg-green-50 transition-all duration-200', isPositionExpired ? 'p-3' : 'p-4']"
                   >
                     <div class="text-center">
-                      <svg class="w-6 h-6 mx-auto mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg :class="['mx-auto mb-2 text-green-600', isPositionExpired ? 'w-5 h-5' : 'w-6 h-6']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                       </svg>
-                      <span class="font-medium">Deposit More</span>
+                      <span :class="['font-medium', isPositionExpired ? 'text-sm' : '']">Deposit More</span>
                       <div class="text-xs text-gray-500 mt-1">Add BTC to position</div>
                     </div>
                   </label>
@@ -108,14 +108,14 @@
                   />
                   <label
                       for="withdraw"
-                      class="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-200 hover:shadow-sm peer-checked:border-red-500 peer-checked:bg-red-50 transition-all duration-200"
+                      class="flex items-center justify-center p-3 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-200 hover:shadow-sm peer-checked:border-red-500 peer-checked:bg-red-50 transition-all duration-200"
                   >
                     <div class="text-center">
-                      <svg class="w-6 h-6 mx-auto mb-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-5 h-5 mx-auto mb-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                       </svg>
-                      <span class="font-medium">Withdraw</span>
-                      <div class="text-xs text-gray-500 mt-1">Remove BTC from position</div>
+                      <span class="font-medium text-sm">Withdraw</span>
+                      <div class="text-xs text-gray-500 mt-1">Partially withdraw BTC</div>
                     </div>
                   </label>
                 </div>
