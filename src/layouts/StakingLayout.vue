@@ -225,6 +225,7 @@
     <NewPositionDialog
         :is-open="isNewPositionDialogOpen"
         :pool-contract="insurancePool"
+        :max-stakeable-amount="maxStakeableAmount"
         @close="closeNewPositionDialog"
         @position-created="handlePositionCreated"
     />
@@ -234,6 +235,7 @@
         :is-open="isExtendPositionDialogOpen"
         :pool-contract="insurancePool"
         :position="positionToExtend"
+        :max-stakeable-amount="maxStakeableAmount"
         @close="closeExtendPositionDialog"
         @position-extended="handlePositionExtended"
     />
@@ -280,6 +282,7 @@ const totalStakedAmount = ref(0);
 const userTotalStakedAmount = ref(0);
 const earnedRewards = ref(0);
 const poolAPR = ref(0);
+const maxStakeableAmount = ref(0);
 const insurancePool = ref(null);
 const poolFactory = ref(null);
 const poolAddress = ref(null);
@@ -411,6 +414,16 @@ const loadPositionState = async () => {
     earnedRewards.value = ethers.utils.formatEther(earned);
     userTotalStakedAmount.value = Number(ethers.utils.formatEther((BigInt(userTotalShares) * BigInt(totalAssetsStakedRaw))/BigInt(totalSharesAmount))).toFixed(2);
 
+    // Calculate max stakeable amount in BTC for non-underwriters
+    if (!isUnderwriter.value && totalSharesAmount > 0) {
+      const maxStakeableShares = BigInt(maxSharesUserToStake);
+      maxStakeableAmount.value = Number(
+        ethers.utils.formatEther((maxStakeableShares * BigInt(totalAssetsStakedRaw)) / BigInt(totalSharesAmount))
+      ).toFixed(2);
+    } else {
+      maxStakeableAmount.value = 0;
+    }
+
     if (totalAssetsStakedRaw != 0) {
       poolAPR.value = ((Number((BigInt(totalAssetsStakedRaw) + BigInt(rewardRate) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(totalAssetsStakedRaw)) / 10000 - 1) * 100).toFixed(2);
     }
@@ -532,7 +545,10 @@ const getReward = async () => {
     transactionType.value = "getreward";
     firstTxStatus.value = "pending";
 
-    const rewardTx = await insurancePool.value.getReward();
+    // Extract position IDs from current positions
+    const positionIds = positions.value.map(position => position.id);
+    
+    const rewardTx = await insurancePool.value.collectRewards(positionIds);
     currentTxHash.value = rewardTx.hash;
 
     await rewardTx.wait();

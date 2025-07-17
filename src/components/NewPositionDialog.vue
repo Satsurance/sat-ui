@@ -37,7 +37,8 @@
                     type="number"
                     id="amount"
                     v-model="toStakeAmount"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-3 pr-16 transition-colors duration-200"
+                    :disabled="isStakingDisabled"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-3 pr-16 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="0.1"
                     step="0.00000001"
                     min="0"
@@ -47,7 +48,15 @@
                   <span class="text-gray-500 font-medium">BTC</span>
                 </div>
               </div>
-              <p class="mt-1 text-sm text-gray-500">Minimum stake amount: 0.01 BTC</p>
+              <div class="mt-1 space-y-1">
+                <p class="text-sm text-gray-500">Minimum stake amount: 0.01 BTC</p>
+                <p v-if="maxStakeableAmount && Number(maxStakeableAmount) > 0" class="text-sm text-gray-500">
+                  Maximum stake amount: {{ maxStakeableAmount }} BTC
+                </p>
+                <p v-if="validationMessage" class="text-sm text-red-600">
+                  {{ validationMessage }}
+                </p>
+              </div>
             </div>
 
             <!-- Episode Selection -->
@@ -129,10 +138,10 @@
             <div class="pt-4">
               <button
                   type="submit"
-                  :disabled="isSubmitting || !isValidAmount || !selectedEpisode"
+                  :disabled="isSubmitting || !isValidAmount || !selectedEpisode || isStakingDisabled"
                   class="w-full py-4 px-4 rounded-lg font-medium shadow-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="[
-                  isSubmitting || !isValidAmount || !selectedEpisode
+                  isSubmitting || !isValidAmount || !selectedEpisode || isStakingDisabled
                     ? 'bg-gray-100 text-gray-400'
                     : 'bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow'
                 ]"
@@ -180,6 +189,10 @@ const props = defineProps({
   poolContract: {
     type: Object,
     required: true
+  },
+  maxStakeableAmount: {
+    type: [String, Number],
+    default: null
   }
 });
 
@@ -206,7 +219,16 @@ const isSubmitting = ref(false);
 
 // Computed
 const isValidAmount = computed(() => {
-  return toStakeAmount.value && toStakeAmount.value >= 0.01;
+  if (!toStakeAmount.value || toStakeAmount.value < 0.01) {
+    return false;
+  }
+  
+  // Check against max stakeable amount if provided
+  if (props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0) {
+    return toStakeAmount.value <= Number(props.maxStakeableAmount);
+  }
+  
+  return true;
 });
 
 const selectedEpisodeUnlockDate = computed(() => {
@@ -219,6 +241,29 @@ const selectedEpisodeDuration = computed(() => {
   if (!selectedEpisode.value) return null;
   const episode = availableEpisodes.value.find(ep => ep.number === selectedEpisode.value);
   return episode ? `${episode.durationDays} days` : null;
+});
+
+const validationMessage = computed(() => {
+  // Check if staking is disabled due to 0 max stakeable amount
+  if (props.maxStakeableAmount && Number(props.maxStakeableAmount) <= 0) {
+    return 'Pool has reached maximum capacity. No new stakes allowed.';
+  }
+  
+  if (!toStakeAmount.value) return '';
+  
+  if (toStakeAmount.value < 0.01) {
+    return 'Amount must be at least 0.01 BTC';
+  }
+  
+  if (props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0 && toStakeAmount.value > Number(props.maxStakeableAmount)) {
+    return `Amount exceeds maximum stakeable limit of ${props.maxStakeableAmount} BTC`;
+  }
+  
+  return '';
+});
+
+const isStakingDisabled = computed(() => {
+  return props.maxStakeableAmount && Number(props.maxStakeableAmount) <= 0;
 });
 
 const transactionSteps = computed(() => {

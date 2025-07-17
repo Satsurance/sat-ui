@@ -82,11 +82,12 @@
                       name="actionType"
                       value="deposit"
                       v-model="actionType"
+                      :disabled="isDepositDisabled"
                       class="peer hidden"
                   />
                   <label
                       for="deposit"
-                      :class="['flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-200 hover:shadow-sm peer-checked:border-green-500 peer-checked:bg-green-50 transition-all duration-200', isPositionExpired ? 'p-3' : 'p-4']"
+                      :class="['flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg transition-all duration-200', isPositionExpired ? 'p-3' : 'p-4', isDepositDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-green-200 hover:shadow-sm peer-checked:border-green-500 peer-checked:bg-green-50']"
                   >
                     <div class="text-center">
                       <svg :class="['mx-auto mb-2 text-green-600', isPositionExpired ? 'w-5 h-5' : 'w-6 h-6']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,6 +136,21 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Deposit Restriction Notice -->
+              <div v-if="isDepositDisabled" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z"/>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-medium text-red-900">Deposit Not Available</p>
+                    <p class="text-xs text-red-700 mt-1">
+                      Pool has reached maximum capacity. No additional deposits are allowed at this time.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Amount Input -->
@@ -147,7 +163,8 @@
                     type="number"
                     :id="`${actionType}-amount`"
                     v-model="amount"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-3 pr-16 transition-colors duration-200"
+                    :disabled="isDepositDisabled"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-3 pr-16 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     :placeholder="actionType === 'deposit' ? '0.1' : '0.05'"
                     step="0.00000001"
                     min="0"
@@ -158,12 +175,17 @@
                   <span class="text-gray-500 font-medium">BTC</span>
                 </div>
               </div>
-              <p class="mt-1 text-sm text-gray-500">
-                {{ actionType === 'deposit' 
-                    ? 'Minimum deposit: 0.01 BTC' 
-                    : `Maximum withdrawal: ${position?.stakedAmount || 0} BTC` 
-                }}
-              </p>
+              <div class="mt-1 space-y-1">
+                <p v-if="actionType === 'withdraw'" class="text-sm text-gray-500">
+                  Maximum withdrawal: {{ position?.stakedAmount || 0 }} BTC
+                </p>
+                <p v-if="actionType === 'deposit' && maxStakeableAmount && Number(maxStakeableAmount) > 0" class="text-sm text-gray-500">
+                  Maximum deposit: {{ maxStakeableAmount }} BTC
+                </p>
+                <p v-if="validationMessage" class="text-sm text-red-600">
+                  {{ validationMessage }}
+                </p>
+              </div>
             </div>
 
             <!-- Episode Selection -->
@@ -286,6 +308,10 @@ const props = defineProps({
   position: {
     type: Object,
     required: true
+  },
+  maxStakeableAmount: {
+    type: [String, Number],
+    default: null
   }
 });
 
@@ -316,15 +342,32 @@ const isValidForm = computed(() => {
     return false;
   }
   
+  // Check if deposit is disabled due to max stakeable limit
+  if (actionType.value === 'deposit' && props.maxStakeableAmount && Number(props.maxStakeableAmount) <= 0) {
+    return false;
+  }
+  
   // For extend only, we don't need an amount
   if (actionType.value === 'extend') {
     return true;
   }
   
   // For deposit and withdraw, we need a valid amount
-  return amount.value && 
-         amount.value > 0 && 
-         (actionType.value !== 'withdraw' || amount.value <= parseFloat(props.position?.stakedAmount || 0));
+  if (!amount.value || amount.value <= 0) {
+    return false;
+  }
+  
+  // Check withdrawal limit
+  if (actionType.value === 'withdraw' && amount.value > parseFloat(props.position?.stakedAmount || 0)) {
+    return false;
+  }
+  
+  // Check deposit limit against max stakeable amount
+  if (actionType.value === 'deposit' && props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0) {
+    return amount.value <= Number(props.maxStakeableAmount);
+  }
+  
+  return true;
 });
 
 const selectedEpisodeUnlockDate = computed(() => {
@@ -347,6 +390,37 @@ const isPositionExpired = computed(() => {
   const currentDate = new Date();
   
   return currentDate > unlockDate;
+});
+
+const validationMessage = computed(() => {
+  if (actionType.value === 'deposit') {
+    // Check if deposit is disabled due to max stakeable limit
+    if (props.maxStakeableAmount && Number(props.maxStakeableAmount) <= 0) {
+      return 'Pool has reached maximum capacity. No additional deposits allowed.';
+    }
+    
+    if (!amount.value) return '';
+    
+    if (amount.value < 0.01) {
+      return 'Deposit amount must be at least 0.01 BTC';
+    }
+    
+    if (props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0 && amount.value > Number(props.maxStakeableAmount)) {
+      return `Deposit amount exceeds maximum stakeable limit of ${props.maxStakeableAmount} BTC`;
+    }
+  } else if (actionType.value === 'withdraw') {
+    if (!amount.value) return '';
+    
+    if (amount.value > parseFloat(props.position?.stakedAmount || 0)) {
+      return `Withdrawal amount exceeds position balance of ${props.position?.stakedAmount || 0} BTC`;
+    }
+  }
+  
+  return '';
+});
+
+const isDepositDisabled = computed(() => {
+  return actionType.value === 'deposit' && props.maxStakeableAmount && Number(props.maxStakeableAmount) <= 0;
 });
 
 const transactionSteps = computed(() => {
@@ -406,7 +480,7 @@ const calculateAvailableEpisodes = () => {
   
   for (let i = current; i < current + MAX_ACTIVE_EPISODES; i++) {
     // Check if episode satisfies the modulo 3 == 2 rule AND is later than current position's episode
-    if (i % 3 === 2 && i > positionEpisode) {
+    if (i % 3 === 2 && i >= positionEpisode) {
       const finishTime = getEpisodeFinishTime(i);
       const unlockDate = new Date(finishTime * 1000);
       const durationDays = Math.ceil((finishTime * 1000 - Date.now()) / (1000 * 60 * 60 * 24));
