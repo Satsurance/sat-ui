@@ -273,9 +273,9 @@ const handlePurchase = async (purchaseParams) => {
 
     const signer = web3Store.provider.getSigner();
 
-    // Get contract instances
+    // Get contract instances - use the specific pool address for this product
     const poolContract = new ethers.Contract(
-        getContractAddress('INSURANCE_POOL', web3Store.chainId),
+        selectedProduct.value.poolAddress,
         insurancePoolABI,
         signer
     );

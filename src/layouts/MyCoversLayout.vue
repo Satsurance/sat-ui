@@ -154,6 +154,7 @@ const loadUserCovers = async () => {
     // Get the number of NFTs owned by the user using ERC721 enumerable
     const balance = await coverContract.balanceOf(web3Store.account);
     const tokenCount = balance.toNumber();
+    console.log('tokenCount', tokenCount);
 
     // Get all token IDs owned by the user
     const tokenIdPromises = [];

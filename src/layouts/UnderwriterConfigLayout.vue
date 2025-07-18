@@ -445,6 +445,7 @@ import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress, SUPPORTED_NETWORKS } from '../constants/contracts';
 import { getPoolName } from '../constants/pools';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
+import poolFactoryABI from '../assets/abis/poolFactory.json';
 import TransactionStatus from '../components/TransactionStatus.vue';
 
 // Props
@@ -460,6 +461,8 @@ const web3Store = useWeb3Store();
 
 // State
 const isUnderwriter = ref(false);
+const poolFactory = ref(null);
+const poolAddress = ref('');
 const insurancePool = ref(null);
 const underwriterPositionId = ref(0);
 const underwriterPosition = ref({});
@@ -591,9 +594,28 @@ const initializeContract = async () => {
   
   try {
     const signer = web3Store.provider.getSigner();
-    const poolAddress = getContractAddress('INSURANCE_POOL', web3Store.chainId);
+    
+    // Initialize pool factory
+    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    
+    poolFactory.value = markRaw(new ethers.Contract(
+      factoryAddress,
+      poolFactoryABI,
+      signer
+    ));
+    
+    // Get specific pool address from factory
+    const poolIndex = parseInt(props.poolId);
+    poolAddress.value = await poolFactory.value.pools(poolIndex);
+    
+    if (!poolAddress.value || poolAddress.value === '0x0000000000000000000000000000000000000000') {
+      console.error(`Pool ${poolIndex} does not exist or is not deployed`);
+      return;
+    }
+    
+    // Initialize insurance pool contract with specific pool address
     insurancePool.value = markRaw(new ethers.Contract(
-      poolAddress,
+      poolAddress.value,
       insurancePoolABI,
       signer
     ));
