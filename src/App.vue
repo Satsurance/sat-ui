@@ -2,7 +2,7 @@
   <div class="min-h-screen m-0 p-0">
     <Navbar />
     <main>
-      <router-view></router-view>
+      <router-view />
     </main>
     <Footer />
   </div>

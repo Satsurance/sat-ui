@@ -1,18 +1,18 @@
 <template>
   <Transition name="fade">
     <div
-        v-if="isOpen"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        @click="onBackdropClick"
+      v-if="isOpen"
+      class="fixed inset-0 z-50 overflow-y-auto"
+      @click="onBackdropClick"
     >
       <!-- Backdrop -->
-      <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"></div>
+      <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity" />
 
       <!-- Dialog -->
       <div class="flex min-h-full items-center justify-center p-4">
         <div
-            class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
-            @click.stop
+          class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-8 shadow-xl transition-all"
+          @click.stop
         >
           <!-- Header -->
           <div class="flex items-center justify-between mb-2.5 md:mb-10">
@@ -21,27 +21,27 @@
                 {{ productInfo?.name || 'Unknown' }} Coverage
               </h3>
               <div
-                  class="px-4 py-1.5 text-sm rounded-full font-medium"
-                  :class="statusClass"
+                class="px-4 py-1.5 text-sm rounded-full font-medium"
+                :class="statusClass"
               >
                 {{ statusText }}
               </div>
             </div>
             <button
-                @click="onClose"
-                class="rounded-full p-2 hover:bg-gray-100 transition-colors"
+              class="rounded-full p-2 hover:bg-gray-100 transition-colors"
+              @click="onClose"
             >
               <svg
-                  class="h-5 w-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                class="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
                 <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
             </button>
@@ -50,11 +50,13 @@
           <!-- Project Info -->
           <div class="flex flex-col items-center mb-8">
             <img
-                :src="productInfo?.logo"
-                :alt="`${productInfo?.name || 'Unknown'} logo`"
-                class="w-24 h-24 object-contain mb-4"
-            />
-            <p class="text-gray-600 text-center">{{ productInfo?.description }}</p>
+              :src="productInfo?.logo"
+              :alt="`${productInfo?.name || 'Unknown'} logo`"
+              class="w-24 h-24 object-contain mb-4"
+            >
+            <p class="text-gray-600 text-center">
+              {{ productInfo?.description }}
+            </p>
           </div>
 
           <!-- Cover Details -->
@@ -90,15 +92,14 @@
               <label class="block text-base text-gray-500 mb-2">Time Left</label>
               <div class="p-3 bg-gray-50 rounded-lg">
                 <span
-                    class="text-base font-medium"
-                    :class="{'text-red-500': isExpiringSoon, 'text-green-600': !isExpiringSoon}"
+                  class="text-base font-medium"
+                  :class="{'text-red-500': isExpiringSoon, 'text-green-600': !isExpiringSoon}"
                 >
                   {{ timeRemaining }}
                 </span>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

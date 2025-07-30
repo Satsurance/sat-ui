@@ -38,7 +38,10 @@
           <!-- Left Column - Form -->
           <div class="text-start space-y-6">
             <div v-if="!isSubmitted && !hasError">
-              <form @submit.prevent="handleSubmit" class="space-y-6">
+              <form
+                class="space-y-6"
+                @submit.prevent="handleSubmit"
+              >
                 <div class="space-y-4">
                   <div>
                     <label
@@ -48,14 +51,14 @@
                       Name
                     </label>
                     <input
-                      type="text"
                       id="name"
                       v-model="formData.name"
+                      type="text"
                       class="form-input"
                       placeholder="Satoshi Nakamoto"
                       :disabled="isSubmitting"
                       required
-                    />
+                    >
                   </div>
 
                   <div>
@@ -66,14 +69,14 @@
                       Company
                     </label>
                     <input
-                      type="text"
                       id="company"
                       v-model="formData.company"
+                      type="text"
                       class="form-input"
                       placeholder="Bitcoin"
                       :disabled="isSubmitting"
                       required
-                    />
+                    >
                   </div>
 
                   <div>
@@ -84,14 +87,14 @@
                       Phone
                     </label>
                     <input
-                      type="tel"
                       id="phone"
                       v-model="formData.phone"
+                      type="tel"
                       class="form-input"
                       placeholder="+1 (123) 456-7890"
                       :disabled="isSubmitting"
                       required
-                    />
+                    >
                   </div>
 
                   <div>
@@ -102,14 +105,14 @@
                       Email
                     </label>
                     <input
-                      type="email"
                       id="email"
                       v-model="formData.email"
+                      type="email"
                       class="form-input"
                       placeholder="satoshi@bitcoin.com"
                       :disabled="isSubmitting"
                       required
-                    />
+                    >
                   </div>
                 </div>
 
@@ -136,25 +139,35 @@
                       </svg>
                       Sending...
                     </template>
-                    <template v-else> Apply for Insurance </template>
+                    <template v-else>
+                      Apply for Insurance
+                    </template>
                   </button>
                 </div>
               </form>
             </div>
 
             <!-- Success State -->
-            <div v-if="isSubmitted" class="text-center space-y-4">
-              <h1 class="text-3xl font-medium">We've received your request!</h1>
+            <div
+              v-if="isSubmitted"
+              class="text-center space-y-4"
+            >
+              <h1 class="text-3xl font-medium">
+                We've received your request!
+              </h1>
               <h2>Our team will contact you within 2 business days</h2>
               <img
                 class="w-2/3 mx-auto"
                 src="../assets/Success.gif"
                 alt="Success"
-              />
+              >
             </div>
 
             <!-- Error State -->
-            <div v-if="hasError" class="text-center space-y-4">
+            <div
+              v-if="hasError"
+              class="text-center space-y-4"
+            >
               <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
                 <div class="ml-3">
                   <h1 class="text-2xl font-medium text-yellow-800">
@@ -166,8 +179,8 @@
                 </div>
               </div>
               <button
-                @click="resetForm"
                 class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                @click="resetForm"
               >
                 Try Again
               </button>
@@ -212,7 +225,7 @@
                 class="h-60 mx-auto"
                 src="../assets/Insurance.gif"
                 alt="Insurance"
-              />
+              >
             </div>
           </div>
         </div>

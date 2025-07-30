@@ -23,13 +23,15 @@
               </svg>
               Claims Management
             </h1>
-            <p class="text-gray-500">Governance and Claims Review Platform</p>
+            <p class="text-gray-500">
+              Governance and Claims Review Platform
+            </p>
           </div>
 
           <div class="flex items-center space-x-4 mt-4 md:mt-0 w-full md:w-max">
             <button
-              @click="openSubmitClaimDialog"
               class="flex items-center text-center justify-center w-full btn-primary px-6 py-2.5 rounded-lg"
+              @click="openSubmitClaimDialog"
             >
               <svg
                 class="w-5 h-5 mr-2"
@@ -48,16 +50,24 @@
             </button>
           </div>
         </div>
-
-
       </div>
 
       <!-- Claims Table -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300">
         <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              class="w-5 h-5 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
             Claims
           </h2>
@@ -70,63 +80,93 @@
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-gray-600">
             <thead>
-            <tr class="bg-gray-50 border-b border-gray-200">
-              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">ID</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Date</th>
-              <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-800">Amount</th>
-              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">Description</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Receiver</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">Status</th>
-            </tr>
+              <tr class="bg-gray-50 border-b border-gray-200">
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  ID
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  Date
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  Amount
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  Description
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  Receiver
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-800">
+                  Status
+                </th>
+              </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-            <tr v-if="claims.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                <div class="flex flex-col items-center justify-center">
-                  <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p class="mb-4">No claims found</p>
-                  <button
-                      @click="openSubmitClaimDialog"
+              <tr v-if="claims.length === 0">
+                <td
+                  colspan="6"
+                  class="px-6 py-12 text-center text-gray-500"
+                >
+                  <div class="flex flex-col items-center justify-center">
+                    <svg
+                      class="w-16 h-16 text-gray-300 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <p class="mb-4">
+                      No claims found
+                    </p>
+                    <button
                       class="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow-sm transition-colors"
-                  >
-                    Submit Your First Claim
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr
+                      @click="openSubmitClaimDialog"
+                    >
+                      Submit Your First Claim
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
                 v-for="claim in claims"
                 :key="claim.id"
                 class="hover:bg-gray-50 cursor-pointer transition-colors"
                 @click="openClaimDetails(claim)"
-            >
-              <td class="px-6 py-5">
+              >
+                <td class="px-6 py-5">
                   <span class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
                     {{ claim.id }}
                   </span>
-              </td>
-              <td class="px-6 py-5 text-gray-700">
-                {{ formatDate(claim.date) }}
-              </td>
-              <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
-                {{ formatAmount(claim.amount) }}
-                <span class="ml-1 text-gray-500 font-normal">BTC</span>
-              </td>
-              <td class="px-6 py-5">
-                <div class="max-w-md truncate" :title="claim.description">
-                  {{ claim.description }}
-                </div>
-              </td>
-              <td class="px-6 py-5 text-center">
+                </td>
+                <td class="px-6 py-5 text-gray-700">
+                  {{ formatDate(claim.date) }}
+                </td>
+                <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
+                  {{ formatAmount(claim.amount) }}
+                  <span class="ml-1 text-gray-500 font-normal">BTC</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div
+                    class="max-w-md truncate"
+                    :title="claim.description"
+                  >
+                    {{ claim.description }}
+                  </div>
+                </td>
+                <td class="px-6 py-5 text-center">
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 font-mono">
                     {{ formatAddress(claim.receiver) }}
                   </span>
-              </td>
-              <td class="px-6 py-5">
-                <div class="flex flex-col items-center gap-2">
-                  <span
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-col items-center gap-2">
+                    <span
                       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                       :class="{
                         'bg-red-100 text-red-800': claim.spam,
@@ -135,31 +175,37 @@
                         'bg-yellow-100 text-yellow-800': claim.approved && !claim.executed && !isReadyForExecution(claim),
                         'bg-gray-100 text-gray-800': !claim.approved && !claim.spam && !claim.executed,
                       }"
-                  >
-                    {{ claim.spam ? 'Spam' : 
+                    >
+                      {{ claim.spam ? 'Spam' : 
                         claim.executed ? 'Executed' : 
                         claim.approved && isReadyForExecution(claim) ? 'Ready' :
                         claim.approved ? 'Approved' : 'Pending' }}
-                  </span>
+                    </span>
                   
-                  <!-- Timing information -->
-                  <span v-if="claim.approved && !claim.executed" class="text-xs text-gray-500 text-center">
-                    {{ getExecutionTimeRemaining(claim) }}
-                  </span>
-                  <span v-else-if="!claim.approved && !claim.spam && !claim.executed" class="text-xs text-gray-500 text-center">
-                    {{ getApprovalTimeRemaining(claim) }}
-                  </span>
-                </div>
-              </td>
-            </tr>
+                    <!-- Timing information -->
+                    <span
+                      v-if="claim.approved && !claim.executed"
+                      class="text-xs text-gray-500 text-center"
+                    >
+                      {{ getExecutionTimeRemaining(claim) }}
+                    </span>
+                    <span
+                      v-else-if="!claim.approved && !claim.spam && !claim.executed"
+                      class="text-xs text-gray-500 text-center"
+                    >
+                      {{ getApprovalTimeRemaining(claim) }}
+                    </span>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Pagination Controls -->
         <div
-            v-if="totalClaims && totalClaims > itemsPerPage"
-            class="flex items-center justify-between border-t border-gray-200 px-6 py-4"
+          v-if="totalClaims && totalClaims > itemsPerPage"
+          class="flex items-center justify-between border-t border-gray-200 px-6 py-4"
         >
           <div class="text-sm text-gray-700">
             Showing
@@ -172,12 +218,22 @@
           </div>
           <div class="flex items-center space-x-2">
             <button
-                @click="prevPage"
-                :disabled="currentPage === 1 || isLoadingClaims"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              :disabled="currentPage === 1 || isLoadingClaims"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              @click="prevPage"
             >
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Previous
             </button>
@@ -185,13 +241,23 @@
               Page {{ currentPage }} of {{ totalPages }}
             </span>
             <button
-                @click="nextPage"
-                :disabled="currentPage >= totalPages || isLoadingClaims"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              :disabled="currentPage >= totalPages || isLoadingClaims"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              @click="nextPage"
             >
               Next
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              <svg
+                class="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </div>
@@ -208,7 +274,7 @@
       >
         <div
           class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm transition-opacity"
-        ></div>
+        />
         <div class="flex min-h-full items-center justify-center p-4">
           <div
             class="relative w-full max-w-xl transform overflow-hidden rounded-3xl bg-white p-4 sm:p-6 md:p-8 shadow-xl transition-all"
@@ -220,8 +286,8 @@
                 Submit New Claim
               </h3>
               <button
-                @click="closeSubmitDialog"
                 class="rounded-full p-2 hover:bg-gray-100 transition-colors"
+                @click="closeSubmitDialog"
               >
                 <svg
                   class="h-5 w-5 text-gray-400"
@@ -240,43 +306,48 @@
             </div>
 
             <!-- Claim Form -->
-            <form @submit.prevent="handleSubmitClaim" class="space-y-6">
+            <form
+              class="space-y-6"
+              @submit.prevent="handleSubmitClaim"
+            >
               <div>
                 <label
-                    for="description"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                  for="description"
+                  class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Incident description
                 </label>
                 <textarea
-                    id="description"
-                    v-model="submitFormData.description"
-                    rows="4"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
-                    placeholder="Please describe the incident in detail..."
-                    required
-                ></textarea>
+                  id="description"
+                  v-model="submitFormData.description"
+                  rows="4"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="Please describe the incident in detail..."
+                  required
+                />
               </div>
 
               <div>
                 <label
-                    for="cover"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                  for="cover"
+                  class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Select Cover
                 </label>
                 <select
-                    id="cover"
-                    v-model="submitFormData.selectedCover"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
-                    required
+                  id="cover"
+                  v-model="submitFormData.selectedCover"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  required
                 >
-                  <option value="">Select a cover</option>
+                  <option value="">
+                    Select a cover
+                  </option>
                   <option
-                      v-for="cover in userCovers"
-                      :key="`${cover.tokenId}`"
-                      :value="cover"
-                      :class="isCoverExpired(cover) ? 'text-gray-500' : 'text-gray-900'"
+                    v-for="cover in userCovers"
+                    :key="`${cover.tokenId}`"
+                    :value="cover"
+                    :class="isCoverExpired(cover) ? 'text-gray-500' : 'text-gray-900'"
                   >
                     NFT #{{ cover.tokenId }} - {{ cover.protocol }} - {{ cover.coverAmount }} BTC
                     (Valid: {{ formatDate(cover.startDate) }} - {{ formatDate(cover.endDate) }})
@@ -284,8 +355,8 @@
                   </option>
                 </select>
                 <p
-                    v-if="submitFormData.selectedCover && isCoverExpired(submitFormData.selectedCover)"
-                    class="mt-1 text-yellow-600 text-sm"
+                  v-if="submitFormData.selectedCover && isCoverExpired(submitFormData.selectedCover)"
+                  class="mt-1 text-yellow-600 text-sm"
                 >
                   Warning: This cover has expired
                 </p>
@@ -293,25 +364,25 @@
 
               <div>
                 <label
-                    for="amount"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                  for="amount"
+                  class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Claim amount (BTC)
                 </label>
                 <input
-                    type="number"
-                    id="amount"
-                    v-model="submitFormData.amount"
-                    :max="submitFormData.selectedCover ? submitFormData.selectedCover.coverAmount : 0"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
-                    placeholder="0.1"
-                    step="0.00000001"
-                    min="0"
-                    required
-                />
+                  id="amount"
+                  v-model="submitFormData.amount"
+                  type="number"
+                  :max="submitFormData.selectedCover ? submitFormData.selectedCover.coverAmount : 0"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none block w-full p-2.5"
+                  placeholder="0.1"
+                  step="0.00000001"
+                  min="0"
+                  required
+                >
                 <p
-                    v-if="submitFormData.selectedCover && submitFormData.amount > submitFormData.selectedCover.coverAmount"
-                    class="mt-1 text-red-600 text-sm"
+                  v-if="submitFormData.selectedCover && submitFormData.amount > submitFormData.selectedCover.coverAmount"
+                  class="mt-1 text-red-600 text-sm"
                 >
                   Maximum available: {{ submitFormData.selectedCover.coverAmount }} BTC
                 </p>
@@ -319,44 +390,51 @@
 
               <div>
                 <label
-                    for="receiver"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                  for="receiver"
+                  class="block mb-2 text-sm font-medium text-gray-900"
                 >
                   Receiver address
                 </label>
                 <input
-                    type="text"
-                    id="receiver"
-                    v-model="submitFormData.receiver"
-                    @input="validateAddress"
-                    :class="[
-        'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
-        addressError
-          ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-          : isValidAddress
-          ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
-          : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500',
-      ]"
-                    placeholder="Enter address to receive the claim"
-                    required
-                />
-                <p v-if="addressError" class="mt-1 text-sm text-red-600">
+                  id="receiver"
+                  v-model="submitFormData.receiver"
+                  type="text"
+                  :class="[
+                    'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
+                    addressError
+                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                      : isValidAddress
+                        ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500',
+                  ]"
+                  placeholder="Enter address to receive the claim"
+                  required
+                  @input="validateAddress"
+                >
+                <p
+                  v-if="addressError"
+                  class="mt-1 text-sm text-red-600"
+                >
                   {{ addressError }}
                 </p>
                 <p
-                    v-else-if="isValidAddress"
-                    class="mt-1 text-sm text-green-600"
+                  v-else-if="isValidAddress"
+                  class="mt-1 text-sm text-green-600"
                 >
                   Valid Ethereum address
                 </p>
               </div>
 
               <!-- Deposit Requirement Information -->
-              <div v-if="depositRequirement.required" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div
+                v-if="depositRequirement.required"
+                class="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+              >
                 <div class="flex items-start">
-
                   <div>
-                    <h4 class="text-sm font-medium text-yellow-800">Deposit Required</h4>
+                    <h4 class="text-sm font-medium text-yellow-800">
+                      Deposit Required
+                    </h4>
                     <p class="mt-1 text-sm text-yellow-700">
                       A deposit of <span class="font-medium">{{ depositRequirement.formattedAmount }} ETH</span> is required to submit this claim.
                       You may need to approve the token transfer first.
@@ -367,22 +445,22 @@
 
               <div class="flex justify-end pt-4">
                 <button
-                    type="submit"
-                    :disabled="
-        isSubmitting ||
-        (!!submitFormData.receiver &&
-          (!isValidAddress || !!addressError)) ||
-        !isValidAmount
-      "
-                    :class="[
-        'w-full py-3 rounded-lg transition-colors duration-300',
-        isSubmitting ||
-        (!!submitFormData.receiver &&
-          (!isValidAddress || !!addressError)) ||
-        !isValidAmount
-          ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
-          : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white',
-      ]"
+                  type="submit"
+                  :disabled="
+                    isSubmitting ||
+                      (!!submitFormData.receiver &&
+                        (!isValidAddress || !!addressError)) ||
+                      !isValidAmount
+                  "
+                  :class="[
+                    'w-full py-3 rounded-lg transition-colors duration-300',
+                    isSubmitting ||
+                      (!!submitFormData.receiver &&
+                        (!isValidAddress || !!addressError)) ||
+                      !isValidAmount
+                      ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
+                      : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white',
+                  ]"
                 >
                   {{ isSubmitting ? "Submitting..." : "Submit Claim" }}
                 </button>
@@ -397,9 +475,9 @@
     <ClaimDetailsDialog
       :claim="selectedClaim"
       :is-open="isDialogOpen"
-      :approvalPeriod="approvalPeriod"
-      :executionTimeout="executionTimeout"
-      :claimReduction="claimReduction"
+      :approval-period="approvalPeriod"
+      :execution-timeout="executionTimeout"
+      :claim-reduction="claimReduction"
       :error-message="currentClaimError"
       :is-controller="isController"
       :threshold="controlBoardThreshold"
@@ -415,20 +493,20 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!(firstTxStatus || secondTxStatus || transactionError)"
-        :steps="transactionSteps"
-        :tx-hash="currentTxHash"
-        :error="transactionError"
-        :block-explorer="web3Store.chainId ? SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0] : ''"
-        @close="resetTransaction"
-        @retry="retryTransaction"
+      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+      :steps="transactionSteps"
+      :tx-hash="currentTxHash"
+      :error="transactionError"
+      :block-explorer="web3Store.chainId ? SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0] : ''"
+      @close="resetTransaction"
+      @retry="retryTransaction"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, reactive, onMounted, onUnmounted } from "vue";
-import { ethers } from "ethers";
+import { parseEther, formatEther, keccak256, toHex, encodeFunctionData } from "viem";
 import {getContractAddress, SUPPORTED_NETWORKS} from "../constants/contracts.js";
 import { COVER_PRODUCTS } from "../constants/projects.js";
 import { useWeb3Store } from "../stores/web3Store";
@@ -449,9 +527,8 @@ const executionTimeout = ref(0);
 const claimReduction = ref(0);
 
 // Deposit state
-const claimDeposit = ref(0);
+const claimDeposit = ref(0n);
 const depositToken = ref(null);
-const isCheckingAllowance = ref(false);
 
 // Controller state
 const isController = ref(false);
@@ -608,11 +685,9 @@ const validateAddress = () => {
       return;
     }
 
-    // Trim whitespace
     const address = submitFormData.receiver.trim();
 
-    // Use isAddress to validate without ENS resolution
-    if (!ethers.utils.isAddress(address)) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
       isValidAddress.value = false;
       addressError.value = "Invalid Ethereum address";
       return;
@@ -621,7 +696,6 @@ const validateAddress = () => {
     isValidAddress.value = true;
     addressError.value = "";
 
-    // Update the form with the validated address (keep original case to avoid ENS issues)
     submitFormData.receiver = address;
   } catch (error) {
     isValidAddress.value = false;
@@ -639,9 +713,8 @@ const isValidAmount = computed(() => {
   return parseFloat(submitFormData.amount) <= parseFloat(submitFormData.selectedCover.coverAmount);
 });
 
-// Computed property for deposit requirement information
 const depositRequirement = computed(() => {
-  if (!claimDeposit.value || claimDeposit.value.eq(0)) {
+  if (!claimDeposit.value || claimDeposit.value === 0n) {
     return {
       required: false,
       amount: "0",
@@ -652,53 +725,50 @@ const depositRequirement = computed(() => {
   return {
     required: true,
     amount: claimDeposit.value,
-    formattedAmount: ethers.utils.formatEther(claimDeposit.value)
+    formattedAmount: formatEther(claimDeposit.value)
   };
 });
 
-// Check if deposit is required and if user has approved sufficient allowance
 const checkDepositAllowance = async () => {
-  if (!claimDeposit.value || claimDeposit.value.eq(0)) {
-    return { needsApproval: false, currentAllowance: ethers.BigNumber.from(0) };
+  if (!claimDeposit.value || claimDeposit.value === 0n) {
+    return { needsApproval: false, currentAllowance: 0n };
   }
 
   try {
-    const depositTokenContract = new ethers.Contract(
-      depositToken.value,
-      erc20ABI,
-      web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
 
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
-    const currentAllowance = await depositTokenContract.allowance(
-      web3Store.account,
-      claimerAddress
-    );
+    const currentAllowance = await publicClient.readContract({
+      address: depositToken.value,
+      abi: erc20ABI,
+      functionName: 'allowance',
+      args: [web3Store.account, claimerAddress]
+    });
 
     return {
-      needsApproval: currentAllowance.lt(claimDeposit.value),
+      needsApproval: currentAllowance < claimDeposit.value,
       currentAllowance
     };
   } catch (error) {
     console.error("Error checking deposit allowance:", error);
-    return { needsApproval: true, currentAllowance: ethers.BigNumber.from(0) };
+    return { needsApproval: true, currentAllowance: 0n };
   }
 };
 
-// Approve deposit token for claim submission
 const approveDepositToken = async () => {
   try {
-    const depositTokenContract = new ethers.Contract(
-      depositToken.value,
-      erc20ABI,
-      web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
     
-    // Approve the exact deposit amount
-    const tx = await depositTokenContract.approve(claimerAddress, claimDeposit.value);
-    return tx;
+    const hash = await walletClient.writeContract({
+      address: depositToken.value,
+      abi: erc20ABI,
+      functionName: 'approve',
+      args: [claimerAddress, claimDeposit.value],
+      account: web3Store.account
+    });
+    return hash;
   } catch (error) {
     console.error("Error approving deposit token:", error);
     throw error;
@@ -707,43 +777,51 @@ const approveDepositToken = async () => {
 
 const loadUserCovers = async () => {
   try {
-    const coverContract = new ethers.Contract(
-        getContractAddress('COVER_NFT', web3Store.chainId),
-        coverNftABI,
-        web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
 
-    // Get the number of NFTs owned by the user
-    const balance = await coverContract.balanceOf(web3Store.account);
-    const userCoversCount = balance.toNumber();
+    const coverContractAddress = getContractAddress('COVER_NFT', web3Store.chainId);
+
+    const balance = await publicClient.readContract({
+      address: coverContractAddress,
+      abi: coverNftABI,
+      functionName: 'balanceOf',
+      args: [web3Store.account]
+    });
     
     let coversPromise = [];
-    for(let i = 0; i < userCoversCount; i++) {
-      // Get token ID at index i for this owner
-      const tokenIdPromise = coverContract.tokenOfOwnerByIndex(web3Store.account, i);
+    for(let i = 0; i < Number(balance); i++) {
+      const tokenIdPromise = publicClient.readContract({
+        address: coverContractAddress,
+        abi: coverNftABI,
+        functionName: 'tokenOfOwnerByIndex',
+        args: [web3Store.account, i]
+      });
       coversPromise.push(tokenIdPromise);
     }
     const tokenIds = await Promise.all(coversPromise);
 
-    // Now get cover details for each token ID
     let coverDetailsPromise = [];
     for(let tokenId of tokenIds) {
-      coverDetailsPromise.push(coverContract.covers(tokenId));
+      coverDetailsPromise.push(publicClient.readContract({
+        address: coverContractAddress,
+        abi: coverNftABI,
+        functionName: 'covers',
+        args: [tokenId]
+      }));
     }
     const covers = await Promise.all(coverDetailsPromise);
 
     userCovers.value = covers.map((cover, index) => {
-      // Get protocol name from productId and poolId
-      const poolId = cover.poolId.toNumber();
-      const productId = cover.productId.toNumber();
+      const poolId = Number(cover[4]);
+      const productId = Number(cover[1]);
       const protocolName = COVER_PRODUCTS[poolId]?.[productId]?.name || `Protocol ${productId}`;
 
       return {
-        tokenId: tokenIds[index].toNumber(),
+        tokenId: Number(tokenIds[index]),
         protocol: protocolName,
-        startDate: parseInt(cover.startDate) * 1000,
-        endDate: parseInt(cover.endDate) * 1000,
-        coverAmount: ethers.utils.formatEther(cover.coveredAmount),
+        startDate: parseInt(cover[2]) * 1000,
+        endDate: parseInt(cover[3]) * 1000,
+        coverAmount: formatEther(cover[0]),
         productId: productId,
         poolId: poolId
       };
@@ -761,29 +839,24 @@ const handleSubmitClaim = async () => {
 
     isSubmitting.value = true;
     
-    // Check if deposit approval is needed
     const { needsApproval } = await checkDepositAllowance();
     
     if (needsApproval) {
-      // Step 1: Approve deposit token
       transactionType.value = "submit_claim_with_approval";
       firstTxStatus.value = "pending";
       
-      const approveTx = await approveDepositToken();
-      currentTxHash.value = approveTx.hash;
+      const hash = await approveDepositToken();
+      currentTxHash.value = hash;
       
-      await approveTx.wait();
+      await web3Store.provider.waitForTransactionReceipt({ hash });
       firstTxStatus.value = "success";
       
-      // Step 2: Submit claim
       secondTxStatus.value = "pending";
     } else {
-      // No approval needed, proceed directly to claim submission
       transactionType.value = "submit_claim";
       firstTxStatus.value = "pending";
     }
 
-    // Create the new format JSON
     const claimData = {
       version: 1,
       cover: {
@@ -798,36 +871,38 @@ const handleSubmitClaim = async () => {
       description: submitFormData.description
     };
 
-    const signer = web3Store.provider.getSigner();
+    const walletClient = web3Store.signer;
     
-    // Get pool address from pool factory
-    const poolFactory = new ethers.Contract(
-        getContractAddress("POOL_FACTORY", web3Store.chainId),
-        poolFactoryABI,
-        web3Store.provider
-    );
-    const poolAddress = await poolFactory.pools(submitFormData.selectedCover.poolId);
+    const poolFactoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    const poolAddress = await web3Store.provider.readContract({
+      address: poolFactoryAddress,
+      abi: poolFactoryABI,
+      functionName: 'pools',
+      args: [submitFormData.selectedCover.poolId]
+    });
     
-    const claimer = new ethers.Contract(
-        getContractAddress("CLAIMER", web3Store.chainId),
-        claimerABI,
-        signer
-    );
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
 
-    const tx = await claimer.createClaim(
+    const hash = await walletClient.writeContract({
+      address: claimerAddress,
+      abi: claimerABI,
+      functionName: 'createClaim',
+      args: [
         submitFormData.receiver,
-        poolAddress, // Add pool address parameter
-        JSON.stringify(claimData), // Store the JSON string
-        ethers.utils.parseEther(submitFormData.amount.toString()),  
-    );
+        poolAddress,
+        JSON.stringify(claimData),
+        parseEther(submitFormData.amount.toString())
+      ],
+      account: web3Store.account
+    });
     
     if (needsApproval) {
-      currentTxHash.value = tx.hash;
-      await tx.wait();
+      currentTxHash.value = hash;
+      await web3Store.provider.waitForTransactionReceipt({ hash });
       secondTxStatus.value = "success";
     } else {
-      currentTxHash.value = tx.hash;
-      await tx.wait();
+      currentTxHash.value = hash;
+      await web3Store.provider.waitForTransactionReceipt({ hash });
       firstTxStatus.value = "success";
     }
 
@@ -850,18 +925,12 @@ const handleSubmitClaim = async () => {
       }
     }
     
-    transactionError.value =
-        error.code === 4001
-            ? "Transaction rejected by user"
-            : isApprovalStep
-            ? "Failed to approve deposit token"
-            : "Failed to submit claim";
+    transactionError.value = error.shortMessage || (isApprovalStep ? "Failed to approve deposit token" : "Failed to submit claim");
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// Reset transaction state
 const resetTransaction = () => {
   firstTxStatus.value = "";
   secondTxStatus.value = "";
@@ -870,7 +939,6 @@ const resetTransaction = () => {
   transactionError.value = "";
 };
 
-// Retry transaction
 const retryTransaction = () => {
   if (transactionType.value === "execute" && selectedClaim.value) {
     handleExecute(selectedClaim.value.id);
@@ -887,12 +955,9 @@ const retryTransaction = () => {
   }
 };
 
-
-
 const parseClaimDescription = (rawDescription) => {
   try {
     const parsedData = JSON.parse(rawDescription);
-    // Validate the expected structure
     if (parsedData.version === 1 && parsedData.cover && parsedData.description) {
       return {
         description: parsedData.description,
@@ -903,25 +968,27 @@ const parseClaimDescription = (rawDescription) => {
     // If parsing fails, treat as old format
   }
 
-  // Return original description for backward compatibility
   return {
     description: rawDescription
   };
 };
 
 const loadClaimsTable = async () => {
-  const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      web3Store.provider.getSigner()
-  );
+  const publicClient = web3Store.publicClient;
+
+  const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
 
   const startIndex = Math.max(0, totalClaims.value - (currentPage.value * itemsPerPage.value));
   const endIndex = totalClaims.value - ((currentPage.value - 1) * itemsPerPage.value);
 
   let promises = [];
   for (let i = endIndex; i > startIndex && i >= 0; i--) {
-    promises.push(claimer.claims(i - 1));
+    promises.push(publicClient.readContract({
+      address: claimerAddress,
+      abi: claimerABI,
+      functionName: 'claims',
+      args: [i - 1]
+    }));
   }
   const retClaims = await Promise.all(promises);
 
@@ -930,45 +997,39 @@ const loadClaimsTable = async () => {
   for (let i = endIndex; i > startIndex && i >= 0; i--) {
     const claim = retClaims[orderCounter];
 
-    // Parse the description field
     const parsedDescription = parseClaimDescription(claim.description);
 
     const newClaim = {
       id: i - 1,
-      date: new Date(claim.startTime * 1000),
-      amount: claim.amount,
+      date: new Date(Number(claim[6]) * 1000),
+      amount: claim[4],
       description: parsedDescription.description,
-      ...(parsedDescription.cover && { cover: parsedDescription.cover }), // Only include cover if it exists
-      receiver: claim.receiver,
-      proposer: claim.proposer,
-      poolAddress: claim.poolAddress,
-      depositAmount: claim.depositAmount,
-      startTime: Number(claim.startTime),
-      approvalTime: Number(claim.approvalTime),
-      approved: claim.approved,
-      executed: claim.executed,
-      exists: claim.exists,
-      spam: claim.spam
+      ...(parsedDescription.cover && { cover: parsedDescription.cover }),
+      receiver: claim[1],
+      proposer: claim[0],
+      poolAddress: claim[2],
+      depositAmount: claim[5],
+      startTime: Number(claim[6]),
+      approvalTime: Number(claim[7]),
+      approved: claim[8],
+      executed: claim[9],
+      exists: claim[10],
+      spam: claim[11]
     };
-    console.log("New claim:", newClaim);
     claims.value.push(newClaim);
     orderCounter++;
   }
 
-  // Load approval counts for all claims
   await loadApprovalCounts();
 }
 
 const loadApprovalCounts = async () => {
-  console.log("Loading approval counts");
   if (claims.value.length === 0) return;
-  console.log("Claims length:", claims.value.length);
 
   const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
   const approvalPromises = [];
   
   for (const claim of claims.value) {
-    // Create transaction hashes for approve and spam actions
     const approveData = encodeApproveClaimCall(claim.id);
     const spamData = encodeMarkAsSpamCall(claim.id);
     
@@ -982,13 +1043,10 @@ const loadApprovalCounts = async () => {
   }
   
   const results = await Promise.all(approvalPromises);
-  console.log("Results:", results);
-  // Update approval counts
   for (let i = 0; i < claims.value.length; i++) {
     const claim = claims.value[i];
     const approveCount = results[i * 2];
     const spamCount = results[i * 2 + 1];
-    console.log("Claim:", claim.id, "Approve count:", approveCount, "Spam count:", spamCount);
     claimApprovals.value.set(claim.id, {
       approveCount,
       spamCount
@@ -996,43 +1054,33 @@ const loadApprovalCounts = async () => {
   }
 }
 
-// Load claims
 const loadClaimsState = async () => {
   try {
     isLoadingClaims.value = true;
-    const claimer = new ethers.Contract(
-        getContractAddress("CLAIMER", web3Store.chainId),
-        claimerABI,
-        web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
 
-    const controlBoard = new ethers.Contract(
-        getContractAddress("CONTROL_BOARD", web3Store.chainId),
-        controlBoardABI,
-        web3Store.provider
-    );
+    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
+    const controlBoardAddress = getContractAddress("CONTROL_BOARD", web3Store.chainId);
 
     const retValues = await Promise.all([
-        claimer.approvalPeriod(),
-        claimer.executionTimeout(),
-        claimer.claimReduction(),
-        claimer.claimCounter(),
-        claimer.claimDeposit(),
-        claimer.depositToken(),
-        controlBoard.threshold(),
-        controlBoard.controllersCount()
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'approvalPeriod' }),
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'executionTimeout' }),
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'claimReduction' }),
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'claimCounter' }),
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'claimDeposit' }),
+        publicClient.readContract({ address: claimerAddress, abi: claimerABI, functionName: 'depositToken' }),
+        publicClient.readContract({ address: controlBoardAddress, abi: controlBoardABI, functionName: 'threshold' }),
+        publicClient.readContract({ address: controlBoardAddress, abi: controlBoardABI, functionName: 'controllersCount' })
     ]);
 
-    const claimCounter = retValues[3];
-
-    approvalPeriod.value = retValues[0].toNumber();
-    executionTimeout.value = retValues[1].toNumber();
-    claimReduction.value = retValues[2].toNumber();
-    totalClaims.value = (claimCounter).toNumber();
+    approvalPeriod.value = Number(retValues[0]);
+    executionTimeout.value = Number(retValues[1]);
+    claimReduction.value = Number(retValues[2]);
+    totalClaims.value = Number(retValues[3]);
     claimDeposit.value = retValues[4];
     depositToken.value = retValues[5];
-    controlBoardThreshold.value = retValues[6].toNumber();
-    controlBoardControllersCount.value = retValues[7].toNumber();
+    controlBoardThreshold.value = Number(retValues[6]);
+    controlBoardControllersCount.value = Number(retValues[7]);
 
     await loadClaimsTable();
     await checkControllerStatus();
@@ -1043,9 +1091,8 @@ const loadClaimsState = async () => {
   }
 };
 
-// Utility functions
-
 const formatDate = (date) => {
+  if (!date || new Date(date).getTime() === 0 || isNaN(new Date(date))) return "N/A";
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -1063,10 +1110,9 @@ const formatAmount = (amount) => {
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 4,
-  }).format(ethers.utils.formatEther(amount.toString()));
+  }).format(formatEther(amount.toString()));
 };
 
-// Helper function to check if a claim is ready for execution
 const isReadyForExecution = (claim) => {
   if (!claim?.approved || claim?.executed || claim?.spam) return false;
   if (!claim?.approvalTime || !executionTimeout.value) return false;
@@ -1077,9 +1123,7 @@ const isReadyForExecution = (claim) => {
   return currentTime >= executionReadyTime;
 };
 
-// Helper function to get time remaining for execution
 const getExecutionTimeRemaining = (claim) => {
-  console.log("execution timeout", executionTimeout.value);
   if (!claim?.approved || !claim?.approvalTime || !executionTimeout.value) return null;
   
   const currentTime = Math.floor(Date.now() / 1000);
@@ -1097,7 +1141,6 @@ const getExecutionTimeRemaining = (claim) => {
   return `${minutes}m until execution`;
 };
 
-// Helper function to get approval time remaining
 const getApprovalTimeRemaining = (claim) => {
   if (!claim?.startTime || !approvalPeriod.value) return null;
   
@@ -1116,11 +1159,10 @@ const getApprovalTimeRemaining = (claim) => {
   return `${minutes}m left for approval`;
 };
 
-// Helper functions for control board integration
 const createTransactionHash = (target, value, data) => {
   const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
-  return ethers.utils.keccak256(
-    ethers.utils.solidityPack(
+  return keccak256(
+    toHex(
       ['address', 'address', 'uint256', 'bytes'],
       [controlBoardAddress, target, value, data]
     )
@@ -1128,25 +1170,33 @@ const createTransactionHash = (target, value, data) => {
 };
 
 const encodeApproveClaimCall = (claimId) => {
-  const iface = new ethers.utils.Interface(claimerABI);
-  return iface.encodeFunctionData('approveClaim', [claimId]);
+  return encodeFunctionData({
+    abi: claimerABI,
+    functionName: 'approveClaim',
+    args: [claimId]
+  });
 };
 
 const encodeMarkAsSpamCall = (claimId) => {
-  const iface = new ethers.utils.Interface(claimerABI);
-  return iface.encodeFunctionData('markAsSpam', [claimId]);
+  return encodeFunctionData({
+    abi: claimerABI,
+    functionName: 'markAsSpam',
+    args: [claimId]
+  });
 };
 
 const getApprovalCount = async (txHash) => {
   try {
-    const controlBoard = new ethers.Contract(
-      getContractAddress('CONTROL_BOARD', web3Store.chainId),
-      controlBoardABI,
-      web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
+    const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
     
-    const count = await controlBoard.approvalCount(txHash);
-    return count.toNumber();
+    const count = await publicClient.readContract({
+      address: controlBoardAddress,
+      abi: controlBoardABI,
+      functionName: 'approvalCount',
+      args: [txHash]
+    });
+    return Number(count);
   } catch (error) {
     console.error('Error getting approval count:', error);
     return 0;
@@ -1155,19 +1205,21 @@ const getApprovalCount = async (txHash) => {
 
 const hasUserApproved = async (txHash, userAddress) => {
   try {
-    const controlBoard = new ethers.Contract(
-      getContractAddress('CONTROL_BOARD', web3Store.chainId),
-      controlBoardABI,
-      web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
+    const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
     
-    return await controlBoard.transactionApprovals(txHash, userAddress);
+    return await publicClient.readContract({
+      address: controlBoardAddress,
+      abi: controlBoardABI,
+      functionName: 'transactionApprovals',
+      args: [txHash, userAddress]
+    });
   } catch (error) {
     console.error('Error checking user approval:', error);
     return false;
   }
 };
-// Claim details dialog management
+
 const openClaimDetails = (claim) => {
   selectedClaim.value = claim;
   isDialogOpen.value = true;
@@ -1179,11 +1231,8 @@ const closeClaimDetails = () => {
   currentClaimError.value = '';
 };
 
-
-
 const handleApproveClaim = async (claimId) => {
   try {
-    // Additional client-side validation for approval period
     const claim = selectedClaim.value;
     if (claim) {
       const currentTime = Math.floor(Date.now() / 1000);
@@ -1196,7 +1245,6 @@ const handleApproveClaim = async (claimId) => {
       }
     }
 
-    // Check if user has already approved this transaction
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
     const approveData = encodeApproveClaimCall(claimId);
     const approveTxHash = createTransactionHash(claimerAddress, 0, approveData);
@@ -1211,44 +1259,32 @@ const handleApproveClaim = async (claimId) => {
     transactionType.value = "approve";
     firstTxStatus.value = "pending";
 
-    const controlBoard = new ethers.Contract(
-        getContractAddress("CONTROL_BOARD", web3Store.chainId),
-        controlBoardABI,
-        web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
-    const tx = await controlBoard.approveTransaction(claimerAddress, 0, approveData);
-    currentTxHash.value = tx.hash;
+    const hash = await walletClient.writeContract({
+      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+      abi: controlBoardABI,
+      functionName: 'approveTransaction',
+      args: [claimerAddress, 0, approveData],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await tx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
-    // Reload the claims state after approving
     await loadClaimsState();
     closeClaimDetails();
   } catch (error) {
     console.error("Error approving claim:", error);
     firstTxStatus.value = "failed";
-
-    if (error.code === 4001) {
-      transactionError.value = "Transaction rejected by user";
-    } else if (error.reason && error.reason.includes("Approval period")) {
-      transactionError.value = "Approval period has expired for this claim.";
-    } else if (error.reason && error.reason.includes("TransactionAlreadyApproved")) {
-      transactionError.value = "You have already approved this claim.";
-    } else if (error.reason) {
-      transactionError.value = error.reason;
-    } else {
-      transactionError.value = "Approval failed. Please try again.";
-    }
-
+    transactionError.value = error.shortMessage || "Approval failed. Please try again.";
     currentClaimError.value = transactionError.value;
   }
 };
 
 const handleMarkAsSpam = async (claimId) => {
   try {
-    // Additional client-side validation for approval period
     const claim = selectedClaim.value;
     if (claim) {
       const currentTime = Math.floor(Date.now() / 1000);
@@ -1261,7 +1297,6 @@ const handleMarkAsSpam = async (claimId) => {
       }
     }
 
-    // Check if user has already approved this transaction
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
     const spamData = encodeMarkAsSpamCall(claimId);
     const spamTxHash = createTransactionHash(claimerAddress, 0, spamData);
@@ -1276,37 +1311,26 @@ const handleMarkAsSpam = async (claimId) => {
     transactionType.value = "mark_spam";
     firstTxStatus.value = "pending";
 
-    const controlBoard = new ethers.Contract(
-        getContractAddress("CONTROL_BOARD", web3Store.chainId),
-        controlBoardABI,
-        web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
-    const tx = await controlBoard.approveTransaction(claimerAddress, 0, spamData);
-    currentTxHash.value = tx.hash;
+    const hash = await walletClient.writeContract({
+      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+      abi: controlBoardABI,
+      functionName: 'approveTransaction',
+      args: [claimerAddress, 0, spamData],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await tx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
-    // Reload the claims state after marking as spam
     await loadClaimsState();
     closeClaimDetails();
   } catch (error) {
     console.error("Error marking claim as spam:", error);
     firstTxStatus.value = "failed";
-
-    if (error.code === 4001) {
-      transactionError.value = "Transaction rejected by user";
-    } else if (error.reason && error.reason.includes("Approval period")) {
-      transactionError.value = "Approval period has expired for this claim.";
-    } else if (error.reason && error.reason.includes("TransactionAlreadyApproved")) {
-      transactionError.value = "You have already marked this claim as spam.";
-    } else if (error.reason) {
-      transactionError.value = error.reason;
-    } else {
-      transactionError.value = "Mark as spam failed. Please try again.";
-    }
-
+    transactionError.value = error.shortMessage || "Mark as spam failed. Please try again.";
     currentClaimError.value = transactionError.value;
   }
 };
@@ -1319,36 +1343,27 @@ const handleExecuteApprovalTransaction = async (claimId) => {
     transactionType.value = "execute_approval";
     firstTxStatus.value = "pending";
 
-    const controlBoard = new ethers.Contract(
-        getContractAddress("CONTROL_BOARD", web3Store.chainId),
-        controlBoardABI,
-        web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
-    const tx = await controlBoard.executeTransaction(claimerAddress, 0, approveData, []);
-    currentTxHash.value = tx.hash;
+    const hash = await walletClient.writeContract({
+      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+      abi: controlBoardABI,
+      functionName: 'executeTransaction',
+      args: [claimerAddress, 0, approveData, []],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await tx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
-    // Reload the claims state after execution
     await loadClaimsState();
     closeClaimDetails();
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error executing approval transaction:", error);
     firstTxStatus.value = "failed";
-    
-    if (error.code === 4001) {
-      transactionError.value = "Transaction rejected by user";
-    } else if (error.reason && error.reason.includes("InsufficientSignatures")) {
-      transactionError.value = "Not enough approvals yet to execute this transaction.";
-    } else if (error.reason) {
-      transactionError.value = error.reason;
-    } else {
-      transactionError.value = "Execution failed. Please try again.";
-    }
-
+    transactionError.value = error.shortMessage || "Execution failed. Please try again.";
     currentClaimError.value = transactionError.value;
   }
 };
@@ -1361,43 +1376,33 @@ const handleExecuteSpamTransaction = async (claimId) => {
     transactionType.value = "execute_spam";
     firstTxStatus.value = "pending";
 
-    const controlBoard = new ethers.Contract(
-        getContractAddress("CONTROL_BOARD", web3Store.chainId),
-        controlBoardABI,
-        web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
-    const tx = await controlBoard.executeTransaction(claimerAddress, 0, spamData, []);
-    currentTxHash.value = tx.hash;
+    const hash = await walletClient.writeContract({
+      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+      abi: controlBoardABI,
+      functionName: 'executeTransaction',
+      args: [claimerAddress, 0, spamData, []],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await tx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
-    // Reload the claims state after execution
     await loadClaimsState();
     closeClaimDetails();
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error executing spam transaction:", error);
     firstTxStatus.value = "failed";
-    
-    if (error.code === 4001) {
-      transactionError.value = "Transaction rejected by user";
-    } else if (error.reason && error.reason.includes("InsufficientSignatures")) {
-      transactionError.value = "Not enough approvals yet to execute this transaction.";
-    } else if (error.reason) {
-      transactionError.value = error.reason;
-    } else {
-      transactionError.value = "Execution failed. Please try again.";
-    }
-
+    transactionError.value = error.shortMessage || "Execution failed. Please try again.";
     currentClaimError.value = transactionError.value;
   }
 };
 
 const handleExecute = async (claimId) => {
   try {
-    // Additional client-side validation for execution timeout
     const claim = selectedClaim.value;
     if (claim && !isReadyForExecution(claim)) {
       transactionError.value = "Execution timeout has not passed yet. Please wait.";
@@ -1407,35 +1412,28 @@ const handleExecute = async (claimId) => {
     transactionType.value = "execute";
     firstTxStatus.value = "pending";
 
-    const claimer = new ethers.Contract(
-      getContractAddress("CLAIMER", web3Store.chainId),
-      claimerABI,
-      web3Store.provider.getSigner()
-    );
+    const walletClient = web3Store.signer;
 
-    const executeTx = await claimer.executeClaim(claimId);
-    currentTxHash.value = executeTx.hash;
+    const hash = await walletClient.writeContract({
+      address: getContractAddress("CLAIMER", web3Store.chainId),
+      abi: claimerABI,
+      functionName: 'executeClaim',
+      args: [claimId],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await executeTx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
-    // Reload claims after successful execution
     await loadClaimsState();
 
-    // Close dialog and reset state after delay
     closeClaimDetails();
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Execution error:", error);
     firstTxStatus.value = "failed";
-    
-    if (error.code === 4001) {
-      transactionError.value = "Transaction rejected by user";
-    } else if (error.reason && error.reason.includes("Execution timeout")) {
-      transactionError.value = "Execution timeout has not expired yet. Please wait.";
-    } else {
-      transactionError.value = "Execution failed. Please try again.";
-    }
+    transactionError.value = error.shortMessage || "Execution failed. Please try again.";
   }
 };
 
@@ -1456,29 +1454,24 @@ const prevPage = () => {
   }
 };
 
-// Watch for wallet connection changes
 watch(
   () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
   async (values) => {
     if (values[0]) {
       await loadClaimsState();
     } else {
-      // Reset controller status when wallet disconnects
       isController.value = false;
     }
   }
 );
 
-// Timer for updating timing information
 let updateTimer = null;
 
-// Setup timer to update timing information every minute
 onMounted(() => {
   updateTimer = setInterval(() => {
-    // Force reactive updates by toggling a dummy value
     const dummy = ref(0);
     dummy.value++;
-  }, 60000); // Update every minute
+  }, 60000);
 });
 
 onUnmounted(() => {
@@ -1487,12 +1480,10 @@ onUnmounted(() => {
   }
 });
 
-// Initial load if wallet is connected
 if (web3Store.isConnected) {
   loadClaimsState();
 }
 
-// Function to check if current user is a controller
 const checkControllerStatus = async () => {
   try {
     if (!web3Store.isConnected || !web3Store.account) {
@@ -1506,13 +1497,14 @@ const checkControllerStatus = async () => {
       return;
     }
 
-    const controlBoard = new ethers.Contract(
-      controlBoardAddress,
-      controlBoardABI,
-      web3Store.provider
-    );
+    const publicClient = web3Store.publicClient;
 
-    isController.value = await controlBoard.isController(web3Store.account);
+    isController.value = await publicClient.readContract({
+      address: controlBoardAddress,
+      abi: controlBoardABI,
+      functionName: 'isController',
+      args: [web3Store.account]
+    });
   } catch (error) {
     console.error('Error checking controller status:', error);
     isController.value = false;

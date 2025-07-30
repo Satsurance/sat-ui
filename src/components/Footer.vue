@@ -3,9 +3,15 @@
     <div
       class="flex flex-col sm:flex-row py-4 sm:py-6 container mx-auto px-4 justify-between bg-white items-center space-y-2 sm:space-y-0"
     >
-      <div class="font-medium text-sm sm:text-base">©Satsurance 2024</div>
+      <div class="font-medium text-sm sm:text-base">
+        ©Satsurance 2024
+      </div>
       <div class="flex flex-row">
-        <a href="https://github.com/Satsurance" class="mr-2" target="_blank">
+        <a
+          href="https://github.com/Satsurance"
+          class="mr-2"
+          target="_blank"
+        >
           <svg
             class="w-6 h-6"
             xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +41,10 @@
             />
           </svg>
         </a>
-        <a href="https://www.twitter.com/Satsurance" target="_blank">
+        <a
+          href="https://www.twitter.com/Satsurance"
+          target="_blank"
+        >
           <svg
             class="w-6 h-6"
             xmlns="http://www.w3.org/2000/svg"

@@ -5,41 +5,73 @@
       <div class="bg-white rounded-xl p-6 mb-8 border border-gray-100">
         <div class="text-center mb-6">
           <h1 class="text-3xl md:text-4xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
-            <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              class="w-10 h-10 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
             Available Insurance Pools
           </h1>
-          <p class="text-gray-500 text-lg">Choose insurance pools to stake your BTC and earn rewards</p>
+          <p class="text-gray-500 text-lg">
+            Choose insurance pools to stake your BTC and earn rewards
+          </p>
         </div>
 
         <!-- Stats Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
-            <div class="text-sm text-yellow-700 mb-1">Avg APR</div>
-            <div class="text-3xl font-bold text-yellow-600">{{ averageAPR }}<span class="text-lg">%</span></div>
+            <div class="text-sm text-yellow-700 mb-1">
+              Avg APR
+            </div>
+            <div class="text-3xl font-bold text-yellow-600">
+              {{ averageAPR }}<span class="text-lg">%</span>
+            </div>
           </div>
           <div class="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
-            <div class="text-sm text-green-700 mb-1">Total TVL</div>
-            <div class="text-3xl font-bold text-green-600">{{ totalTVL }} <span class="text-lg">BTC</span></div>
+            <div class="text-sm text-green-700 mb-1">
+              Total TVL
+            </div>
+            <div class="text-3xl font-bold text-green-600">
+              {{ totalTVL }} <span class="text-lg">BTC</span>
+            </div>
           </div>
           <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
-            <div class="text-sm text-blue-700 mb-1">Total Pools</div>
-            <div class="text-3xl font-bold text-blue-600">{{ poolCount }}</div>
+            <div class="text-sm text-blue-700 mb-1">
+              Total Pools
+            </div>
+            <div class="text-3xl font-bold text-blue-600">
+              {{ poolCount }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="bg-white rounded-xl p-12 border border-gray-100">
+      <div
+        v-if="loading"
+        class="bg-white rounded-xl p-12 border border-gray-100"
+      >
         <div class="flex flex-col items-center justify-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mb-4"></div>
-          <p class="text-gray-500">Loading available pools...</p>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mb-4" />
+          <p class="text-gray-500">
+            Loading available pools...
+          </p>
         </div>
       </div>
 
       <!-- Pools Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        v-else
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
         <div
           v-for="pool in pools"
           :key="pool.id"
@@ -50,18 +82,36 @@
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-900">{{ pool.name }}</h3>
-                <p class="text-sm text-gray-500">Insurance Pool</p>
+                <h3 class="font-semibold text-gray-900">
+                  {{ pool.name }}
+                </h3>
+                <p class="text-sm text-gray-500">
+                  Insurance Pool
+                </p>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-2xl font-bold text-yellow-600">{{ pool.apr }}%</div>
-              <div class="text-sm text-gray-500">APR</div>
+              <div class="text-2xl font-bold text-yellow-600">
+                {{ pool.apr }}%
+              </div>
+              <div class="text-sm text-gray-500">
+                APR
+              </div>
             </div>
           </div>
 
@@ -93,23 +143,54 @@
           @click="openCreatePoolDialog"
         >
           <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            <svg
+              class="w-8 h-8 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 mb-2">Create New Pool</h3>
-          <p class="text-sm text-gray-500 text-center">Set up a new insurance pool for staking</p>
+          <h3 class="font-semibold text-gray-900 mb-2">
+            Create New Pool
+          </h3>
+          <p class="text-sm text-gray-500 text-center">
+            Set up a new insurance pool for staking
+          </p>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div v-if="!loading && pools.length === 0" class="bg-white rounded-xl p-12 border border-gray-100">
+      <div
+        v-if="!loading && pools.length === 0"
+        class="bg-white rounded-xl p-12 border border-gray-100"
+      >
         <div class="flex flex-col items-center justify-center">
-          <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          <svg
+            class="w-16 h-16 text-gray-300 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            />
           </svg>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">No Pools Available</h3>
-          <p class="text-gray-500 text-center">There are currently no insurance pools available for staking.</p>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">
+            No Pools Available
+          </h3>
+          <p class="text-gray-500 text-center">
+            There are currently no insurance pools available for staking.
+          </p>
         </div>
       </div>
     </div>
@@ -117,8 +198,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, markRaw, onMounted } from "vue";
-import { ethers } from "ethers";
+import { ref, computed, watch, onMounted } from "vue";
+import { formatEther, createPublicClient, custom } from "viem";
 import { useRouter } from "vue-router";
 import { useWeb3Store } from "../stores/web3Store";
 import { getContractAddress } from "../constants/contracts.js";
@@ -126,18 +207,14 @@ import { getPoolName } from "../constants/pools.js";
 import poolFactoryABI from "../assets/abis/poolFactory.json";
 import insurancePoolABI from "../assets/abis/insurancePool.json";
 
-// Router and store
 const router = useRouter();
 const web3Store = useWeb3Store();
 
-// State
 const pools = ref([]);
 const poolCount = ref(0);
 const loading = ref(true);
-const poolFactory = ref(null);
 const canCreatePool = ref(false);
 
-// Computed properties
 const totalTVL = computed(() => {
   return pools.value.reduce((total, pool) => total + parseFloat(pool.tvl), 0).toFixed(2);
 });
@@ -148,44 +225,30 @@ const averageAPR = computed(() => {
   return (totalAPR / pools.value.length).toFixed(2);
 });
 
-// Methods
-const initializeContracts = () => {
-  try {
-    const signer = web3Store.provider.getSigner();
-    
-    // Check if pool factory exists for this network
-    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
-    if (factoryAddress) {
-      poolFactory.value = markRaw(new ethers.Contract(
-        factoryAddress,
-        poolFactoryABI,
-        signer
-      ));
-    }
-  } catch (error) {
-    console.error("Pool factory not available for this network:", error);
-  }
-};
-
 const loadPools = async () => {
   try {
     loading.value = true;
-    
-    if (!poolFactory.value) {
-      // No pool factory available, no pools to load
+    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    if (!factoryAddress) {
       pools.value = [];
       poolCount.value = 0;
       return;
     }
 
-    // Get pool count from factory
-    const count = await poolFactory.value.poolCount();
-    poolCount.value = count.toNumber();
+    const publicClient = createPublicClient({
+      transport: custom(window.ethereum)
+    });
 
-    // Load all pools
+    const count = await publicClient.readContract({
+      address: factoryAddress,
+      abi: poolFactoryABI,
+      functionName: 'poolCount'
+    });
+    poolCount.value = Number(count);
+
     const poolPromises = [];
     for (let i = 0; i < poolCount.value; i++) {
-      poolPromises.push(loadPoolData(i + 1));
+      poolPromises.push(loadPoolData(i + 1, publicClient, factoryAddress));
     }
 
     const poolData = await Promise.all(poolPromises);
@@ -200,30 +263,28 @@ const loadPools = async () => {
   }
 };
 
-
-
-const loadPoolData = async (poolIndex) => {
+const loadPoolData = async (poolIndex, publicClient, factoryAddress) => {
   try {
-    // Get pool address from factory
-    const poolAddress = await poolFactory.value.pools(poolIndex);
-    
-    // Create contract instance for this pool
-    const signer = web3Store.provider.getSigner();
-    const poolContract = markRaw(new ethers.Contract(
-      poolAddress,
-      insurancePoolABI,
-      signer
-    ));
+    const poolAddress = await publicClient.readContract({
+      address: factoryAddress,
+      abi: poolFactoryABI,
+      functionName: 'pools',
+      args: [poolIndex]
+    });
 
-    // Get pool stats
-    const poolStats = await poolContract.callStatic.poolStatsLatest();
+    const poolStats = await publicClient.readContract({
+      address: poolAddress,
+      abi: insurancePoolABI,
+      functionName: 'poolStatsLatest'
+    });
+    const [totalAssetsStaked_, totalCoverAllocation_, totalPoolShares_, poolRewardRate_] = poolStats;
     
-    const tvl = Number(ethers.utils.formatEther(poolStats.totalAssetsStaked_)).toFixed(2);
-    const totalCoverAllocation = Number(ethers.utils.formatEther(poolStats.totalCoverAllocation_));
+    const tvl = Number(formatEther(totalAssetsStaked_)).toFixed(2);
+    const totalCoverAllocation = Number(formatEther(totalCoverAllocation_));
     let apr = 0;
     
-    if (poolStats.totalAssetsStaked_ != 0) {
-      apr = ((Number((BigInt(poolStats.totalAssetsStaked_) + BigInt(poolStats.poolRewardRate_) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(poolStats.totalAssetsStaked_)) / 10000 - 1) * 100).toFixed(2);
+    if (totalAssetsStaked_ != 0n) {
+      apr = ((Number((totalAssetsStaked_ + poolRewardRate_ * BigInt(60 * 60 * 24 * 360)) * 10000n / totalAssetsStaked_) / 10000 - 1) * 100).toFixed(2);
     }
 
     return {
@@ -245,17 +306,30 @@ const navigateToPool = (pool) => {
 };
 
 const openCreatePoolDialog = () => {
-  // TODO: Implement pool creation dialog
   console.log("Create pool dialog would open here");
 };
 
 const checkCreatePermission = async () => {
   try {
-    if (!poolFactory.value) return;
+    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+    if (!factoryAddress) return;
+
+    const publicClient = createPublicClient({
+      transport: custom(window.ethereum)
+    });
     
-    // Check if user has MINTER_ROLE or similar permission
-    const minterRole = await poolFactory.value.MINTER_ROLE();
-    const hasRole = await poolFactory.value.hasRole(minterRole, web3Store.account);
+    const minterRole = await publicClient.readContract({
+      address: factoryAddress,
+      abi: poolFactoryABI,
+      functionName: 'MINTER_ROLE'
+    });
+
+    const hasRole = await publicClient.readContract({
+      address: factoryAddress,
+      abi: poolFactoryABI,
+      functionName: 'hasRole',
+      args: [minterRole, web3Store.account]
+    });
     canCreatePool.value = hasRole;
   } catch (error) {
     console.error("Error checking create permission:", error);
@@ -263,21 +337,17 @@ const checkCreatePermission = async () => {
   }
 };
 
-// Lifecycle
 onMounted(() => {
   if (web3Store.isConnected) {
-    initializeContracts();
     loadPools();
     checkCreatePermission();
   }
 });
 
-// Watch for web3 connection changes
 watch(
   () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
   async ([isConnected]) => {
     if (isConnected) {
-      initializeContracts();
       await loadPools();
       await checkCreatePermission();
     } else {

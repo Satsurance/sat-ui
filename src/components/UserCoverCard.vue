@@ -3,10 +3,12 @@
     <div class="flex flex-col h-full">
       <!-- Project Name and Status -->
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">{{ productInfo?.name || 'Unknown' }}</h3>
+        <h3 class="text-lg font-semibold text-gray-900">
+          {{ productInfo?.name || 'Unknown' }}
+        </h3>
         <span
-            class="px-2.5 py-0.5 text-xs font-medium rounded-full"
-            :class="statusClass"
+          class="px-2.5 py-0.5 text-xs font-medium rounded-full"
+          :class="statusClass"
         >
           {{ isActive ? 'Active' : 'Expired' }}
         </span>
@@ -15,15 +17,17 @@
       <!-- Logo -->
       <div class="flex justify-center items-center py-4 sm:py-6">
         <img
-            :src="productInfo?.logo"
-            :alt="`${productInfo?.name || 'Unknown'} logo`"
-            class="w-24 h-24 sm:w-28 md:w-32 sm:h-28 md:h-32 object-contain"
-        />
+          :src="productInfo?.logo"
+          :alt="`${productInfo?.name || 'Unknown'} logo`"
+          class="w-24 h-24 sm:w-28 md:w-32 sm:h-28 md:h-32 object-contain"
+        >
       </div>
 
       <!-- Cover Info -->
       <div class="mt-auto space-y-3">
-        <p class="text-gray-600 mb-4 text-sm">{{ productInfo?.description }}</p>
+        <p class="text-gray-600 mb-4 text-sm">
+          {{ productInfo?.description }}
+        </p>
 
         <div class="flex justify-between text-sm">
           <span class="text-gray-500">Cover Amount:</span>
@@ -40,11 +44,14 @@
           <span class="font-medium">{{ formatDate(cover.endDate) }}</span>
         </div>
 
-        <div v-if="isActive" class="flex justify-between text-sm">
+        <div
+          v-if="isActive"
+          class="flex justify-between text-sm"
+        >
           <span class="text-gray-500">Time Left:</span>
           <span
-              :class="{'text-red-500': isExpiringSoon, 'text-green-600': !isExpiringSoon}"
-              class="font-medium"
+            :class="{'text-red-500': isExpiringSoon, 'text-green-600': !isExpiringSoon}"
+            class="font-medium"
           >
             {{ timeRemaining }}
           </span>

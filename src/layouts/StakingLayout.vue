@@ -3,8 +3,6 @@
     <div class="max-w-6xl mx-auto px-4 py-8">
       <!-- Main Container -->
       <div class="bg-white rounded-xl p-6 mb-8 border border-gray-100 transition-all duration-300">
-
-        
         <!-- Header with Dashboard Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
           <!-- Left: Title and APR Display -->
@@ -12,31 +10,55 @@
             <div>
               <h1 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
                 <button
-                  @click="$router.push('/pools')"
                   class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200 hover:border-gray-300"
                   title="Back to Pools"
+                  @click="$router.push('/pools')"
                 >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 {{ getPoolName(web3Store.chainId, parseInt(props.poolId)) }}
               </h1>
-              <p class="text-gray-500 text-lg">Stake your BTC to earn rewards while providing insurance</p>
+              <p class="text-gray-500 text-lg">
+                Stake your BTC to earn rewards while providing insurance
+              </p>
             </div>
 
             <!-- APR Display -->
             <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200 transform transition-all duration-300 hover:shadow-md">
               <div class="flex items-center gap-3 mb-3">
-                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                <svg
+                  class="w-6 h-6 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
                 </svg>
                 <span class="text-lg font-medium text-gray-700">Current APR</span>
               </div>
               <div class="text-5xl font-bold text-yellow-600 flex items-baseline">
                 {{ poolAPR }}<span class="text-2xl ml-1">%</span>
               </div>
-              <div class="mt-2 text-sm text-yellow-700">Earn rewards for providing insurance</div>
+              <div class="mt-2 text-sm text-yellow-700">
+                Earn rewards for providing insurance
+              </div>
             </div>
           </div>
 
@@ -50,14 +72,18 @@
                 <div class="text-sm text-gray-600 mb-1 flex items-center gap-2">
                   Your Total Stake
                 </div>
-                <div class="text-2xl font-semibold text-gray-900 mt-1">{{ userTotalStakedAmount }} <span class="text-lg font-medium text-gray-700">BTC</span></div>
+                <div class="text-2xl font-semibold text-gray-900 mt-1">
+                  {{ userTotalStakedAmount }} <span class="text-lg font-medium text-gray-700">BTC</span>
+                </div>
               </div>
 
               <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 hover:shadow-sm transition-all duration-300 flex flex-col">
                 <div class="text-sm text-gray-600 mb-1 flex items-center gap-2">
                   Pool TVL
                 </div>
-                <div class="text-2xl font-semibold text-gray-900 mt-1">{{ totalStakedAmount }} <span class="text-lg font-medium text-gray-700">BTC</span></div>
+                <div class="text-2xl font-semibold text-gray-900 mt-1">
+                  {{ totalStakedAmount }} <span class="text-lg font-medium text-gray-700">BTC</span>
+                </div>
               </div>
 
               <div class="bg-gradient-to-r from-gray-50 to-yellow-50 p-5 rounded-xl border border-yellow-100 md:col-span-2 hover:shadow-sm transition-all duration-300">
@@ -65,11 +91,13 @@
                   Available Rewards
                 </div>
                 <div class="flex items-center justify-between">
-                  <div class="text-2xl font-semibold text-gray-900 mt-1">{{ earnedRewards }} <span class="text-lg font-medium text-gray-700">BTC</span></div>
+                  <div class="text-2xl font-semibold text-gray-900 mt-1">
+                    {{ earnedRewards }} <span class="text-lg font-medium text-gray-700">BTC</span>
+                  </div>
                   <button
-                      @click="getReward"
-                      :disabled="!earnedRewards || firstTxStatus !== ''"
-                      class="btn-secondary px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                    :disabled="!Number(earnedRewards) || firstTxStatus !== ''"
+                    class="btn-secondary px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                    @click="getReward"
                   >
                     Claim
                   </button>
@@ -82,23 +110,48 @@
         <!-- Action Button -->
         <div class="flex justify-center mt-2">
           <button
-              v-if="!isUnderwriter"
-              @click="openNewPositionDialog"
-              class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+            v-if="!isUnderwriter"
+            class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+            @click="openNewPositionDialog"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            <svg
+              class="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             New Staking Position
           </button>
           <button
-              v-else
-              @click="navigateToUnderwriterConfig"
-              class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+            v-else
+            class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+            @click="navigateToUnderwriterConfig"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <svg
+              class="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
             Configure Pool
           </button>
@@ -109,112 +162,160 @@
       <div class="bg-white rounded-xl p-0 border border-gray-100 transition-all duration-300">
         <div class="p-5 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              class="w-5 h-5 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
             Active Positions
           </h2>
-          <div class="text-sm text-gray-500">{{ positions.length }} active position{{ positions.length !== 1 ? 's' : '' }}</div>
+          <div class="text-sm text-gray-500">
+            {{ positions.length }} active position{{ positions.length !== 1 ? 's' : '' }}
+          </div>
         </div>
 
         <!-- Enhanced Positions Table -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-gray-600">
             <thead>
-            <tr class="bg-gray-50 text-left">
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">ID</th>
-              <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-900">Amount</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Unlock Date</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Status</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">Actions</th>
-            </tr>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">
+                  ID
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-900">
+                  Amount
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">
+                  Unlock Date
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">
+                  Status
+                </th>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-900">
+                  Actions
+                </th>
+              </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-            <tr v-if="positions.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                <div class="flex flex-col items-center justify-center">
-                  <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
-                  <p>No active positions</p>
-                  <button
+              <tr v-if="positions.length === 0">
+                <td
+                  colspan="6"
+                  class="px-6 py-12 text-center text-gray-500"
+                >
+                  <div class="flex flex-col items-center justify-center">
+                    <svg
+                      class="w-12 h-12 text-gray-300 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                      />
+                    </svg>
+                    <p>No active positions</p>
+                    <button
                       v-if="!isUnderwriter"
+                      class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
                       @click="openNewPositionDialog"
-                      class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
-                  >
-                    Create your first position
-                  </button>
-                  <button
+                    >
+                      Create your first position
+                    </button>
+                    <button
                       v-else
-                      @click="navigateToUnderwriterConfig"
                       class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
-                  >
-                    Configure Pool
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr
+                      @click="navigateToUnderwriterConfig"
+                    >
+                      Configure Pool
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
                 v-for="position in positions"
                 :key="position.id"
                 class="hover:bg-gray-50 transition-all duration-300"
-            >
-              <td class="px-6 py-5">
-                <div class="flex justify-center items-center">
+              >
+                <td class="px-6 py-5">
+                  <div class="flex justify-center items-center">
                     <span class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
                       {{ position.id }}
                     </span>
-                </div>
-              </td>
-              <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
-                {{ position.stakedAmount }}
-                <span class="ml-1 text-gray-500 font-normal">BTC</span>
-              </td>
-              <td class="px-6 py-5">
-                <div class="flex items-center justify-center gap-3">
+                  </div>
+                </td>
+                <td class="px-6 py-5 text-right font-medium whitespace-nowrap">
+                  {{ position.stakedAmount }}
+                  <span class="ml-1 text-gray-500 font-normal">BTC</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex items-center justify-center gap-3">
                     <span class="text-sm whitespace-nowrap text-gray-600 min-w-[4.5rem] text-center">
                       {{ position.unlockDate }}
                     </span>
-                </div>
-              </td>
-              <td class="px-6 py-5">
-                <div class="flex justify-center">
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex justify-center">
                     <span
-                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300"
-                        :class="position.isUnlocked ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300"
+                      :class="position.isUnlocked ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
                     >
-                      <span class="w-2 h-2 rounded-full mr-1" :class="position.isUnlocked ? 'bg-green-500' : 'bg-yellow-500'"></span>
+                      <span
+                        class="w-2 h-2 rounded-full mr-1"
+                        :class="position.isUnlocked ? 'bg-green-500' : 'bg-yellow-500'"
+                      />
                       {{ position.isUnlocked ? 'Unlocked' : 'Locked' }}
                     </span>
-                </div>
-              </td>
-              <td class="px-6 py-5 text-center">
-                <div class="flex gap-2 justify-center">
-                  <button
-                      @click="openExtendPositionDialog(position)"
+                  </div>
+                </td>
+                <td class="px-6 py-5 text-center">
+                  <div class="flex gap-2 justify-center">
+                    <button
                       :disabled="firstTxStatus !== ''"
                       class="btn-primary px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm text-sm"
-                  >
+                      @click="openExtendPositionDialog(position)"
+                    >
                       <span class="flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        <svg
+                          class="w-4 h-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
                         </svg>
                         Extend
                       </span>
-                  </button>
-                  <button
+                    </button>
+                    <button
                       v-if="position.isUnlocked"
-                      @click="unstakePosition(position.id)"
                       :disabled="firstTxStatus !== ''"
                       class="btn-secondary px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-sm text-sm"
-                  >
+                      @click="unstakePosition(position.id)"
+                    >
                       <span class="flex items-center">
                         Unstake
                       </span>
-                  </button>
-                </div>
-              </td>
-            </tr>
+                    </button>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -223,39 +324,39 @@
 
     <!-- New Position Dialog -->
     <NewPositionDialog
-        :is-open="isNewPositionDialogOpen"
-        :pool-contract="insurancePool"
-        :max-stakeable-amount="maxStakeableAmount"
-        @close="closeNewPositionDialog"
-        @position-created="handlePositionCreated"
+      :is-open="isNewPositionDialogOpen"
+      :pool-contract="insurancePool"
+      :max-stakeable-amount="maxStakeableAmount"
+      @close="closeNewPositionDialog"
+      @position-created="handlePositionCreated"
     />
 
     <!-- Extend Position Dialog -->
     <ExtendPositionDialog
-        :is-open="isExtendPositionDialogOpen"
-        :pool-contract="insurancePool"
-        :position="positionToExtend"
-        :max-stakeable-amount="maxStakeableAmount"
-        @close="closeExtendPositionDialog"
-        @position-extended="handlePositionExtended"
+      :is-open="isExtendPositionDialogOpen"
+      :pool-contract="insurancePool"
+      :position="positionToExtend"
+      :max-stakeable-amount="maxStakeableAmount"
+      @close="closeExtendPositionDialog"
+      @position-extended="handlePositionExtended"
     />
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-        :show="!!(firstTxStatus || secondTxStatus || transactionError)"
-        :steps="transactionSteps"
-        :tx-hash="currentTxHash"
-        :error="transactionError"
-        :block-explorer="web3Store.chainId ? SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0] : ''"
-        @close="resetTransaction"
-        @retry="retryTransaction"
+      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+      :steps="transactionSteps"
+      :tx-hash="currentTxHash"
+      :error="transactionError"
+      :block-explorer="web3Store.chainId ? SUPPORTED_NETWORKS[web3Store.chainId].blockExplorerUrls[0] : ''"
+      @close="resetTransaction"
+      @retry="retryTransaction"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, watch, computed, markRaw } from "vue";
-import { ethers } from "ethers";
+import { ref, watch, computed } from "vue";
+import { formatEther } from "viem";
 import { useRouter } from "vue-router";
 import { useWeb3Store } from "../stores/web3Store";
 import {getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION} from "../constants/contracts.js";
@@ -268,7 +369,6 @@ import NewPositionDialog from "../components/NewPositionDialog.vue";
 import ExtendPositionDialog from "../components/ExtendPositionDialog.vue";
 import { formatDate } from "../utils.js";
 
-// Props
 const props = defineProps({
   poolId: {
     type: String,
@@ -276,7 +376,6 @@ const props = defineProps({
   }
 });
 
-// State
 const positions = ref([]);
 const totalStakedAmount = ref(0);
 const userTotalStakedAmount = ref(0);
@@ -284,16 +383,12 @@ const earnedRewards = ref(0);
 const poolAPR = ref(0);
 const maxStakeableAmount = ref(0);
 const insurancePool = ref(null);
-const poolFactory = ref(null);
 const poolAddress = ref(null);
-const positionNFT = ref(null);
-const coverNFT = ref(null);
 const isNewPositionDialogOpen = ref(false);
 const isExtendPositionDialogOpen = ref(false);
-const positionToExtend = ref(null);
+const positionToExtend = ref({});
 const isUnderwriter = ref(false);
 
-// Transaction state
 const firstTxStatus = ref("");
 const secondTxStatus = ref("");
 const transactionType = ref("");
@@ -303,7 +398,6 @@ const transactionError = ref("");
 const web3Store = useWeb3Store();
 const router = useRouter();
 
-// Computed Properties
 const transactionSteps = computed(() => {
   if (transactionType.value === 'unstake') {
     return [
@@ -329,124 +423,101 @@ const transactionSteps = computed(() => {
   return [];
 });
 
-// Methods
 const initializeContracts = async () => {
-  try {
-    const signer = web3Store.provider.getSigner();
-    
-    // Initialize pool factory
-    const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
-    if (!factoryAddress) {
-      console.error("Pool factory not available for this network");
-      return;
-    }
-    
-    poolFactory.value = markRaw(new ethers.Contract(
-      factoryAddress,
-      poolFactoryABI,
-      signer
-    ));
-    
-    // Get specific pool address from factory
-    const poolIndex = parseInt(props.poolId);
-    poolAddress.value = await poolFactory.value.pools(poolIndex);
-    
-    // Initialize insurance pool contract with specific pool address
-    insurancePool.value = markRaw(new ethers.Contract(
-      poolAddress.value,
-      insurancePoolABI,
-      signer
-    ));
-    
-    // Initialize NFT contracts
-    positionNFT.value = new ethers.Contract(
-      getContractAddress("POSITION_NFT", web3Store.chainId),
-      erc721ABI,
-      signer
-    );
-    coverNFT.value = new ethers.Contract(
-      getContractAddress("COVER_NFT", web3Store.chainId),
-      erc721ABI,
-      signer
-    );
-  } catch (error) {
-    console.error("Error initializing contracts:", error);
+  const publicClient = web3Store.publicClient;
+
+  const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
+  if (!factoryAddress) {
+    console.error("Pool factory not available for this network");
+    return;
   }
+
+  const poolIndex = parseInt(props.poolId);
+  poolAddress.value = await publicClient.readContract({
+    address: factoryAddress,
+    abi: poolFactoryABI,
+    functionName: 'pools',
+    args: [poolIndex]
+  });
+
+  insurancePool.value = {
+    address: poolAddress.value,
+    abi: insurancePoolABI
+  };
 };
 
-
 const loadPositionState = async () => {
-  try {
-    if (!insurancePool.value || !positionNFT.value) {
-      console.warn("Contracts not initialized yet");
-      return;
-    }
-
-    const positionsCount = (await positionNFT.value.balanceOf(web3Store.account)).toNumber();
-    const positionsIds = await Promise.all(Array(positionsCount).fill().map((_, i) => 
-      positionNFT.value.tokenOfOwnerByIndex(web3Store.account, i)
-    ));
-
-    const [poolStats, currentEpisode, earned, poolUnderwriter, ...userPositions] = await Promise.all([
-      insurancePool.value.callStatic.poolStatsLatest(),
-      insurancePool.value.getCurrentEpisode(),
-      insurancePool.value.callStatic.earnedPositions(positionsIds),
-      insurancePool.value.poolUnderwriter(),
-      ...positionsIds.map(positionId =>
-          insurancePool.value.getPoolPosition(positionId)
-      )
-    ]);
-
-    // Check underwriter status
-    isUnderwriter.value = poolUnderwriter.toLowerCase() === web3Store.account.toLowerCase();
-
-    // Destructure the poolStatsLatest response
-    const [totalAssetsStakedRaw, totalSharesAmount, totalRewardShares, rewardRate, maxSharesUserToStake, maxUnderwriterSharesToUnstake] = poolStats;
-
-    const userTotalShares = userPositions.reduce((total, position) => {
-      return total + BigInt(position.shares);
-    }, BigInt(0));
-
-    // Update global stats
-    totalStakedAmount.value = Number(
-        ethers.utils.formatEther(totalAssetsStakedRaw)
-    ).toFixed(2);
-    earnedRewards.value = ethers.utils.formatEther(earned);
-    userTotalStakedAmount.value = Number(ethers.utils.formatEther((BigInt(userTotalShares) * BigInt(totalAssetsStakedRaw))/BigInt(totalSharesAmount))).toFixed(2);
-
-    // Calculate max stakeable amount in BTC for non-underwriters
-    if (!isUnderwriter.value && totalSharesAmount > 0) {
-      const maxStakeableShares = BigInt(maxSharesUserToStake);
-      maxStakeableAmount.value = Number(
-        ethers.utils.formatEther((maxStakeableShares * BigInt(totalAssetsStakedRaw)) / BigInt(totalSharesAmount))
-      ).toFixed(2);
-    } else {
-      maxStakeableAmount.value = 0;
-    }
-
-    if (totalAssetsStakedRaw != 0) {
-      poolAPR.value = ((Number((BigInt(totalAssetsStakedRaw) + BigInt(rewardRate) * BigInt(60 * 60 * 24 * 360)) * 10000n / BigInt(totalAssetsStakedRaw)) / 10000 - 1) * 100).toFixed(2);
-    }
-
-    let processedPositions = [];
-    for (let i = 0; i < positionsIds.length; i++) {
-      if(userPositions[i].active) {
-        processedPositions.push({
-          id: positionsIds[i],
-          episode: userPositions[i].episode.toNumber(),
-          unlockDate: calculateStakingTime((userPositions[i].episode.toNumber() + 1) * EPISODE_DURATION),
-          stakedAmount: Number(
-              ethers.utils.formatEther(((BigInt(userPositions[i].shares) * BigInt(totalAssetsStakedRaw)) / BigInt(totalSharesAmount)).toString())
-          ).toFixed(2),
-          isUnlocked: (userPositions[i].episode + 1n) * EPISODE_DURATION < Math.floor(Date.now() / 1000)
-        });
-      }
-    }
-
-    positions.value = processedPositions;
-  } catch (error) {
-    console.error("Error loading positions:", error);
+  if (!insurancePool.value) {
+    console.warn("Contracts not initialized yet");
+    return;
   }
+
+  const publicClient = web3Store.publicClient;
+
+  const positionNFTAddress = getContractAddress("POSITION_NFT", web3Store.chainId);
+
+  const positionsCount = await publicClient.readContract({
+    address: positionNFTAddress,
+    abi: erc721ABI,
+    functionName: 'balanceOf',
+    args: [web3Store.account]
+  });
+
+  const positionsIds = await Promise.all(Array(Number(positionsCount)).fill().map((_, i) => 
+    publicClient.readContract({
+      address: positionNFTAddress,
+      abi: erc721ABI,
+      functionName: 'tokenOfOwnerByIndex',
+      args: [web3Store.account, i]
+    })
+  ));
+
+  const [poolStats, currentEpisode, earned, poolUnderwriter, ...userPositions] = await Promise.all([
+    publicClient.readContract({ ...insurancePool.value, functionName: 'poolStatsLatest' }),
+    publicClient.readContract({ ...insurancePool.value, functionName: 'getCurrentEpisode' }),
+    publicClient.readContract({ ...insurancePool.value, functionName: 'earnedPositions', args: [positionsIds] }),
+    publicClient.readContract({ ...insurancePool.value, functionName: 'poolUnderwriter' }),
+    ...positionsIds.map(positionId =>
+      publicClient.readContract({ ...insurancePool.value, functionName: 'getPoolPosition', args: [positionId] })
+    )
+  ]);
+
+  isUnderwriter.value = poolUnderwriter.toLowerCase() === web3Store.account.toLowerCase();
+
+  const [totalAssetsStakedRaw, totalSharesAmount, , rewardRate, maxSharesUserToStake] = poolStats;
+
+  const userTotalShares = userPositions.reduce((total, position) => {
+    return total + position.shares;
+  }, 0n);
+
+  totalStakedAmount.value = Number(formatEther(totalAssetsStakedRaw)).toFixed(2);
+  earnedRewards.value = formatEther(earned);
+  userTotalStakedAmount.value = Number(formatEther((userTotalShares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2);
+
+  if (!isUnderwriter.value && totalSharesAmount > 0n) {
+    maxStakeableAmount.value = Number(formatEther((maxSharesUserToStake * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2);
+  } else {
+    maxStakeableAmount.value = 0;
+  }
+
+  if (totalAssetsStakedRaw !== 0n) {
+    poolAPR.value = ((Number((totalAssetsStakedRaw + rewardRate * BigInt(60 * 60 * 24 * 360)) * 10000n / totalAssetsStakedRaw) / 10000 - 1) * 100).toFixed(2);
+  }
+
+  let processedPositions = [];
+  for (let i = 0; i < positionsIds.length; i++) {
+    if(userPositions[i].active) {
+      processedPositions.push({
+        id: positionsIds[i],
+        episode: Number(userPositions[i].episode),
+        unlockDate: calculateStakingTime((Number(userPositions[i].episode) + 1) * EPISODE_DURATION),
+        stakedAmount: Number(formatEther((userPositions[i].shares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2),
+        isUnlocked: (userPositions[i].episode + 1n) * BigInt(EPISODE_DURATION) < BigInt(Math.floor(Date.now() / 1000))
+      });
+    }
+  }
+
+  positions.value = processedPositions;
 };
 
 const calculateStakingTime = (unlockTime) => {
@@ -458,15 +529,12 @@ const calculateStakingTime = (unlockTime) => {
     return "Unlocked";
   }
 
-  // Convert timestamp to date and format it
   const unlockDate = new Date(unlockTimestamp * 1000);
   const currentDate = new Date();
   
-  // Check if unlock date is today
   const isToday = unlockDate.toDateString() === currentDate.toDateString();
   
   if (isToday) {
-    // Calculate time difference in seconds
     const timeLeft = unlockTimestamp - now;
     const hoursLeft = Math.floor(timeLeft / 3600);
     const minutesLeft = Math.floor((timeLeft % 3600) / 60);
@@ -512,7 +580,6 @@ const navigateToUnderwriterConfig = () => {
   router.push(`/underwriter/${props.poolId}`);
 };
 
-// Unstake position
 const unstakePosition = async (positionId) => {
   try {
     resetTransaction();
@@ -520,21 +587,25 @@ const unstakePosition = async (positionId) => {
     transactionType.value = "unstake";
     firstTxStatus.value = "pending";
 
-    const unstakeTx = await insurancePool.value.quitPool(positionId);
-    currentTxHash.value = unstakeTx.hash;
+    const walletClient = web3Store.signer;
+    const hash = await walletClient.writeContract({
+      ...insurancePool.value,
+      functionName: 'quitPool',
+      args: [positionId],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await unstakeTx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadPositionState();
 
-    // Auto-close on success after delay
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Unstaking error:", error);
     firstTxStatus.value = "failed";
-    transactionError.value =
-        error.code === 4001 ? "Transaction rejected" : "Unstaking failed";
+    transactionError.value = error.shortMessage || "Unstaking failed";
   }
 };
 
@@ -545,28 +616,30 @@ const getReward = async () => {
     transactionType.value = "getreward";
     firstTxStatus.value = "pending";
 
-    // Extract position IDs from current positions
     const positionIds = positions.value.map(position => position.id);
     
-    const rewardTx = await insurancePool.value.collectRewards(positionIds);
-    currentTxHash.value = rewardTx.hash;
+    const walletClient = web3Store.signer;
+    const hash = await walletClient.writeContract({
+      ...insurancePool.value,
+      functionName: 'collectRewards',
+      args: [positionIds],
+      account: web3Store.account
+    });
+    currentTxHash.value = hash;
 
-    await rewardTx.wait();
+    await web3Store.provider.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadPositionState();
 
-    // Auto-close on success after delay
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Get reward error:", error);
     firstTxStatus.value = "failed";
-    transactionError.value =
-        error.code === 4001 ? "Transaction rejected" : "Get reward failed";
+    transactionError.value = error.shortMessage || "Get reward failed";
   }
 };
 
-// Reset transaction state
 const resetTransaction = () => {
   firstTxStatus.value = "";
   secondTxStatus.value = "";
@@ -584,14 +657,12 @@ const retryTransaction = async () => {
   }
 };
 
-// Initialize contracts and load data when web3 is connected
 if (web3Store.isConnected) {
   initializeContracts().then(async () => {
    loadPositionState();
   });
 }
 
-// Watch for web3 connection changes
 watch(
     () => [web3Store.isConnected, web3Store.account, web3Store.chainId],
     async ([isConnected]) => {

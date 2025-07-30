@@ -1,40 +1,44 @@
 import { defineStore } from 'pinia';
-import { ethers } from 'ethers';
-import { MulticallWrapper } from "ethers-multicall-provider";
+import { createWalletClient, custom, createPublicClient, http } from 'viem';
+import { SUPPORTED_NETWORKS } from '../constants/contracts.js';
 
 export const useWeb3Store = defineStore('web3', {
     state: () => ({
         account: null,
         chainId: null,
         provider: null,
-        signer: null,
+        publicClient: null,
+        signer: null, // In Viem, the walletClient acts as the signer
         isConnected: false,
     }),
 
     actions: {
         async connectWallet() {
             try {
-                // Request account access
                 const accounts = await window.ethereum.request({
                     method: 'eth_requestAccounts'
                 });
 
-                // Create ethers provider and signer
-                let provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-                this.chainId = (await provider.getNetwork()).chainId;
-                // Do not use multicall for local network
-                if (this.chainId != 31337) {
-                    provider = MulticallWrapper.wrap(new ethers.providers.Web3Provider(window.ethereum, "any"));
-                }
+                const tempWalletClient = createWalletClient({ transport: custom(window.ethereum) });
+                const chainId = await tempWalletClient.getChainId();
+                const chain = SUPPORTED_NETWORKS[chainId];
 
-                const signer = provider.getSigner();
+                const walletClient = createWalletClient({
+                    chain,
+                    transport: custom(window.ethereum)
+                });
+
+                const publicClient = createPublicClient({
+                    chain,
+                    transport: http(chain.rpcUrls[0])
+                });
 
                 this.account = accounts[0];
-                this.provider = provider;
-                this.signer = signer;
+                this.provider = publicClient; // Public Client for reading data
+                this.publicClient = publicClient;
+                this.signer = walletClient; // Wallet Client for sending transactions
+                this.chainId = await walletClient.getChainId();
 
-
-                // Setup event listeners
                 this.setupEventListeners();
                 this.isConnected = true;
             } catch (error) {
@@ -54,15 +58,22 @@ export const useWeb3Store = defineStore('web3', {
                 }
             });
 
-            window.ethereum.on('chainChanged', (chainId) => {
-                this.chainId = parseInt(chainId, 16);
+            window.ethereum.on('chainChanged', () => {
+                this.reconnect();
             });
         },
+
+        async reconnect() {
+            this.disconnect();
+            await this.connectWallet();
+        },
+            
 
         disconnect() {
             this.account = null;
             this.chainId = null;
             this.provider = null;
+            this.publicClient = null;
             this.signer = null;
             this.isConnected = false;
         }
