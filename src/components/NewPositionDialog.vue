@@ -274,6 +274,8 @@ import {getContractAddress, SUPPORTED_NETWORKS} from '../constants/contracts.js'
 import erc20ABI from '../assets/abis/erc20.json';
 import { formatDate } from '../utils.js';
 import TransactionStatus from '../components/TransactionStatus.vue';
+import { addTxIntention, signIntention, finalizeBTCTransaction, convertETHtoBTC } from '@midl-xyz/midl-js-executor';
+import { getBalance } from '@midl-xyz/midl-js-core';
 
 const props = defineProps({
   isOpen: {
@@ -431,7 +433,7 @@ const handleStakeProcess = async (amountInWei) => {
     
     const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
 
-    const currentAllowance = await web3Store.provider.readContract({
+    const currentAllowance = await web3Store.ethClient.readContract({
       address: btcAddress,
       abi: erc20ABI,
       functionName: 'allowance',
@@ -451,7 +453,7 @@ const handleStakeProcess = async (amountInWei) => {
           account: web3Store.account
         });
         currentTxHash.value = hash;
-        await web3Store.publicClient.waitForTransactionReceipt({ hash });
+        await web3Store.ethClient.waitForTransactionReceipt({ hash });
         firstTxStatus.value = "success";
       } catch (error) {
         firstTxStatus.value = "failed";
@@ -470,7 +472,7 @@ const handleStakeProcess = async (amountInWei) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.publicClient.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     secondTxStatus.value = "success";
 
     emit('positionCreated');
@@ -489,13 +491,33 @@ const handleCreatePosition = async () => {
   }
 
   try {
+
+    const btcBalance = await getBalance(web3Store.midlConfig, web3Store.midlAccount.address);
+    console.log(btcBalance);
+
     isSubmitting.value = true;
-    const amountInWei = parseEther(toStakeAmount.value.toString());
+    const amountInWei = convertETHtoBTC(parseEther(toStakeAmount.value.toString()));
 
-    
     const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
+    const res = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: btcAddress,
+        value: amountInWei
+      },
+      publicKey: web3Store.midlAccount.publicKey
+    });
 
-    const balance = await web3Store.provider.readContract({
+    console.log(res);
+
+    const btc_tx = await finalizeBTCTransaction(web3Store.midlConfig, [res], web3Store.ethClient);
+    console.log(btc_tx);
+
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, res, [res], {
+      txId: btc_tx.tx.id,
+    });
+    console.log(signed);
+
+    const balance = await web3Store.ethClient.readContract({
       address: btcAddress,
       abi: erc20ABI,
       functionName: 'balanceOf',

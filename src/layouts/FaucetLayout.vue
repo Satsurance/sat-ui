@@ -262,8 +262,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { formatEther, createPublicClient, custom } from 'viem';
+import { ref, computed, watch, onMounted } from 'vue';
+import { formatEther } from 'viem';
 import { useWeb3Store } from '../stores/web3Store';
 import {SUPPORTED_NETWORKS, getContractAddress, NETWORKS} from '../constants/contracts.js';
 import erc20ABI from '../assets/abis/erc20.json';
@@ -330,9 +330,7 @@ const loadBalances = async () => {
     return;
   }
 
-  const publicClient = createPublicClient({
-    transport: custom(window.ethereum)
-  });
+  const publicClient = web3Store.ethClient;
 
   const btcBalance = await publicClient.readContract({
     address: getContractAddress('BTC_TOKEN', web3Store.chainId),

@@ -735,7 +735,7 @@ const checkDepositAllowance = async () => {
   }
 
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
     const currentAllowance = await publicClient.readContract({
@@ -777,7 +777,7 @@ const approveDepositToken = async () => {
 
 const loadUserCovers = async () => {
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const coverContractAddress = getContractAddress('COVER_NFT', web3Store.chainId);
 
@@ -848,7 +848,7 @@ const handleSubmitClaim = async () => {
       const hash = await approveDepositToken();
       currentTxHash.value = hash;
       
-      await web3Store.provider.waitForTransactionReceipt({ hash });
+      await web3Store.ethClient.waitForTransactionReceipt({ hash });
       firstTxStatus.value = "success";
       
       secondTxStatus.value = "pending";
@@ -874,7 +874,7 @@ const handleSubmitClaim = async () => {
     const walletClient = web3Store.signer;
     
     const poolFactoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
-    const poolAddress = await web3Store.provider.readContract({
+    const poolAddress = await web3Store.ethClient.readContract({
       address: poolFactoryAddress,
       abi: poolFactoryABI,
       functionName: 'pools',
@@ -898,11 +898,11 @@ const handleSubmitClaim = async () => {
     
     if (needsApproval) {
       currentTxHash.value = hash;
-      await web3Store.provider.waitForTransactionReceipt({ hash });
+      await web3Store.ethClient.waitForTransactionReceipt({ hash });
       secondTxStatus.value = "success";
     } else {
       currentTxHash.value = hash;
-      await web3Store.provider.waitForTransactionReceipt({ hash });
+      await web3Store.ethClient.waitForTransactionReceipt({ hash });
       firstTxStatus.value = "success";
     }
 
@@ -974,7 +974,7 @@ const parseClaimDescription = (rawDescription) => {
 };
 
 const loadClaimsTable = async () => {
-  const publicClient = web3Store.publicClient;
+  const publicClient = web3Store.ethClient;
 
   const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
 
@@ -1057,7 +1057,7 @@ const loadApprovalCounts = async () => {
 const loadClaimsState = async () => {
   try {
     isLoadingClaims.value = true;
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
     const controlBoardAddress = getContractAddress("CONTROL_BOARD", web3Store.chainId);
@@ -1187,7 +1187,7 @@ const encodeMarkAsSpamCall = (claimId) => {
 
 const getApprovalCount = async (txHash) => {
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
     const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
     
     const count = await publicClient.readContract({
@@ -1205,7 +1205,7 @@ const getApprovalCount = async (txHash) => {
 
 const hasUserApproved = async (txHash, userAddress) => {
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
     const controlBoardAddress = getContractAddress('CONTROL_BOARD', web3Store.chainId);
     
     return await publicClient.readContract({
@@ -1270,7 +1270,7 @@ const handleApproveClaim = async (claimId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1322,7 +1322,7 @@ const handleMarkAsSpam = async (claimId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1354,7 +1354,7 @@ const handleExecuteApprovalTransaction = async (claimId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1387,7 +1387,7 @@ const handleExecuteSpamTransaction = async (claimId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1423,7 +1423,7 @@ const handleExecute = async (claimId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1497,7 +1497,7 @@ const checkControllerStatus = async () => {
       return;
     }
 
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     isController.value = await publicClient.readContract({
       address: controlBoardAddress,

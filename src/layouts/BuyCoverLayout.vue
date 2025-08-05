@@ -155,7 +155,7 @@ const loadPoolProducts = async () => {
       return;
     }
 
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const poolCount = await publicClient.readContract({
       address: factoryAddress,
@@ -291,7 +291,7 @@ const handlePurchase = async (purchaseParams) => {
     const coverAmountWei = parseEther(coverAmount.toString());
     const premiumWei = parseEther(premium.toString());
 
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const walletClient = web3Store.signer;
 
@@ -344,7 +344,7 @@ const handlePurchase = async (purchaseParams) => {
       });
 
       currentTxHash.value = hash;
-      await web3Store.provider.waitForTransactionReceipt({ hash });
+      await web3Store.ethClient.waitForTransactionReceipt({ hash });
       secondTxStatus.value = 'success';
 
       setTimeout(handleClose, 2000);

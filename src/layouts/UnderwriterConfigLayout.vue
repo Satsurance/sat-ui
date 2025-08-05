@@ -736,10 +736,10 @@ const formatDuration = (seconds) => {
 };
 
 const initializeContract = async () => {
-  if (!web3Store.publicClient) return;
+  if (!web3Store.ethClient) return;
 
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
     const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
 
     const poolIndex = parseInt(props.poolId);
@@ -772,10 +772,10 @@ const initializeContract = async () => {
 };
 
 const loadPoolData = async () => {
-  if (!insurancePool.value || !web3Store.publicClient) return;
+  if (!insurancePool.value || !web3Store.ethClient) return;
 
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const poolStats = await publicClient.readContract({ ...insurancePool.value, functionName: 'poolStatsLatest' });
     const [totalAssetsStaked_, totalCoverAllocation_, totalPoolShares_, poolRewardRate_] = poolStats;
@@ -805,10 +805,10 @@ const loadPoolData = async () => {
 };
 
 const loadProducts = async () => {
-  if (!insurancePool.value || !web3Store.publicClient) return;
+  if (!insurancePool.value || !web3Store.ethClient) return;
 
   try {
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
     const productCounter = await publicClient.readContract({ ...insurancePool.value, functionName: 'productCounter' });
     const productPromises = [];
 
@@ -849,7 +849,7 @@ const performTransaction = async (type, functionName, args, loadingRef) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.publicClient.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = 'success';
 
     await loadPoolData();

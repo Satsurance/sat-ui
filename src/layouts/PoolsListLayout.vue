@@ -235,9 +235,7 @@ const loadPools = async () => {
       return;
     }
 
-    const publicClient = createPublicClient({
-      transport: custom(window.ethereum)
-    });
+    const publicClient = web3Store.ethClient;
 
     const count = await publicClient.readContract({
       address: factoryAddress,
@@ -314,9 +312,7 @@ const checkCreatePermission = async () => {
     const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
     if (!factoryAddress) return;
 
-    const publicClient = createPublicClient({
-      transport: custom(window.ethereum)
-    });
+    const publicClient = web3Store.ethClient;
     
     const minterRole = await publicClient.readContract({
       address: factoryAddress,

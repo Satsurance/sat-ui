@@ -1,45 +1,40 @@
 import { defineStore } from 'pinia';
 import { createWalletClient, custom, createPublicClient, http } from 'viem';
-import { SUPPORTED_NETWORKS } from '../constants/contracts.js';
+import { SUPPORTED_NETWORKS, NETWORKS } from '../constants/contracts.js';
+import { createConfig, regtest, connect, getBalance, AddressPurpose } from '@midl-xyz/midl-js-core';
+import { getEVMAddress, midlRegtest } from '@midl-xyz/midl-js-executor';
+import { leatherConnector } from '@midl-xyz/midl-js-connectors';
+
 
 export const useWeb3Store = defineStore('web3', {
     state: () => ({
         account: null,
+        midlAccount: null,
+        ethClient: null,
+        midlConfig: null,
         chainId: null,
-        provider: null,
-        publicClient: null,
-        signer: null, // In Viem, the walletClient acts as the signer
         isConnected: false,
     }),
 
     actions: {
         async connectWallet() {
             try {
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
+                this.midlConfig = createConfig({
+                    networks: [regtest],
+                    connectors: [leatherConnector()],
                 });
 
-                const tempWalletClient = createWalletClient({ transport: custom(window.ethereum) });
-                const chainId = await tempWalletClient.getChainId();
-                const chain = SUPPORTED_NETWORKS[chainId];
-
-                const walletClient = createWalletClient({
-                    chain,
-                    transport: custom(window.ethereum)
+                const midlAccounts = await connect(this.midlConfig, {
+                    purposes: [AddressPurpose.Payment],
+                    network: regtest
                 });
-
-                const publicClient = createPublicClient({
-                    chain,
-                    transport: http(chain.rpcUrls[0])
+                this.midlAccount = midlAccounts[0];
+                this.account = getEVMAddress(this.midlConfig, this.midlAccount);
+                this.ethClient = createPublicClient({
+                    chain: midlRegtest,
+                    transport: http(SUPPORTED_NETWORKS[NETWORKS.MIDL_REGTEST].rpcUrls[0])
                 });
-
-                this.account = accounts[0];
-                this.provider = publicClient; // Public Client for reading data
-                this.publicClient = publicClient;
-                this.signer = walletClient; // Wallet Client for sending transactions
-                this.chainId = await walletClient.getChainId();
-
-                this.setupEventListeners();
+                this.chainId = NETWORKS.MIDL_REGTEST;
                 this.isConnected = true;
             } catch (error) {
                 console.error('Error connecting wallet:', error);
@@ -47,34 +42,12 @@ export const useWeb3Store = defineStore('web3', {
             }
         },
 
-        setupEventListeners() {
-            if (!window.ethereum) return;
-
-            window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length === 0) {
-                    this.disconnect();
-                } else {
-                    this.account = accounts[0];
-                }
-            });
-
-            window.ethereum.on('chainChanged', () => {
-                this.reconnect();
-            });
-        },
-
-        async reconnect() {
-            this.disconnect();
-            await this.connectWallet();
-        },
-            
-
         disconnect() {
             this.account = null;
+            this.midlAccount = null;
             this.chainId = null;
-            this.provider = null;
-            this.publicClient = null;
-            this.signer = null;
+            this.ethClient = null;
+            this.midlConfig = null;
             this.isConnected = false;
         }
     }

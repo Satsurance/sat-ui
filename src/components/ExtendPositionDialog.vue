@@ -689,14 +689,14 @@ const handleExtendPosition = async () => {
     if (actionType.value === 'deposit') {
       const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
 
-      const balance = await web3Store.provider.readContract({
+      const balance = await web3Store.ethClient.readContract({
         address: btcAddress,
         abi: erc20ABI,
         functionName: 'balanceOf',
         args: [web3Store.account]
       });
 
-      const currentAllowance = await web3Store.provider.readContract({
+      const currentAllowance = await web3Store.ethClient.readContract({
         address: btcAddress,
         abi: erc20ABI,
         functionName: 'allowance',
@@ -720,7 +720,7 @@ const handleExtendPosition = async () => {
             account: web3Store.account
           });
           currentTxHash.value = hash;
-          await web3Store.publicClient.waitForTransactionReceipt({ hash });
+          await web3Store.ethClient.waitForTransactionReceipt({ hash });
           firstTxStatus.value = "success";
         } catch (error) {
           firstTxStatus.value = "failed";
@@ -744,7 +744,7 @@ const handleExtendPosition = async () => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.publicClient.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     
     if (actionType.value === 'deposit') {
       secondTxStatus.value = "success";

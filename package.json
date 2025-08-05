@@ -12,6 +12,10 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-pattern .gitignore"
   },
   "dependencies": {
+    "@midl-xyz/midl-js-connectors": "2.0.0-next.47",
+    "@midl-xyz/midl-js-core": "2.0.0-next.47",
+    "@midl-xyz/midl-js-executor": "2.0.0-next.47",
+    "@midl-xyz/satoshi-kit": "2.0.0-next.47",
     "@vueuse/core": "^12.0.0",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
@@ -23,7 +27,7 @@
     "radix-vue": "^1.9.11",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "^2.18.3",
+    "viem": "npm:@midl-xyz/midl-viem@2.21.37",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

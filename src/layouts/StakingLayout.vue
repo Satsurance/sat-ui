@@ -369,6 +369,8 @@ import NewPositionDialog from "../components/NewPositionDialog.vue";
 import ExtendPositionDialog from "../components/ExtendPositionDialog.vue";
 import { formatDate } from "../utils.js";
 
+import { addTxIntention } from '@midl-xyz/midl-js-executor';
+
 const props = defineProps({
   poolId: {
     type: String,
@@ -424,7 +426,7 @@ const transactionSteps = computed(() => {
 });
 
 const initializeContracts = async () => {
-  const publicClient = web3Store.publicClient;
+  const publicClient = web3Store.ethClient;
 
   const factoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
   if (!factoryAddress) {
@@ -452,7 +454,7 @@ const loadPositionState = async () => {
     return;
   }
 
-  const publicClient = web3Store.publicClient;
+  const publicClient = web3Store.ethClient;
 
   const positionNFTAddress = getContractAddress("POSITION_NFT", web3Store.chainId);
 
@@ -596,7 +598,7 @@ const unstakePosition = async (positionId) => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadPositionState();
@@ -627,7 +629,7 @@ const getReward = async () => {
     });
     currentTxHash.value = hash;
 
-    await web3Store.provider.waitForTransactionReceipt({ hash });
+    await web3Store.ethClient.waitForTransactionReceipt({ hash });
     firstTxStatus.value = "success";
 
     await loadPositionState();

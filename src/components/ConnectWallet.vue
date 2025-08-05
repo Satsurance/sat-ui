@@ -40,7 +40,7 @@
             />
           </svg>
           <div class="flex flex-col">
-            <span class="text-sm text-gray-600">{{ formatAddress(web3Store.account) }}</span>
+            <span class="text-sm text-gray-600">{{ formatAddress(web3Store.midlAccount.address) }}</span>
             <span class="text-xs text-gray-500">{{ networkName }}</span>
           </div>
         </div>
@@ -83,14 +83,8 @@ const web3Store = useWeb3Store();
 const networkName = computed(() => {
   if (!web3Store.isConnected) return "Not connected";
   switch (web3Store.chainId) {
-    case 200810:
-      return "Bitlayer Testnet";
-    case 763373:
-      return "Ink Sepolia";
-    case 808813:
-      return "BOB Sepolia";
-    case 31337:
-      return "Local Hardhat";
+    case 777:
+      return "MIDL Regtest";
     default:
       return "Unsupported Network";
   }
@@ -110,6 +104,6 @@ const handleDisconnect = () => {
 
 const formatAddress = (address) => {
   if (!address) return "";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return `${address.toString().slice(0, 6)}...${address.toString().slice(-6)}`;
 };
 </script>

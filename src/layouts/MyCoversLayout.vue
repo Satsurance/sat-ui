@@ -161,7 +161,7 @@ const loadUserCovers = async () => {
     loading.value = true;
     error.value = null;
 
-    const publicClient = web3Store.publicClient;
+    const publicClient = web3Store.ethClient;
 
     const coverContractAddress = getContractAddress('COVER_NFT', web3Store.chainId);
 
