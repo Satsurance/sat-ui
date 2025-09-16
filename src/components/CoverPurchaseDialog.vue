@@ -183,7 +183,7 @@
             <div class="bg-gray-50 rounded-lg p-4 space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Premium Rate:</span>
-                <span class="font-medium">{{ Number(product.annualPercent) / 10000 }}% per year</span>
+                <span class="font-medium">{{ Number(product.annualPercent) / 100 }}% per year</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Cover Duration:</span>
@@ -285,7 +285,7 @@ const formatPremium = computed(() => {
     if (premium === 0) return '0 BTC';
     if (premium < 0.00000001) return premium.toExponential(8) + ' BTC';
     if (premium < 0.0001) return premium.toFixed(8) + ' BTC';
-    if (premium < 0.01) return premium.toFixed(6) + ' BTC';
+    if (premium < 0.01) return premium.toFixed(8) + ' BTC';
     return premium.toFixed(4) + ' BTC';
   } catch (error) {
     console.error('Error formatting premium:', error);

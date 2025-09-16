@@ -16,7 +16,7 @@ const SUPPORTED_NETWORKS =
             symbol: 'BTC',
             decimals: 18,
         },
-        blockExplorerUrls: ['https://blockscout.regtest.midl.xyz'],
+        blockExplorerUrls: ['https://mempool.regtest.midl.xyz'],
     },
     ...(import.meta.env.DEV ? {
         [NETWORKS.LOCALHOST]: {

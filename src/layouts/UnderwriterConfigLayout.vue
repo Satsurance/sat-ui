@@ -132,7 +132,7 @@
                 Total Pool Shares
               </div>
               <div class="text-2xl font-bold text-green-600">
-                {{ totalPoolShares.toLocaleString() }}
+                {{ totalPoolShares.toFixed(8) }}
               </div>
             </div>
             <div class="bg-purple-50 p-6 rounded-lg border border-purple-200">
@@ -369,7 +369,6 @@
     <div
       v-if="isCreateProductModalOpen"
       class="fixed inset-0 z-50 overflow-y-auto"
-      @click="closeCreateProductModal"
     >
       <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm" />
       <div class="flex min-h-full items-center justify-center p-4">
@@ -482,7 +481,6 @@
     <div
       v-if="isEditProductModalOpen"
       class="fixed inset-0 z-50 overflow-y-auto"
-      @click="closeEditProductModal"
     >
       <div class="fixed inset-0 bg-gray-500/70 backdrop-blur-sm" />
       <div class="flex min-h-full items-center justify-center p-4">
@@ -603,12 +601,15 @@
 
 <script setup>
 import { ref, computed, watch, reactive, onMounted } from 'vue';
-import { formatEther } from 'viem';
+import { formatEther, encodeFunctionData } from 'viem';
 import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress, SUPPORTED_NETWORKS } from '../constants/contracts';
 import { getPoolName } from '../constants/pools';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
 import poolFactoryABI from '../assets/abis/poolFactory.json';
+import { addTxIntention, signIntention, finalizeBTCTransaction } from '@midl-xyz/midl-js-executor';
+import { waitForTransaction } from '@midl-xyz/midl-js-core';
+import TransactionStatus from '../components/TransactionStatus.vue';
 
 const props = defineProps({
   poolId: {
@@ -727,7 +728,7 @@ const transactionSteps = computed(() => {
 });
 
 const formatBTC = (amount) => {
-  return (parseFloat(formatEther(amount || 0n))).toFixed(6) + ' BTC';
+  return (parseFloat(formatEther(amount || 0n))).toFixed(8) + ' BTC';
 };
 
 const formatDuration = (seconds) => {
@@ -833,23 +834,44 @@ const loadProducts = async () => {
 };
 
 const performTransaction = async (type, functionName, args, loadingRef) => {
-  if (!insurancePool.value || !web3Store.signer) return;
+  if (!insurancePool.value || !web3Store.midlConfig) return;
 
   try {
     loadingRef.value = true;
     transactionType.value = type;
     firstTxStatus.value = 'pending';
 
-    const walletClient = web3Store.signer;
-    const hash = await walletClient.writeContract({
-      ...insurancePool.value,
-      functionName,
-      args,
-      account: web3Store.account
+    // Create transaction intention
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: insurancePool.value.address,
+        data: encodeFunctionData({
+          abi: insurancePool.value.abi,
+          functionName,
+          args
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
 
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    // Finalize BTC transaction
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    
+    // Sign the intention
+    const signedIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], {
+      txId: btcTx.tx.id,
+    });
+
+    // Broadcast the transaction
+    await web3Store.ethClient.sendBTCTransactions({
+      serializedTransactions: [signedIntention],
+      btcTransaction: btcTx.tx.hex,
+    });
+
+    // Wait for transaction confirmation
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
+    
+    currentTxHash.value = btcTx.tx.id;
     firstTxStatus.value = 'success';
 
     await loadPoolData();

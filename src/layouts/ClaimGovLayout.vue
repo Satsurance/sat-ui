@@ -161,7 +161,7 @@
                 </td>
                 <td class="px-6 py-5 text-center">
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 font-mono">
-                    {{ formatAddress(claim.receiver) }}
+                    {{ claim.btcReceiver ? formatAddress(claim.btcReceiver) : formatAddress(claim.receiver) }}
                   </span>
                 </td>
                 <td class="px-6 py-5">
@@ -389,40 +389,22 @@
               </div>
 
               <div>
-                <label
-                  for="receiver"
-                  class="block mb-2 text-sm font-medium text-gray-900"
-                >
+                <label class="block mb-2 text-sm font-medium text-gray-900">
                   Receiver address
                 </label>
-                <input
-                  id="receiver"
-                  v-model="submitFormData.receiver"
-                  type="text"
-                  :class="[
-                    'bg-gray-50 border text-gray-900 text-sm rounded-lg focus:outline-none block w-full p-2.5',
-                    addressError
-                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                      : isValidAddress
-                        ? 'border-green-500 focus:ring-green-500 focus:border-green-500'
-                        : 'border-gray-300 focus:ring-yellow-500 focus:border-yellow-500',
-                  ]"
-                  placeholder="Enter address to receive the claim"
-                  required
-                  @input="validateAddress"
-                >
-                <p
-                  v-if="addressError"
-                  class="mt-1 text-sm text-red-600"
-                >
-                  {{ addressError }}
-                </p>
-                <p
-                  v-else-if="isValidAddress"
-                  class="mt-1 text-sm text-green-600"
-                >
-                  Valid Ethereum address
-                </p>
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-2 font-mono truncate">
+                    {{ web3Store.midlAccount.address || 'Not connected' }}
+                  </div>
+                  <button
+                    type="button"
+                    class="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    @click="copyReceiverAddress"
+                    :disabled="!web3Store.midlAccount?.address"
+                  >
+                    Copy
+                  </button>
+                </div>
               </div>
 
               <!-- Deposit Requirement Information -->
@@ -447,17 +429,11 @@
                 <button
                   type="submit"
                   :disabled="
-                    isSubmitting ||
-                      (!!submitFormData.receiver &&
-                        (!isValidAddress || !!addressError)) ||
-                      !isValidAmount
+                    isSubmitting || !isValidAmount
                   "
                   :class="[
                     'w-full py-3 rounded-lg transition-colors duration-300',
-                    isSubmitting ||
-                      (!!submitFormData.receiver &&
-                        (!isValidAddress || !!addressError)) ||
-                      !isValidAmount
+                    isSubmitting || !isValidAmount
                       ? 'bg-yellow-300 border-yellow-400 hover:border-yellow-500 cursor-not-allowed'
                       : 'bg-yellow-500 border border-yellow-500 hover:bg-white hover:text-yellow-500 hover:border-yellow-500 text-white',
                   ]"
@@ -493,7 +469,7 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+      :show="!!(firstTxStatus || secondTxStatus || thirdTxStatus || transactionError)"
       :steps="transactionSteps"
       :tx-hash="currentTxHash"
       :error="transactionError"
@@ -517,6 +493,8 @@ import controlBoardABI from '../assets/abis/controlBoard.json';
 import erc20ABI from '../assets/abis/erc20.json';
 import ClaimDetailsDialog from "../components/ClaimDetailsDialog.vue";
 import TransactionStatus from "../components/TransactionStatus.vue";
+import { getEVMAddress, addTxIntention, signIntention, finalizeBTCTransaction, addCompleteTxIntention, convertETHtoBTC } from "@midl-xyz/midl-js-executor";
+import { regtest, waitForTransaction } from "@midl-xyz/midl-js-core";
 
 // Store and contract setup
 const web3Store = useWeb3Store();
@@ -538,6 +516,7 @@ const controlBoardControllersCount = ref(0);
 // Transaction state
 const firstTxStatus = ref("");
 const secondTxStatus = ref("");
+const thirdTxStatus = ref("");
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
@@ -564,12 +543,9 @@ const totalPages = computed(() =>
 // Submit claim form state
 const isSubmitDialogOpen = ref(false);
 const isSubmitting = ref(false);
-const isValidAddress = ref(false);
-const addressError = ref("");
 const submitFormData = reactive({
   description: "",
   amount: "",
-  receiver: "",
   selectedCover: ""
 });
 
@@ -599,6 +575,30 @@ const transactionSteps = computed(() => {
           title: 'Submit Claim',
           description: 'Submit your new claim',
           status: secondTxStatus.value,
+          showNumber: true
+        }
+      ];
+    case 'submit_claim_btc':
+      return [
+        {
+          id: 'wrap',
+          title: 'Wrap BTC',
+          description: 'Lock BTC and mint wrapped tokens',
+          status: firstTxStatus.value,
+          showNumber: true
+        },
+        {
+          id: 'approve',
+          title: 'Approve Deposit Token',
+          description: 'Allow contract to use your deposit tokens',
+          status: secondTxStatus.value,
+          showNumber: true
+        },
+        {
+          id: 'submit',
+          title: 'Submit Claim',
+          description: 'Submit your new claim',
+          status: thirdTxStatus.value,
           showNumber: true
         }
       ];
@@ -671,37 +671,10 @@ const closeSubmitDialog = () => {
 const resetSubmitForm = () => {
   submitFormData.description = "";
   submitFormData.amount = "";
-  submitFormData.receiver = "";
   submitFormData.selectedCover = "";
-  isValidAddress.value = false;
-  addressError.value = "";
 };
 
-const validateAddress = () => {
-  try {
-    if (!submitFormData.receiver) {
-      isValidAddress.value = false;
-      addressError.value = "";
-      return;
-    }
 
-    const address = submitFormData.receiver.trim();
-
-    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      isValidAddress.value = false;
-      addressError.value = "Invalid Ethereum address";
-      return;
-    }
-
-    isValidAddress.value = true;
-    addressError.value = "";
-
-    submitFormData.receiver = address;
-  } catch (error) {
-    isValidAddress.value = false;
-    addressError.value = "Invalid Ethereum address";
-  }
-};
 
 const isCoverExpired = (cover) => {
   return cover.endDate < Date.now();
@@ -755,25 +728,7 @@ const checkDepositAllowance = async () => {
   }
 };
 
-const approveDepositToken = async () => {
-  try {
-    const walletClient = web3Store.signer;
-
-    const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
-    
-    const hash = await walletClient.writeContract({
-      address: depositToken.value,
-      abi: erc20ABI,
-      functionName: 'approve',
-      args: [claimerAddress, claimDeposit.value],
-      account: web3Store.account
-    });
-    return hash;
-  } catch (error) {
-    console.error("Error approving deposit token:", error);
-    throw error;
-  }
-};
+// Approval will be handled via MIDl intentions in handleSubmitClaim
 
 const loadUserCovers = async () => {
   try {
@@ -833,29 +788,8 @@ const loadUserCovers = async () => {
 
 const handleSubmitClaim = async () => {
   try {
-    if (!isValidAddress.value) {
-      return;
-    }
-
     isSubmitting.value = true;
-    
     const { needsApproval } = await checkDepositAllowance();
-    
-    if (needsApproval) {
-      transactionType.value = "submit_claim_with_approval";
-      firstTxStatus.value = "pending";
-      
-      const hash = await approveDepositToken();
-      currentTxHash.value = hash;
-      
-      await web3Store.ethClient.waitForTransactionReceipt({ hash });
-      firstTxStatus.value = "success";
-      
-      secondTxStatus.value = "pending";
-    } else {
-      transactionType.value = "submit_claim";
-      firstTxStatus.value = "pending";
-    }
 
     const claimData = {
       version: 1,
@@ -868,11 +802,10 @@ const handleSubmitClaim = async () => {
         endDate: submitFormData.selectedCover.endDate,
         amount: submitFormData.selectedCover.coverAmount
       },
-      description: submitFormData.description
+      description: submitFormData.description,
+      btcReceiver: web3Store.midlAccount.address || ""
     };
 
-    const walletClient = web3Store.signer;
-    
     const poolFactoryAddress = getContractAddress("POOL_FACTORY", web3Store.chainId);
     const poolAddress = await web3Store.ethClient.readContract({
       address: poolFactoryAddress,
@@ -883,28 +816,124 @@ const handleSubmitClaim = async () => {
     
     const claimerAddress = getContractAddress("CLAIMER", web3Store.chainId);
 
-    const hash = await walletClient.writeContract({
-      address: claimerAddress,
-      abi: claimerABI,
-      functionName: 'createClaim',
-      args: [
-        submitFormData.receiver,
-        poolAddress,
-        JSON.stringify(claimData),
-        parseEther(submitFormData.amount.toString())
-      ],
-      account: web3Store.account
-    });
-    
-    if (needsApproval) {
-      currentTxHash.value = hash;
-      await web3Store.ethClient.waitForTransactionReceipt({ hash });
-      secondTxStatus.value = "success";
-    } else {
-      currentTxHash.value = hash;
-      await web3Store.ethClient.waitForTransactionReceipt({ hash });
-      firstTxStatus.value = "success";
+    const onChainReceiver = web3Store.account;
+
+    // Build MIDl intentions
+    const intentions = [];
+    const btcTokenAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
+    if (!btcTokenAddress) {
+      throw new Error('BTC token not configured for this network');
     }
+
+    const wrapPresent = claimDeposit.value && claimDeposit.value > 0n;
+    const approvePresent = needsApproval;
+
+    // Always wrap BTC for the deposit amount (common case). Users having pre-wrapped BTC is a corner case.
+    if (wrapPresent) {
+      const wrapIntention = await addTxIntention(web3Store.midlConfig, {
+        evmTransaction: {
+          to: btcTokenAddress,
+          value: claimDeposit.value
+        },
+        satoshis: convertETHtoBTC(claimDeposit.value)
+      });
+      intentions.push(wrapIntention);
+    }
+
+    // If approval required, add approve intention
+    if (approvePresent) {
+      const approveIntention = await addTxIntention(web3Store.midlConfig, {
+        evmTransaction: {
+          to: depositToken.value,
+          data: encodeFunctionData({
+            abi: erc20ABI,
+            functionName: 'approve',
+            args: [claimerAddress, claimDeposit.value]
+          }),
+          value: 0n
+        }
+      });
+      intentions.push(approveIntention);
+    }
+
+    // Create claim intention
+    const submitIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: claimerAddress,
+        data: encodeFunctionData({
+          abi: claimerABI,
+          functionName: 'createClaim',
+          args: [
+            onChainReceiver,
+            poolAddress,
+            JSON.stringify(claimData),
+            parseEther(submitFormData.amount.toString())
+          ]
+        }),
+        value: 0n
+      }
+    });
+    intentions.push(submitIntention);
+
+    // Finalize and sign
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, intentions, web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const serializedTransactions = [];
+
+    // Determine transaction steps based on presence of wrap and approve
+    if (wrapPresent) {
+      transactionType.value = 'submit_claim_btc';
+    } else if (approvePresent) {
+      transactionType.value = 'submit_claim_with_approval';
+    } else {
+      transactionType.value = 'submit_claim';
+    }
+
+    // Sign intentions in order and update step statuses accordingly
+    let intentionIndex = 0;
+    if (wrapPresent) {
+      firstTxStatus.value = 'pending';
+      const signedWrap = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex++], intentions, { txId: btcTx.tx.id });
+      serializedTransactions.push(signedWrap);
+      firstTxStatus.value = 'success';
+    }
+
+    if (approvePresent) {
+      if (wrapPresent) {
+        secondTxStatus.value = 'pending';
+      } else {
+        firstTxStatus.value = 'pending';
+      }
+      const signedApprove = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex++], intentions, { txId: btcTx.tx.id });
+      serializedTransactions.push(signedApprove);
+      if (wrapPresent) {
+        secondTxStatus.value = 'success';
+      } else {
+        firstTxStatus.value = 'success';
+      }
+    }
+
+    // Submit intention
+    if (wrapPresent && approvePresent) {
+      thirdTxStatus.value = 'pending';
+    } else if (wrapPresent || approvePresent) {
+      secondTxStatus.value = 'pending';
+    } else {
+      firstTxStatus.value = 'pending';
+    }
+    const signedSubmit = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex++], intentions, { txId: btcTx.tx.id });
+    serializedTransactions.push(signedSubmit);
+    if (wrapPresent && approvePresent) {
+      thirdTxStatus.value = 'success';
+    } else if (wrapPresent || approvePresent) {
+      secondTxStatus.value = 'success';
+    } else {
+      firstTxStatus.value = 'success';
+    }
+
+    // Broadcast once after building all signed intentions
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions, btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
 
     await loadClaimsState();
     closeSubmitDialog();
@@ -912,20 +941,17 @@ const handleSubmitClaim = async () => {
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Error submitting claim:", error);
-    
-    const isApprovalStep = transactionType.value === "submit_claim_with_approval" && secondTxStatus.value !== "pending";
-    
-    if (isApprovalStep) {
-      firstTxStatus.value = "failed";
+    if (transactionType.value === 'submit_claim_btc') {
+      if (thirdTxStatus.value === 'pending') thirdTxStatus.value = 'failed';
+      else if (secondTxStatus.value === 'pending') secondTxStatus.value = 'failed';
+      else if (firstTxStatus.value === 'pending') firstTxStatus.value = 'failed';
+    } else if (transactionType.value === 'submit_claim_with_approval') {
+      if (secondTxStatus.value === 'pending') secondTxStatus.value = 'failed';
+      else if (firstTxStatus.value === 'pending') firstTxStatus.value = 'failed';
     } else {
-      if (transactionType.value === "submit_claim_with_approval") {
-        secondTxStatus.value = "failed";
-      } else {
-        firstTxStatus.value = "failed";
-      }
+      if (firstTxStatus.value === 'pending') firstTxStatus.value = 'failed';
     }
-    
-    transactionError.value = error.shortMessage || (isApprovalStep ? "Failed to approve deposit token" : "Failed to submit claim");
+    transactionError.value = error.shortMessage || "Failed to submit claim";
   } finally {
     isSubmitting.value = false;
   }
@@ -934,6 +960,7 @@ const handleSubmitClaim = async () => {
 const resetTransaction = () => {
   firstTxStatus.value = "";
   secondTxStatus.value = "";
+  thirdTxStatus.value = "";
   transactionType.value = "";
   currentTxHash.value = "";
   transactionError.value = "";
@@ -942,7 +969,7 @@ const resetTransaction = () => {
 const retryTransaction = () => {
   if (transactionType.value === "execute" && selectedClaim.value) {
     handleExecute(selectedClaim.value.id);
-  } else if (transactionType.value === "submit_claim" || transactionType.value === "submit_claim_with_approval") {
+  } else if (transactionType.value === "submit_claim" || transactionType.value === "submit_claim_with_approval" || transactionType.value === 'submit_claim_btc') {
     handleSubmitClaim();
   } else if (transactionType.value === "approve" && selectedClaim.value) {
     handleApproveClaim(selectedClaim.value.id);
@@ -956,21 +983,32 @@ const retryTransaction = () => {
 };
 
 const parseClaimDescription = (rawDescription) => {
+  console.log('rawDescription', rawDescription);
   try {
     const parsedData = JSON.parse(rawDescription);
-    if (parsedData.version === 1 && parsedData.cover && parsedData.description) {
-      return {
-        description: parsedData.description,
-        cover: parsedData.cover
-      };
+    const result = {};
+
+    // Prefer a human description if present; otherwise fall back to raw string
+    if (typeof parsedData.description === 'string' && parsedData.description.length > 0) {
+      result.description = parsedData.description;
+    } else {
+      result.description = rawDescription;
     }
+
+    if (parsedData.cover) {
+      result.cover = parsedData.cover;
+    }
+
+    // Extract btcReceiver whenever present in the JSON, regardless of version/other fields
+    if (typeof parsedData.btcReceiver === 'string' && parsedData.btcReceiver.length > 0) {
+      result.btcReceiver = parsedData.btcReceiver;
+    }
+
+    return result;
   } catch (e) {
     // If parsing fails, treat as old format
+    return { description: rawDescription };
   }
-
-  return {
-    description: rawDescription
-  };
 };
 
 const loadClaimsTable = async () => {
@@ -997,13 +1035,15 @@ const loadClaimsTable = async () => {
   for (let i = endIndex; i > startIndex && i >= 0; i--) {
     const claim = retClaims[orderCounter];
 
-    const parsedDescription = parseClaimDescription(claim.description);
+  const rawDesc = (claim && typeof claim.description === 'string') ? claim.description : (claim?.[3] ?? '');
+  const parsedDescription = parseClaimDescription(rawDesc);
 
     const newClaim = {
       id: i - 1,
       date: new Date(Number(claim[6]) * 1000),
       amount: claim[4],
-      description: parsedDescription.description,
+      description: parsedDescription.description ?? rawDesc ?? '',
+      ...(parsedDescription.btcReceiver && { btcReceiver: parsedDescription.btcReceiver }),
       ...(parsedDescription.cover && { cover: parsedDescription.cover }),
       receiver: claim[1],
       proposer: claim[0],
@@ -1259,18 +1299,22 @@ const handleApproveClaim = async (claimId) => {
     transactionType.value = "approve";
     firstTxStatus.value = "pending";
 
-    const walletClient = web3Store.signer;
-
-    const hash = await walletClient.writeContract({
-      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
-      abi: controlBoardABI,
-      functionName: 'approveTransaction',
-      args: [claimerAddress, 0, approveData],
-      account: web3Store.account
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        data: encodeFunctionData({
+          abi: controlBoardABI,
+          functionName: 'approveTransaction',
+          args: [claimerAddress, 0, approveData]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], { txId: btcTx.tx.id });
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions: [signed], btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1311,18 +1355,22 @@ const handleMarkAsSpam = async (claimId) => {
     transactionType.value = "mark_spam";
     firstTxStatus.value = "pending";
 
-    const walletClient = web3Store.signer;
-
-    const hash = await walletClient.writeContract({
-      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
-      abi: controlBoardABI,
-      functionName: 'approveTransaction',
-      args: [claimerAddress, 0, spamData],
-      account: web3Store.account
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        data: encodeFunctionData({
+          abi: controlBoardABI,
+          functionName: 'approveTransaction',
+          args: [claimerAddress, 0, spamData]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], { txId: btcTx.tx.id });
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions: [signed], btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1343,18 +1391,22 @@ const handleExecuteApprovalTransaction = async (claimId) => {
     transactionType.value = "execute_approval";
     firstTxStatus.value = "pending";
 
-    const walletClient = web3Store.signer;
-
-    const hash = await walletClient.writeContract({
-      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
-      abi: controlBoardABI,
-      functionName: 'executeTransaction',
-      args: [claimerAddress, 0, approveData, []],
-      account: web3Store.account
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        data: encodeFunctionData({
+          abi: controlBoardABI,
+          functionName: 'executeTransaction',
+          args: [claimerAddress, 0, approveData, []]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], { txId: btcTx.tx.id });
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions: [signed], btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1376,18 +1428,22 @@ const handleExecuteSpamTransaction = async (claimId) => {
     transactionType.value = "execute_spam";
     firstTxStatus.value = "pending";
 
-    const walletClient = web3Store.signer;
-
-    const hash = await walletClient.writeContract({
-      address: getContractAddress("CONTROL_BOARD", web3Store.chainId),
-      abi: controlBoardABI,
-      functionName: 'executeTransaction',
-      args: [claimerAddress, 0, spamData, []],
-      account: web3Store.account
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: getContractAddress("CONTROL_BOARD", web3Store.chainId),
+        data: encodeFunctionData({
+          abi: controlBoardABI,
+          functionName: 'executeTransaction',
+          args: [claimerAddress, 0, spamData, []]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], { txId: btcTx.tx.id });
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions: [signed], btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1412,18 +1468,22 @@ const handleExecute = async (claimId) => {
     transactionType.value = "execute";
     firstTxStatus.value = "pending";
 
-    const walletClient = web3Store.signer;
-
-    const hash = await walletClient.writeContract({
-      address: getContractAddress("CLAIMER", web3Store.chainId),
-      abi: claimerABI,
-      functionName: 'executeClaim',
-      args: [claimId],
-      account: web3Store.account
+    const intention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: getContractAddress("CLAIMER", web3Store.chainId),
+        data: encodeFunctionData({
+          abi: claimerABI,
+          functionName: 'executeClaim',
+          args: [claimId]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, [intention], web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+    const signed = await signIntention(web3Store.midlConfig, web3Store.ethClient, intention, [intention], { txId: btcTx.tx.id });
+    await web3Store.ethClient.sendBTCTransactions({ serializedTransactions: [signed], btcTransaction: btcTx.tx.hex });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
     firstTxStatus.value = "success";
 
     await loadClaimsState();
@@ -1483,6 +1543,16 @@ onUnmounted(() => {
 if (web3Store.isConnected) {
   loadClaimsState();
 }
+
+const copyReceiverAddress = async () => {
+  try {
+    const addr = web3Store.midlAccount?.address;
+    if (!addr) return;
+    await navigator.clipboard.writeText(addr);
+  } catch (e) {
+    // noop
+  }
+};
 
 const checkControllerStatus = async () => {
   try {

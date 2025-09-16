@@ -14,7 +14,7 @@
   "dependencies": {
     "@midl-xyz/midl-js-connectors": "2.0.0-next.47",
     "@midl-xyz/midl-js-core": "2.0.0-next.47",
-    "@midl-xyz/midl-js-executor": "2.0.0-next.47",
+    "@midl-xyz/midl-js-executor": "2.0.0-next.50",
     "@midl-xyz/satoshi-kit": "2.0.0-next.47",
     "@vueuse/core": "^12.0.0",
     "assert": "^2.1.0",

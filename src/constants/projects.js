@@ -52,6 +52,11 @@ export const COVER_PRODUCTS = {
             name: 'DotSwap',
             logo: dotswapLogo,
             category: 'Web3'
+        },
+        2: {
+            name: 'Lorenzo',
+            logo: lorenzoLogo,
+            category: 'Web3'
         }
     }
 };

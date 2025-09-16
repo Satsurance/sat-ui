@@ -118,12 +118,12 @@
                 <label class="block text-base text-gray-500 mb-2">Funds Recipient</label>
                 <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg">
                   <span class="font-mono text-sm text-gray-900 whitespace-nowrap overflow-x-auto inline-block">
-                    {{ claim?.receiver || "0x0" }}
+                    {{ claim.btcReceiver }}
                   </span>
                   <button
                     class="text-gray-400 hover:text-gray-600 transition-colors"
                     title="Copy address"
-                    @click="copyToClipboard(claim?.receiver)"
+                    @click="copyToClipboard(claim?.btcReceiver)"
                   >
                     <svg
                       class="h-4 w-4"

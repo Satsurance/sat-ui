@@ -92,15 +92,23 @@
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="text-2xl font-semibold text-gray-900 mt-1">
-                    {{ earnedRewards }} <span class="text-lg font-medium text-gray-700">BTC</span>
+                    {{ Number(earnedRewards).toFixed(8) }} <span class="text-lg font-medium text-gray-700">BTC</span>
                   </div>
-                  <button
-                    :disabled="!Number(earnedRewards) || firstTxStatus !== ''"
-                    class="btn-secondary px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                    @click="getReward"
-                  >
-                    Claim
-                  </button>
+                  <div class="relative group">
+                    <button
+                      :disabled="isClaimDisabled"
+                      class="btn-secondary px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                      @click="getReward"
+                    >
+                      Claim
+                    </button>
+                    <div
+                      v-if="showClaimTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      Minimum claim amount is 1000 sats. (547 sats is taken as a network fee)
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -108,9 +116,10 @@
         </div>
 
         <!-- Action Button -->
-        <div class="flex justify-center mt-2">
+        <div class="flex justify-center gap-4 mt-2">
+          <!-- New Staking Position Button -->
           <button
-            v-if="!isUnderwriter"
+            v-if="!isUnderwriter || (isUnderwriter && positions.length === 0)"
             class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
             @click="openNewPositionDialog"
           >
@@ -129,9 +138,11 @@
             </svg>
             New Staking Position
           </button>
+          
+          <!-- Configure Pool Button -->
           <button
-            v-else
-            class="flex items-center justify-center btn-primary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
+            v-if="isUnderwriter"
+            class="flex items-center justify-center btn-secondary px-8 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 font-medium"
             @click="navigateToUnderwriterConfig"
           >
             <svg
@@ -225,20 +236,22 @@
                       />
                     </svg>
                     <p>No active positions</p>
-                    <button
-                      v-if="!isUnderwriter"
-                      class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
-                      @click="openNewPositionDialog"
-                    >
-                      Create your first position
-                    </button>
-                    <button
-                      v-else
-                      class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
-                      @click="navigateToUnderwriterConfig"
-                    >
-                      Configure Pool
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4 items-center">
+                      <button
+                        v-if="!isUnderwriter || (isUnderwriter && positions.length === 0)"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
+                        @click="openNewPositionDialog"
+                      >
+                        Create your first position
+                      </button>
+                      <button
+                        v-if="isUnderwriter"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-300 text-sm font-medium"
+                        @click="navigateToUnderwriterConfig"
+                      >
+                        Configure Pool
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -343,7 +356,7 @@
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+      :show="!!(firstTxStatus || secondTxStatus || thirdTxStatus || transactionError)"
       :steps="transactionSteps"
       :tx-hash="currentTxHash"
       :error="transactionError"
@@ -356,7 +369,7 @@
 
 <script setup>
 import { ref, watch, computed } from "vue";
-import { formatEther } from "viem";
+import { formatEther, parseEther, encodeFunctionData } from "viem";
 import { useRouter } from "vue-router";
 import { useWeb3Store } from "../stores/web3Store";
 import {getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION} from "../constants/contracts.js";
@@ -364,12 +377,13 @@ import { getPoolName } from "../constants/pools.js";
 import insurancePoolABI from "../assets/abis/insurancePool.json";
 import poolFactoryABI from "../assets/abis/poolFactory.json";
 import erc721ABI from "../assets/abis/erc721enumerable.json";
+import wrappedTokenABI from "../assets/abis/wrappedToken.json";
 import TransactionStatus from "../components/TransactionStatus.vue";
 import NewPositionDialog from "../components/NewPositionDialog.vue";
 import ExtendPositionDialog from "../components/ExtendPositionDialog.vue";
 import { formatDate } from "../utils.js";
-
-import { addTxIntention } from '@midl-xyz/midl-js-executor';
+import { addTxIntention, signIntention, finalizeBTCTransaction, addCompleteTxIntention, convertETHtoBTC } from '@midl-xyz/midl-js-executor';
+import { waitForTransaction } from '@midl-xyz/midl-js-core';
 
 const props = defineProps({
   poolId: {
@@ -377,6 +391,8 @@ const props = defineProps({
     default: "1"
   }
 });
+
+const MIN_CLAIM_SATS = 1000;
 
 const positions = ref([]);
 const totalStakedAmount = ref(0);
@@ -393,12 +409,23 @@ const isUnderwriter = ref(false);
 
 const firstTxStatus = ref("");
 const secondTxStatus = ref("");
+const thirdTxStatus = ref("");
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
 
 const web3Store = useWeb3Store();
 const router = useRouter();
+
+const earnedSats = computed(() => Number(earnedRewards.value) * 1e8);
+
+const isClaimDisabled = computed(() => {
+  return earnedSats.value < MIN_CLAIM_SATS || firstTxStatus.value !== '';
+});
+
+const showClaimTooltip = computed(() => {
+  return earnedSats.value > 0 && earnedSats.value < MIN_CLAIM_SATS && firstTxStatus.value === '';
+});
 
 const transactionSteps = computed(() => {
   if (transactionType.value === 'unstake') {
@@ -415,10 +442,24 @@ const transactionSteps = computed(() => {
     return [
       {
         id: 'getreward',
-        title: 'Get Reward',
-        description: 'Process the reward payout',
+        title: 'Claim Rewards',
+        description: 'Collect your BTC rewards from the pool',
         status: firstTxStatus.value,
-        showNumber: false
+        showNumber: true
+      },
+      {
+        id: 'unwrap',
+        title: 'Unwrap BTC',
+        description: 'Convert ERC20 tokens back to BTC',
+        status: secondTxStatus.value,
+        showNumber: true
+      },
+      {
+        id: 'complete',
+        title: 'Complete Transaction',
+        description: 'Finalize the reward claim transaction',
+        status: thirdTxStatus.value,
+        showNumber: true
       }
     ];
   }
@@ -492,12 +533,12 @@ const loadPositionState = async () => {
     return total + position.shares;
   }, 0n);
 
-  totalStakedAmount.value = Number(formatEther(totalAssetsStakedRaw)).toFixed(2);
+  totalStakedAmount.value = Number(formatEther(totalAssetsStakedRaw)).toFixed(4);
   earnedRewards.value = formatEther(earned);
-  userTotalStakedAmount.value = Number(formatEther((userTotalShares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2);
+  userTotalStakedAmount.value = Number(formatEther((userTotalShares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(5);
 
   if (!isUnderwriter.value && totalSharesAmount > 0n) {
-    maxStakeableAmount.value = Number(formatEther((maxSharesUserToStake * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2);
+    maxStakeableAmount.value = Number(formatEther((maxSharesUserToStake * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(4);
   } else {
     maxStakeableAmount.value = 0;
   }
@@ -513,7 +554,7 @@ const loadPositionState = async () => {
         id: positionsIds[i],
         episode: Number(userPositions[i].episode),
         unlockDate: calculateStakingTime((Number(userPositions[i].episode) + 1) * EPISODE_DURATION),
-        stakedAmount: Number(formatEther((userPositions[i].shares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(2),
+        stakedAmount: Number(formatEther((userPositions[i].shares * totalAssetsStakedRaw) / totalSharesAmount)).toFixed(5),
         isUnlocked: (userPositions[i].episode + 1n) * BigInt(EPISODE_DURATION) < BigInt(Math.floor(Date.now() / 1000))
       });
     }
@@ -616,28 +657,90 @@ const getReward = async () => {
     resetTransaction();
 
     transactionType.value = "getreward";
-    firstTxStatus.value = "pending";
-
     const positionIds = positions.value.map(position => position.id);
-    
-    const walletClient = web3Store.signer;
-    const hash = await walletClient.writeContract({
-      ...insurancePool.value,
-      functionName: 'collectRewards',
-      args: [positionIds],
-      account: web3Store.account
+
+    const collectRewardsIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: insurancePool.value.address,
+        data: encodeFunctionData({
+          abi: insurancePool.value.abi,
+          functionName: 'collectRewards',
+          args: [positionIds]
+        }),
+        value: 0n
+      }
     });
-    currentTxHash.value = hash;
 
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
+    // Get BTC token address for unwrapping
+    const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
+    
+    // Create unwrap intention to convert collected ERC20 rewards back to BTC
+    const unwrapIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: btcAddress,
+        data: encodeFunctionData({
+          abi: wrappedTokenABI,
+          functionName: 'withdraw',
+          args: [parseEther(earnedRewards.value.toString())]
+        }),
+        value: 0n
+      }
+    });
+
+    const completeTxIntention = await addCompleteTxIntention(web3Store.midlConfig);
+
+    const intentions = [collectRewardsIntention, unwrapIntention, completeTxIntention];
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, intentions, web3Store.ethClient);
+    currentTxHash.value = btcTx.tx.id;
+
+    // Step 1: Sign collect rewards intention
+    firstTxStatus.value = "pending";
+    const serializedTransactions = [];
+    
+    const signedCollectRewardsIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, collectRewardsIntention, intentions, {
+      txId: btcTx.tx.id,
+    });
+    serializedTransactions.push(signedCollectRewardsIntention);
     firstTxStatus.value = "success";
+    
+    // Step 2: Sign unwrap intention
+    secondTxStatus.value = "pending";
+    const signedUnwrapIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, unwrapIntention, intentions, {
+      txId: btcTx.tx.id,
+    });
+    serializedTransactions.push(signedUnwrapIntention);
+    secondTxStatus.value = "success";
+    
+    // Step 3: Sign complete transaction intention
+    thirdTxStatus.value = "pending";
+    const signedCompleteTxIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, completeTxIntention, intentions, {
+      txId: btcTx.tx.id,
+    });
+    serializedTransactions.push(signedCompleteTxIntention);
+    
+    await web3Store.ethClient.sendBTCTransactions({
+      serializedTransactions,
+      btcTransaction: btcTx.tx.hex,
+    });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
 
+    thirdTxStatus.value = "success";
     await loadPositionState();
 
     setTimeout(resetTransaction, 3000);
   } catch (error) {
     console.error("Get reward error:", error);
-    firstTxStatus.value = "failed";
+    // Set the appropriate step as failed based on where the error occurred
+    if (firstTxStatus.value === "pending") {
+      firstTxStatus.value = "failed";
+    } else if (secondTxStatus.value === "pending") {
+      secondTxStatus.value = "failed";
+    } else if (thirdTxStatus.value === "pending") {
+      thirdTxStatus.value = "failed";
+    } else {
+      // If no step was pending, assume it failed during the first step
+      firstTxStatus.value = "failed";
+    }
     transactionError.value = error.shortMessage || "Get reward failed";
   }
 };
@@ -645,6 +748,7 @@ const getReward = async () => {
 const resetTransaction = () => {
   firstTxStatus.value = "";
   secondTxStatus.value = "";
+  thirdTxStatus.value = "";
   transactionType.value = "";
   currentTxHash.value = "";
   transactionError.value = "";

@@ -25,11 +25,11 @@ export const useWeb3Store = defineStore('web3', {
                 });
 
                 const midlAccounts = await connect(this.midlConfig, {
-                    purposes: [AddressPurpose.Payment],
+                    purposes: [AddressPurpose.Ordinals],
                     network: regtest
                 });
                 this.midlAccount = midlAccounts[0];
-                this.account = getEVMAddress(this.midlConfig, this.midlAccount);
+                this.account = getEVMAddress(this.midlAccount, regtest);
                 this.ethClient = createPublicClient({
                     chain: midlRegtest,
                     transport: http(SUPPORTED_NETWORKS[NETWORKS.MIDL_REGTEST].rpcUrls[0])

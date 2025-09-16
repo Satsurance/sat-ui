@@ -281,6 +281,31 @@
               </div>
               <div class="mt-1 space-y-1">
                 <p
+                  v-if="actionType === 'deposit'"
+                  class="text-sm text-gray-500"
+                >
+                  Minimum deposit amount: 0.01 BTC
+                </p>
+                <p
+                  v-if="actionType === 'deposit'"
+                  class="text-sm text-gray-600 flex items-center gap-1"
+                >
+                  <svg
+                    class="w-4 h-4 text-blue-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Your balance: {{ userBTCBalance.toFixed(8) }} BTC
+                </p>
+                <p
                   v-if="actionType === 'withdraw'"
                   class="text-sm text-gray-500"
                 >
@@ -420,7 +445,7 @@
 
   <!-- Transaction Status Modal -->
   <TransactionStatus
-    :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+    :show="!!(firstTxStatus || secondTxStatus || thirdTxStatus || transactionError)"
     :steps="transactionSteps"
     :tx-hash="currentTxHash"
     :error="transactionError"
@@ -432,12 +457,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, encodeFunctionData } from 'viem';
 import { useWeb3Store } from '../stores/web3Store';
 import { getContractAddress, SUPPORTED_NETWORKS, EPISODE_DURATION } from '../constants/contracts.js';
 import erc20ABI from '../assets/abis/erc20.json';
 import { formatDate } from '../utils.js';
 import TransactionStatus from '../components/TransactionStatus.vue';
+import { addTxIntention, signIntention, finalizeBTCTransaction, convertETHtoBTC } from '@midl-xyz/midl-js-executor';
+import { getBalance, waitForTransaction } from '@midl-xyz/midl-js-core';
 
 const props = defineProps({
   isOpen: {
@@ -470,10 +497,12 @@ const amount = ref(null);
 const selectedEpisode = ref(null);
 const currentEpisode = ref(0);
 const availableEpisodes = ref([]);
+const userBTCBalance = ref(0);
 
 // Transaction state
 const firstTxStatus = ref("");
 const secondTxStatus = ref("");
+const thirdTxStatus = ref("");
 const transactionType = ref("");
 const currentTxHash = ref("");
 const transactionError = ref("");
@@ -496,13 +525,24 @@ const isValidForm = computed(() => {
   if (!amount.value || amount.value <= 0) {
     return false;
   }
+
+  if (actionType.value === 'deposit') {
+    if (amount.value < 0.01) {
+      return false;
+    }
+    
+    // Check if user has sufficient balance
+    if (amount.value > userBTCBalance.value) {
+      return false;
+    }
+    
+    if (props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0) {
+      return amount.value <= Number(props.maxStakeableAmount);
+    }
+  }
   
   if (actionType.value === 'withdraw' && amount.value > parseFloat(props.position?.stakedAmount || 0)) {
     return false;
-  }
-  
-  if (actionType.value === 'deposit' && props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0) {
-    return amount.value <= Number(props.maxStakeableAmount);
   }
   
   return true;
@@ -536,9 +576,13 @@ const validationMessage = computed(() => {
     }
     
     if (!amount.value) return '';
-    
+
     if (amount.value < 0.01) {
-      return 'Deposit amount must be at least 0.01 BTC';
+      return 'Amount must be at least 0.01 BTC';
+    }
+    
+    if (amount.value > userBTCBalance.value) {
+      return `Insufficient balance. You have ${userBTCBalance.value.toFixed(8)} BTC available.`;
     }
     
     if (props.maxStakeableAmount && Number(props.maxStakeableAmount) > 0 && amount.value > Number(props.maxStakeableAmount)) {
@@ -563,17 +607,24 @@ const transactionSteps = computed(() => {
   if (actionType.value === 'deposit') {
     return [
       {
+        id: 'wrap',
+        title: 'Wrap BTC',
+        description: 'Convert BTC to wrapped BTC tokens',
+        status: firstTxStatus.value,
+        showNumber: true
+      },
+      {
         id: 'approve',
         title: 'Approve BTC',
         description: 'Allow smart contract to use your BTC tokens',
-        status: firstTxStatus.value,
+        status: secondTxStatus.value,
         showNumber: true
       },
       {
         id: 'extend',
         title: 'Extend Position',
         description: 'Extend position with additional deposit',
-        status: secondTxStatus.value,
+        status: thirdTxStatus.value,
         showNumber: true
       }
     ];
@@ -631,7 +682,23 @@ const calculateAvailableEpisodes = () => {
   return episodes;
 };
 
-watch(() => props.isOpen, (isOpen) => {
+const loadUserBTCBalance = async () => {
+  if (!web3Store.isConnected || !web3Store.midlConfig || !web3Store.midlAccount) {
+    userBTCBalance.value = 0;
+    return;
+  }
+
+  try {
+    const btcBalance = await getBalance(web3Store.midlConfig, web3Store.midlAccount.address);
+    // getBalance returns satoshis, convert to BTC (1 BTC = 100,000,000 satoshis)
+    userBTCBalance.value = Number(btcBalance) / 100000000;
+  } catch (error) {
+    console.error('Error fetching BTC balance:', error);
+    userBTCBalance.value = 0;
+  }
+};
+
+watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     resetForm();
     currentEpisode.value = getCurrentEpisode();
@@ -640,6 +707,9 @@ watch(() => props.isOpen, (isOpen) => {
     if (availableEpisodes.value.length > 0) {
       selectedEpisode.value = availableEpisodes.value[0].number;
     }
+
+    // Load user's BTC balance
+    await loadUserBTCBalance();
   }
 });
 
@@ -648,6 +718,19 @@ watch([isPositionExpired, actionType], ([expired, action]) => {
     actionType.value = '';
   }
 });
+
+// Watch for changes in wallet connection and reload balance
+watch(
+  () => [web3Store.isConnected, web3Store.account, web3Store.midlAccount],
+  async ([isConnected]) => {
+    if (isConnected) {
+      await loadUserBTCBalance();
+    } else {
+      userBTCBalance.value = 0;
+    }
+  },
+  { immediate: true }
+);
 
 const resetForm = () => {
   actionType.value = 'extend';
@@ -659,6 +742,7 @@ const resetForm = () => {
 const resetTransaction = () => {
   firstTxStatus.value = "";
   secondTxStatus.value = "";
+  thirdTxStatus.value = "";
   transactionType.value = "";
   currentTxHash.value = "";
   transactionError.value = "";
@@ -684,18 +768,19 @@ const handleExtendPosition = async () => {
     const withdrawAmount = actionType.value === 'withdraw' ? amountInWei : 0n;
     const depositAmount = actionType.value === 'deposit' ? amountInWei : 0n;
 
-    
+    const intentions = [];
+    let needsApproval = false;
+    let btcAddress = null;
 
+    // For deposit actions, we need to wrap BTC and potentially approve
     if (actionType.value === 'deposit') {
-      const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
+      const btcBalance = await getBalance(web3Store.midlConfig, web3Store.midlAccount.address);
+      console.log('BTC Balance:', btcBalance);
 
-      const balance = await web3Store.ethClient.readContract({
-        address: btcAddress,
-        abi: erc20ABI,
-        functionName: 'balanceOf',
-        args: [web3Store.account]
-      });
+      const amountInSatoshis = convertETHtoBTC(amountInWei);
+      btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
 
+      // Check if we need approval
       const currentAllowance = await web3Store.ethClient.readContract({
         address: btcAddress,
         abi: erc20ABI,
@@ -703,54 +788,132 @@ const handleExtendPosition = async () => {
         args: [web3Store.account, props.poolContract.address]
       });
 
-      if (balance < amountInWei) {
-        transactionError.value = `Insufficient BTC balance. You have ${formatEther(balance)} BTC but trying to deposit ${amount.value} BTC`;
-        return;
+      needsApproval = currentAllowance < amountInWei;
+
+      // Step 1: Create tx intention for wrapping BTC
+      const wrapIntention = await addTxIntention(web3Store.midlConfig, {
+        evmTransaction: {
+          to: btcAddress,
+          value: amountInWei
+        },
+        satoshis: amountInSatoshis
+      });
+      intentions.push(wrapIntention);
+
+      // Step 2: Create tx intention for approval (if needed)
+      if (needsApproval) {
+        const approveIntention = await addTxIntention(web3Store.midlConfig, {
+          evmTransaction: {
+            to: btcAddress,
+            data: encodeFunctionData({
+              abi: erc20ABI,
+              functionName: 'approve',
+              args: [props.poolContract.address, amountInWei]
+            }),
+            value: 0n
+          }
+        });
+        intentions.push(approveIntention);
+        console.log('Approve intention created:', approveIntention);
+      }
+    }
+
+    // Step 3: Create tx intention for extending position (always needed)
+    const extendIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: props.poolContract.address,
+        data: encodeFunctionData({
+          abi: props.poolContract.abi,
+          functionName: 'extendPoolPosition',
+          args: [props.position.id, selectedEpisode.value, withdrawAmount, depositAmount]
+        }),
+        value: 0n
+      }
+    });
+    intentions.push(extendIntention);
+
+    // Step 4: Finalize BTC transaction with all intentions
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, intentions, web3Store.ethClient);
+
+    // If approval wasn't needed for deposits, mark the approve step as success immediately
+    if (actionType.value === 'deposit' && !needsApproval) {
+      secondTxStatus.value = "success";
+    }
+
+    // Step 5: Sign each intention separately
+    const serialized = [];
+    let intentionIndex = 0;
+
+    // Sign wrap intention (only for deposits)
+    if (actionType.value === 'deposit') {
+      try {
+        firstTxStatus.value = "pending";
+        const signedWrapIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex], intentions, {
+          txId: btcTx.tx.id,
+        });
+        serialized.push(signedWrapIntention);
+        firstTxStatus.value = "success";
+        intentionIndex++;
+      } catch (error) {
+        console.error('Failed to sign wrap intention:', error);
+        firstTxStatus.value = "failed";
+        throw error;
       }
 
-      if (currentAllowance < amountInWei) {
-        firstTxStatus.value = "pending";
-
+      // Sign approve intention (if needed for deposits)
+      if (needsApproval) {
         try {
-          const hash = await web3Store.signer.writeContract({
-            address: btcAddress,
-            abi: erc20ABI,
-            functionName: 'approve',
-            args: [props.poolContract.address, amountInWei],
-            account: web3Store.account
+          secondTxStatus.value = "pending";
+          const signedApproveIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex], intentions, {
+            txId: btcTx.tx.id,
           });
-          currentTxHash.value = hash;
-          await web3Store.ethClient.waitForTransactionReceipt({ hash });
-          firstTxStatus.value = "success";
+          serialized.push(signedApproveIntention);
+          secondTxStatus.value = "success";
+          intentionIndex++;
         } catch (error) {
-          firstTxStatus.value = "failed";
-          transactionError.value = error.shortMessage || "Failed to approve tokens";
+          console.error('Failed to sign approve intention:', error);
+          secondTxStatus.value = "failed";
           throw error;
         }
       }
-
-      secondTxStatus.value = "pending";
-    } else {
-      firstTxStatus.value = "pending";
     }
-    console.log(props.poolContract)
-    console.log([props.position.id, selectedEpisode.value, withdrawAmount, depositAmount])
-    const hash = await web3Store.signer.writeContract({
-      address: props.poolContract.address,
-      abi: props.poolContract.abi,
-      functionName: 'extendPoolPosition',
-      args: [props.position.id, selectedEpisode.value, withdrawAmount, depositAmount],
-      account: web3Store.account
+
+    // Sign extend position intention (always last)
+    try {
+      if (actionType.value === 'deposit') {
+        thirdTxStatus.value = "pending";
+      } else {
+        firstTxStatus.value = "pending";
+      }
+      
+      console.log('Signing extend position intention:', intentions[intentionIndex]);
+      const signedExtendIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[intentionIndex], intentions, {
+        txId: btcTx.tx.id,
+      });
+      serialized.push(signedExtendIntention);
+      console.log('Extend position intention signed successfully:', signedExtendIntention);
+      
+      if (actionType.value === 'deposit') {
+        thirdTxStatus.value = "success";
+      } else {
+        firstTxStatus.value = "success";
+      }
+    } catch (error) {
+      console.error('Failed to sign extend position intention:', error);
+      if (actionType.value === 'deposit') {
+        thirdTxStatus.value = "failed";
+      } else {
+        firstTxStatus.value = "failed";
+      }
+      throw error;
+    }
+
+    // Step 6: Broadcast the BTC transaction to the network
+    await web3Store.ethClient.sendBTCTransactions({
+      serializedTransactions: serialized,
+      btcTransaction: btcTx.tx.hex,
     });
-    currentTxHash.value = hash;
-
-    await web3Store.ethClient.waitForTransactionReceipt({ hash });
-    
-    if (actionType.value === 'deposit') {
-      secondTxStatus.value = "success";
-    } else {
-      firstTxStatus.value = "success";
-    }
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
 
     emit('positionExtended');
     emit('close');
@@ -759,13 +922,21 @@ const handleExtendPosition = async () => {
   } catch (error) {
     console.error('Failed to extend position:', error);
 
-    if (actionType.value === 'deposit' && firstTxStatus.value !== "failed") {
-      secondTxStatus.value = "failed";
+    if (actionType.value === 'deposit') {
+      if (firstTxStatus.value === "failed") {
+        // Wrap failed, no change needed
+      } else if (secondTxStatus.value === "failed") {
+        // Approve failed, no change needed
+      } else if (thirdTxStatus.value !== "failed") {
+        // Extend failed, mark it as failed
+        thirdTxStatus.value = "failed";
+      }
     } else {
       firstTxStatus.value = "failed";
     }
     
-    transactionError.value = error.shortMessage || "Transaction failed. Please try again";
+    transactionError.value = error.message || error.shortMessage || "Transaction failed. Please try again";
+    isSubmitting.value = false;
   }
 };
 </script>

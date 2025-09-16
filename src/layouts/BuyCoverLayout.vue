@@ -95,14 +95,14 @@
       v-if="selectedProduct"
       :product="selectedProduct"
       :show="!!selectedProduct"
-      :is-submitting="firstTxStatus !== ''"
+      :is-submitting="!!(firstTxStatus || secondTxStatus || thirdTxStatus)"
       @close="handleClose"
       @purchase="handlePurchase"
     />
 
     <!-- Transaction Status Modal -->
     <TransactionStatus
-      :show="!!(firstTxStatus || secondTxStatus || transactionError)"
+      :show="!!(firstTxStatus || secondTxStatus || thirdTxStatus || transactionError)"
       :steps="transactionSteps"
       :tx-hash="currentTxHash"
       :error="transactionError"
@@ -115,7 +115,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, encodeFunctionData } from 'viem';
 import ProductCard from '../components/CoverCard.vue';
 import CoverPurchaseDialog from '../components/CoverPurchaseDialog.vue';
 import TransactionStatus from '../components/TransactionStatus.vue';
@@ -125,6 +125,8 @@ import { useWeb3Store } from '../stores/web3Store';
 import erc20ABI from '../assets/abis/erc20.json';
 import insurancePoolABI from '../assets/abis/insurancePool.json';
 import poolFactoryABI from '../assets/abis/poolFactory.json';
+import { addTxIntention, signIntention, finalizeBTCTransaction, convertETHtoBTC } from '@midl-xyz/midl-js-executor';
+import { getBalance, waitForTransaction } from '@midl-xyz/midl-js-core';
 
 const categories = ['All', 'Web3', 'Cannabis', 'AI'];
 const selectedCategory = ref('All');
@@ -132,6 +134,7 @@ const selectedProduct = ref(null);
 
 const firstTxStatus = ref('');
 const secondTxStatus = ref('');
+const thirdTxStatus = ref('');
 const transactionType = ref('');
 const currentTxHash = ref('');
 const transactionError = ref('');
@@ -221,8 +224,8 @@ const loadPoolProducts = async () => {
   
       if (productInfo && product.active) {
         const basisPoints = 10000n;
-        const [totalAssetsStaked_, , , , , , totalCoverAllocation_] = product.poolStats;
-        const maxCover = formatEther((BigInt(product.maxPoolAllocationPercent) * totalAssetsStaked_) / basisPoints - totalCoverAllocation_);
+        const [totalAssetsStaked_,] = product.poolStats;
+        const maxCover = formatEther((BigInt(product.maxPoolAllocationPercent) * totalAssetsStaked_) / basisPoints - product.allocation);
         
         return {
           ...product,
@@ -245,17 +248,24 @@ const transactionSteps = computed(() => {
   if (transactionType.value === 'cover_purchase') {
     return [
       {
+        id: 'wrap',
+        title: 'Wrap BTC',
+        description: 'Convert BTC to wrapped BTC tokens',
+        status: firstTxStatus.value,
+        showNumber: true
+      },
+      {
         id: 'approve',
         title: 'Approve BTC',
-        description: 'Allow smart contract to use your BTC',
-        status: firstTxStatus.value,
+        description: 'Allow smart contract to use your BTC tokens',
+        status: secondTxStatus.value,
         showNumber: true
       },
       {
         id: 'purchase',
         title: 'Purchase Cover',
         description: 'Process your cover purchase',
-        status: secondTxStatus.value,
+        status: thirdTxStatus.value,
         showNumber: true
       }
     ];
@@ -270,6 +280,7 @@ const openPurchaseModal = (productId) => {
 const resetTransaction = () => {
   firstTxStatus.value = '';
   secondTxStatus.value = '';
+  thirdTxStatus.value = '';
   transactionType.value = '';
   currentTxHash.value = '';
   transactionError.value = '';
@@ -290,74 +301,132 @@ const handlePurchase = async (purchaseParams) => {
     const durationInSeconds = duration * 86400;
     const coverAmountWei = parseEther(coverAmount.toString());
     const premiumWei = parseEther(premium.toString());
-
-    const publicClient = web3Store.ethClient;
-
-    const walletClient = web3Store.signer;
+    const premiumInSatoshis = convertETHtoBTC(premiumWei);
 
     const poolAddress = selectedProduct.value.poolAddress;
-    const paymentTokenAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
+    const btcAddress = getContractAddress('BTC_TOKEN', web3Store.chainId);
 
-    const currentAllowance = await publicClient.readContract({
-      address: paymentTokenAddress,
+    // Check if we need approval
+    const currentAllowance = await web3Store.ethClient.readContract({
+      address: btcAddress,
       abi: erc20ABI,
       functionName: 'allowance',
       args: [web3Store.account, poolAddress]
     });
 
+    const needsApproval = currentAllowance < premiumWei;
+    const intentions = [];
+
     transactionType.value = 'cover_purchase';
 
-    if (currentAllowance < premiumWei) {
-      try {
-        firstTxStatus.value = 'pending';
+    // Step 1: Create tx intention for wrapping BTC
+    const wrapIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: btcAddress,
+        value: premiumWei
+      },
+      satoshis: premiumInSatoshis
+    });
+    intentions.push(wrapIntention);
 
-        const hash = await walletClient.writeContract({
-          address: paymentTokenAddress,
-          abi: erc20ABI,
-          functionName: 'approve',
-          args: [poolAddress, premiumWei],
-          account: web3Store.account
-        });
-        currentTxHash.value = hash;
-
-        await publicClient.waitForTransactionReceipt({ hash });
-        firstTxStatus.value = 'success';
-      } catch (error) {
-        console.error('Approval error:', error);
-        firstTxStatus.value = 'failed';
-        transactionError.value = error.shortMessage || 'Failed to approve tokens';
-        throw error;
-      }
-    } else {
-      firstTxStatus.value = 'success';
+    // Step 2: Create tx intention for approval (if needed)
+    if (needsApproval) {
+      const approveIntention = await addTxIntention(web3Store.midlConfig, {
+        evmTransaction: {
+          to: btcAddress,
+          data: encodeFunctionData({
+            abi: erc20ABI,
+            functionName: 'approve',
+            args: [poolAddress, premiumWei]
+          }),
+          value: 0n
+        }
+      });
+      intentions.push(approveIntention);
     }
 
+    // Step 3: Create tx intention for purchasing cover
+    const purchaseCoverIntention = await addTxIntention(web3Store.midlConfig, {
+      evmTransaction: {
+        to: poolAddress,
+        data: encodeFunctionData({
+          abi: insurancePoolABI,
+          functionName: 'purchaseCover',
+          args: [selectedProduct.value.productId, web3Store.account, durationInSeconds, coverAmountWei]
+        }),
+        value: 0n
+      }
+    });
+    intentions.push(purchaseCoverIntention);
+
+    // Step 4: Finalize BTC transaction with all intentions
+    const btcTx = await finalizeBTCTransaction(web3Store.midlConfig, intentions, web3Store.ethClient);
+
+    // If approval wasn't needed, mark the approve step as success immediately
+    if (!needsApproval) {
+      secondTxStatus.value = "success";
+    }
+
+    // Step 5: Sign each intention separately
+    const serialized = [];
+
+    // Sign wrap intention (always first)
     try {
-      secondTxStatus.value = 'pending';
-
-      const hash = await walletClient.writeContract({
-        address: poolAddress,
-        abi: insurancePoolABI,
-        functionName: 'purchaseCover',
-        args: [selectedProduct.value.productId, web3Store.account, durationInSeconds, coverAmountWei],
-        account: web3Store.account
+      firstTxStatus.value = "pending";
+      const signedWrapIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[0], intentions, {
+        txId: btcTx.tx.id,
       });
-
-      currentTxHash.value = hash;
-      await web3Store.ethClient.waitForTransactionReceipt({ hash });
-      secondTxStatus.value = 'success';
-
-      setTimeout(handleClose, 2000);
-
+      serialized.push(signedWrapIntention);
+      firstTxStatus.value = "success";
     } catch (error) {
-      console.error('Purchase error:', error);
-      secondTxStatus.value = 'failed';
-      transactionError.value = error.shortMessage || 'Transaction failed. Please try again';
+      console.error('Failed to sign wrap intention:', error);
+      firstTxStatus.value = "failed";
       throw error;
     }
 
+    if (needsApproval) {
+      // Sign approve intention (second when approval is needed)
+      try {
+        secondTxStatus.value = "pending";
+        const signedApproveIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[1], intentions, {
+          txId: btcTx.tx.id,
+        });
+        serialized.push(signedApproveIntention);
+        secondTxStatus.value = "success";
+      } catch (error) {
+        console.error('Failed to sign approve intention:', error);
+        secondTxStatus.value = "failed";
+        throw error;
+      }
+    }
+
+    // Sign purchase cover intention (index depends on whether approval was needed)
+    const purchaseIntentionIndex = needsApproval ? 2 : 1;
+    try {
+      thirdTxStatus.value = "pending";
+      const signedPurchaseIntention = await signIntention(web3Store.midlConfig, web3Store.ethClient, intentions[purchaseIntentionIndex], intentions, {
+        txId: btcTx.tx.id,
+      });
+      serialized.push(signedPurchaseIntention);
+      thirdTxStatus.value = "success";
+    } catch (error) {
+      console.error('Failed to sign purchase cover intention:', error);
+      thirdTxStatus.value = "failed";
+      throw error;
+    }
+
+    // Step 6: Broadcast the BTC transaction to the network
+    await web3Store.ethClient.sendBTCTransactions({
+        serializedTransactions: serialized,
+        btcTransaction: btcTx.tx.hex,
+    });
+    await waitForTransaction(web3Store.midlConfig, btcTx.tx.id, 1);
+
+    setTimeout(handleClose, 2000);
+
   } catch (error) {
     console.error('Cover purchase process error:', error);
+    transactionError.value = error.message || error.shortMessage || "Transaction failed. Please try again";
   }
 };
 

@@ -43,7 +43,7 @@
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-500">Premium Rate:</span>
-            <span class="text-yellow-600 font-medium">{{ Number(product.annualPercent) / 10000 }}% per year</span>
+            <span class="text-yellow-600 font-medium">{{ Number(product.annualPercent) / 100 }}% per year</span>
           </div>
         </div>
       </div>

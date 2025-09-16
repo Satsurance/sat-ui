@@ -2,20 +2,10 @@
 import { NETWORKS } from './contracts.js';
 
 const POOL_NAMES = {
-    [NETWORKS.BOB_TESTNET]: {
+    [NETWORKS.MIDL_REGTEST]: {
         1: "Main Insurance Pool",
         2: "Secondary Pool",
         3: "High-Yield Pool"
-    },
-    [NETWORKS.INK_TESTNET]: {
-        1: "Primary Pool",
-        2: "Balanced Pool",
-        3: "Growth Pool"
-    },
-    [NETWORKS.BITLAYER_TESTNET]: {
-        1: "Core Pool",
-        2: "Stable Pool",
-        3: "Advanced Pool"
     },
     [NETWORKS.LOCALHOST]: {
         1: "Test Pool",
