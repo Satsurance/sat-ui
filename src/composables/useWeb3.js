@@ -9,9 +9,9 @@ export function useWeb3() {
     };
 
     const connectWallet = async () => {
-        if (!checkMetaMaskInstalled()) {
-            throw new Error('MetaMask is not installed');
-        }
+        //if (!checkMetaMaskInstalled()) {
+        //    throw new Error('MetaMask is not installed');
+        //}
         return web3Store.connectWallet();
     };
 
