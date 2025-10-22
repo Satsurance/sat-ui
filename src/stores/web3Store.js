@@ -3,7 +3,7 @@ import { createWalletClient, custom, createPublicClient, http } from 'viem';
 import { SUPPORTED_NETWORKS, NETWORKS } from '../constants/contracts.js';
 import { createConfig, regtest, connect, getBalance, AddressPurpose } from '@midl-xyz/midl-js-core';
 import { getEVMAddress, midlRegtest } from '@midl-xyz/midl-js-executor';
-import { leatherConnector } from '@midl-xyz/midl-js-connectors';
+import { leatherConnector, unisatConnector, phantomConnector, bitgetConnector, xverseConnector } from '@midl-xyz/midl-js-connectors';
 
 
 export const useWeb3Store = defineStore('web3', {
@@ -16,12 +16,19 @@ export const useWeb3Store = defineStore('web3', {
         isConnected: false,
     }),
 
+
     actions: {
         async connectWallet() {
             try {
                 this.midlConfig = createConfig({
                     networks: [regtest],
-                    connectors: [leatherConnector()],
+                    connectors: [
+                        unisatConnector(),
+                        leatherConnector(),
+                        phantomConnector(),
+                        bitgetConnector(),
+                        xverseConnector()
+                    ],
                 });
 
                 const midlAccounts = await connect(this.midlConfig, {
